@@ -82,6 +82,16 @@
               <q-table :rows="event.schedule || []" :columns="scheduleColumns" row-key="scheduleId"
                 :rows-per-page-options="[5, 10, 25]" v-model:pagination="schedulePagination" class="schedule-table" flat
                 bordered>
+
+                  <!-- venue -->
+                <template #body-cell-venue_name="props">
+                  <q-td :props="props">
+                    <div class="schedule-date-cell">
+                      <span>{{ props.row.venue_name || "—" }}</span>
+                    </div>
+                  </q-td>
+                </template>
+
                 <!-- Date Column -->
                 <template #body-cell-date="props">
                   <q-td :props="props">
@@ -103,14 +113,18 @@
                   </q-td>
                 </template>
 
-                  <template #body-cell-status="props">
+                 <template #body-cell-status="props">
                   <q-td :props="props">
-                    <div class="schedule-hours-cell">
-                      {{
-                        props.row.computedStatus
-                      }}
-                    </div>
+                     <div class="status-badge" :class="'status-' + props.row.computedStatus">
+                {{ props.row.computedStatus }}
+                     </div>
                   </q-td>
+                  
+            <!-- <q-td key="computedStatus" :props="props">
+              <span class="status-badge" :class="'status-' + props.row.computedStatus">
+                {{ props.row.computedStatus }}
+              </span>
+            </q-td> -->
                 </template>
 
                 <!-- Action Column -->
@@ -675,28 +689,31 @@ export default defineComponent({
 }
 
 .schedule-table :deep(.q-table th) {
-  font-size: 11px;
-  font-weight: 600;
-  color: #555555;
-  padding: 8px 12px;
-  border-bottom: 2px solid #e0e0e0;
+  color: #2b2e31;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .schedule-table :deep(.q-table td) {
   padding: 8px 12px;
   font-size: 12px;
+  height: 68px;
 }
 
 .schedule-date-cell {
   display: flex;
   align-items: center;
-  color: #333333;
-  font-size: 12px;
+  color: #0b0d0e;
+   font-size: 11px;
+  font-weight: 500;
 }
 
 .schedule-hours-cell {
-  color: #333333;
-  font-size: 12px;
+  color: #0b0d0e;
+  font-size: 11px;
+  font-weight: 500;
   text-align: center;
 }
 

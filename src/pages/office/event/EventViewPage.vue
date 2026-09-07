@@ -424,7 +424,7 @@ import Swal from "sweetalert2";
 
 export default defineComponent({
   name: "EventViewPage",
-  components: { LoadingState },
+  components: { LoadingState }, 
 
   setup() {
     const officeEventStore = useOfficeEventStore();

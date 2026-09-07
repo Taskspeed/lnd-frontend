@@ -615,11 +615,8 @@ export default defineComponent({
 
 .events-table :deep(th) {
   height: 48px;
-
   color: #2b2e31;
-
   background: #ffffff;
-
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.3px;
@@ -627,11 +624,8 @@ export default defineComponent({
 
 .events-table :deep(td) {
   height: 68px;
-
   color: #425b68;
-
   border-color: #edf1ef;
-
   font-size: 11px;
 }
 
