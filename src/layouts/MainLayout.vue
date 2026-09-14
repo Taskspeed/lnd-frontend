@@ -5,15 +5,42 @@
     ====================================================== -->
     <q-header class="app-header">
       <q-toolbar class="app-toolbar">
-        <!-- Menu -->
         <q-btn flat round dense icon="menu" class="menu-btn" @click="toggleLeftDrawer" />
 
-        <!-- Office Name - Full display without ellipsis -->
         <div class="header-office">
-          <div class="office-name">
-            {{ officeName }}
-          </div>
+          <div class="office-name">{{ officeName }}</div>
         </div>
+
+        <!-- NOTIFICATION BELL -->
+        <q-btn flat round dense icon="notifications" class="notification-btn">
+          <q-badge v-if="notificationCount > 0" color="red" floating rounded>
+            {{ notificationCount }}
+          </q-badge>
+
+          <q-menu anchor="bottom right" self="top right" max-width="360px">
+            <q-list class="notification-list">
+              <q-item-label header class="notification-header">Notifications</q-item-label>
+
+              <template v-if="notifications.length">
+                <q-item v-for="n in notifications" :key="n.id" clickable v-close-popup @click="goToNotification(n)"
+                  :class="{ 'notification-unread': !n.read_at }">
+                  <q-item-section avatar>
+                    <q-icon :name="n.data.title?.includes('Disapproved') ? 'cancel' : 'notifications'"
+                      :color="n.data.title?.includes('Disapproved') ? 'negative' : 'primary'" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label class="notification-title">{{ n.data.title }}</q-item-label>
+                    <q-item-label caption lines="2">{{ n.data.message }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </template>
+
+              <q-item v-else>
+                <q-item-section class="text-center text-grey-6">No notifications yet.</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
 
         <!-- User -->
         <q-btn flat no-caps class="header-user q-px-md">
@@ -65,14 +92,14 @@
                 <q-item-section avatar><q-icon name="dashboard" /></q-item-section>
                 <q-item-section>Dashboard</q-item-section>
               </q-item>
-
+              <div class="nav-section">LEARNING</div>
               <q-item clickable v-ripple :to="{ name: 'office-events' }" class="nav-item"
                 active-class="nav-item-active">
                 <q-item-section avatar><q-icon name="event" /></q-item-section>
                 <q-item-section>Events</q-item-section>
               </q-item>
             </template>
-          
+
 
             <template v-if="isHrAdmin">
               <!-- Overview -->
@@ -97,29 +124,30 @@
 
                 <q-item-section> Events </q-item-section>
               </q-item>
-                <q-item clickable v-ripple :to="{ name: 'bpm' }" class="nav-item" active-class="nav-item-active">
-              <q-item-section avatar>
-                <q-icon name="account_tree" />
-              </q-item-section>
+              <q-item clickable v-ripple :to="{ name: 'bpm' }" class="nav-item" active-class="nav-item-active">
+                <q-item-section avatar>
+                  <q-icon name="account_tree" />
+                </q-item-section>
 
-              <q-item-section> BPM </q-item-section>
-            </q-item>
-            
-            <q-item clickable v-ripple :to="{ name: 'assessment' }" class="nav-item" active-class="nav-item-active">
-              <q-item-section avatar>
-                <q-icon name="assignment" />
-              </q-item-section>
+                <q-item-section> BPM </q-item-section>
+              </q-item>
 
-              <q-item-section> Assessment </q-item-section>
-            </q-item>
+              <q-item clickable v-ripple :to="{ name: 'assessment' }" class="nav-item" active-class="nav-item-active">
+                <q-item-section avatar>
+                  <q-icon name="assignment" />
+                </q-item-section>
 
-            <q-item clickable v-ripple :to="{ name: 'certification' }" class="nav-item" active-class="nav-item-active">
-              <q-item-section avatar>
-                <q-icon name="workspace_premium" />
-              </q-item-section>
+                <q-item-section> Assessment </q-item-section>
+              </q-item>
 
-              <q-item-section> Certification </q-item-section>
-            </q-item>
+              <q-item clickable v-ripple :to="{ name: 'certification' }" class="nav-item"
+                active-class="nav-item-active">
+                <q-item-section avatar>
+                  <q-icon name="workspace_premium" />
+                </q-item-section>
+
+                <q-item-section> Certification </q-item-section>
+              </q-item>
               <!-- Management -->
               <div class="nav-section">MANAGEMENT</div>
 
@@ -250,10 +278,12 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed } from "vue";
+import { defineComponent, ref, computed, onMounted, onUnmounted } from "vue";
 
 import { useRouter } from "vue-router";
 import { useAuthStore } from "stores/authStore";
+import { useNotificationStore } from "src/stores/notificationStore";
+import { notificationRoutes } from "src/constants/notification";
 
 export default defineComponent({
   name: "MainLayout",
@@ -263,6 +293,7 @@ export default defineComponent({
     const authStore = useAuthStore();
     const libraryExpanded = ref(false);
     const leftDrawerOpen = ref(false);
+    const notificationStore = useNotificationStore(); // idagdag
 
     // Pulled live from the auth store
     const userName = computed(() => authStore.fullName || "User");
@@ -283,8 +314,32 @@ export default defineComponent({
       isOfficeAdmin.value ? "office-events" : "events"
     );
 
-    const notificationCount = ref(3);
+    const notificationCount = computed(() => notificationStore.unreadCount);
+    const notifications = computed(() => notificationStore.notifications);
+    let pollInterval = null;
 
+  function goToNotification(n) {
+    if (!n.read_at) notificationStore.markAsRead(n.id);
+
+    const data = n.data || {};
+    const buildRoute = notificationRoutes[data.type];
+
+    if (buildRoute) {
+      router.push(buildRoute(data));
+    } else {
+      console.warn("Unknown notification type:", data.type);
+    }
+  }
+    onMounted(() => {
+      notificationStore.fetchNotifications();
+      pollInterval = setInterval(() => {
+        notificationStore.fetchNotifications();
+      }, 30000); // every 30s
+    });
+
+    onUnmounted(() => {
+      if (pollInterval) clearInterval(pollInterval);
+    });
     const userInitials = computed(() => {
       return userName.value
         .split(" ")
@@ -337,6 +392,8 @@ export default defineComponent({
       isOfficeAdmin,
       isHrAdmin,
       logout,
+      notifications,
+      goToNotification,
     };
   },
 });
@@ -718,5 +775,27 @@ export default defineComponent({
 
 .nav-subitem {
   padding-left: 20px;
+}
+
+.notification-list {
+  min-width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notification-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: #7c898f;
+}
+
+.notification-title {
+  font-size: 12px;
+  font-weight: 650;
+  color: #172b3a;
+}
+
+.notification-unread {
+  background: #f0f8f2;
 }
 </style>
