@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { api } from "boot/axios";
-import { suggested_employees } from "src/service/event/eventService";
+import { nominated_employee, suggested_employees,nomination_approval } from "src/service/event/eventService";
 
 export const useEventStore = defineStore("event", {
   state: () => ({
@@ -8,7 +8,8 @@ export const useEventStore = defineStore("event", {
     selectedEvent: null,
     loading: false,
     error: null,
-    employees: []
+    employees: [],
+    nominated_employee:[]
   }),
 
   actions: {
@@ -132,19 +133,49 @@ export const useEventStore = defineStore("event", {
     clearSelectedEvent() {
       this.selectedEvent = null;
     },
-   async fetchSuggested(office, titleName) {
+    async fetchSuggested(office, titleName) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await suggested_employees(office, titleName);
+        this.employees = response.data.data || response.data || [];
+      } catch (err) {
+        this.error = err.response?.data?.message || "Failed to load employees.";
+        this.employees = [];
+      } finally {
+        this.loading = false;
+      }
+    },
+
+  async fetchNominatedEmployee(eventId, scheduleId) {
+        this.loading = true;
+        this.error = null;
+        try {
+          const response = await nominated_employee(eventId, scheduleId);
+          this.nominated_employee = response.data.data || response.data || null;
+          return { success: true };
+        } catch (err) {
+          this.error = err.response?.data?.message || "Failed to load employees.";
+          this.nominated_employee = null;
+          return { success: false, message: this.error };
+        } finally {
+          this.loading = false;
+        }
+      },
+  
+async approvalNominatedEmployee(nominatedEmployeeId, payload) {
   this.loading = true;
   this.error = null;
   try {
-    const response = await suggested_employees(office, titleName);
-    this.employees = response.data.data || response.data || [];
+    const response = await nomination_approval(nominatedEmployeeId, payload);
+    return { success: true, data: response.data.data || response.data };
   } catch (err) {
-    this.error = err.response?.data?.message || "Failed to load employees.";
-    this.employees = [];
+    this.error = err.response?.data?.message || "Failed to update nomination status.";
+    return { success: false, message: this.error };
   } finally {
     this.loading = false;
   }
-}
+},
+
   },
-  
 });
