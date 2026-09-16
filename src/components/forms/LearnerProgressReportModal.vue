@@ -9,6 +9,10 @@
 
       <q-card-section class="lpr-body">
         <div class="lpr-title">Learner's Progress Report</div>
+        <div v-if="submission?.status === 'Returned'" class="lap-remarks-box">
+          <div class="lap-remarks-label">Remarks (Returned):</div>
+          <div class="lap-remarks-text">{{ submission.remarks }}</div>
+        </div>
 
         <!-- BASIC INFO -->
         <div class="lpr-field-row">
@@ -34,25 +38,40 @@
         <div class="lpr-grid-3">
           <div class="lpr-box">
             <div class="lpr-box-title">Core Areas</div>
-            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Delivering Service Excellence" label="Delivering Service Excellence" />
-            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Exemplifying Integrity" label="Exemplifying Integrity" />
-            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Interpersonal Skills" label="Interpersonal Skills" />
+            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Delivering Service Excellence"
+              label="Delivering Service Excellence" />
+            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Exemplifying Integrity"
+              label="Exemplifying Integrity" />
+            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Interpersonal Skills"
+              label="Interpersonal Skills" />
           </div>
           <div class="lpr-box">
             <div class="lpr-box-title">Technical Areas</div>
-            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Planning and Organizing" label="Planning &amp; Organizing" />
-            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Monitoring and Evaluation" label="Monitoring &amp; Evaluation" />
-            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Records Management" label="Records Management" />
-            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Partnering and Networking" label="Partnering &amp; Networking" />
-            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Process Management" label="Process Management" />
-            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Attention to Detail" label="Attention to Detail" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Planning and Organizing"
+              label="Planning &amp; Organizing" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Monitoring and Evaluation"
+              label="Monitoring &amp; Evaluation" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Records Management"
+              label="Records Management" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Partnering and Networking"
+              label="Partnering &amp; Networking" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Process Management"
+              label="Process Management" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Attention to Detail"
+              label="Attention to Detail" />
           </div>
           <div class="lpr-box">
             <div class="lpr-box-title">Leadership Areas</div>
-            <q-checkbox dense :disable="readonly" v-model="leadershipAreas" val="Thinking Strategically and Creativity" label="Thinking Strategically and Creativity" />
-            <q-checkbox dense :disable="readonly" v-model="leadershipAreas" val="Problem Solving and Decision Making" label="Problem Solving &amp; Decision Making" />
-            <q-checkbox dense :disable="readonly" v-model="leadershipAreas" val="Building Collaborative and Inclusive Working Relationships" label="Building Collaborative &amp; Inclusive Working Relationships" />
-            <q-checkbox dense :disable="readonly" v-model="leadershipAreas" val="Managing Performance and Coaching for Results" label="Managing Performance &amp; Coaching for Results" />
+            <q-checkbox dense :disable="readonly" v-model="leadershipAreas" val="Thinking Strategically and Creativity"
+              label="Thinking Strategically and Creativity" />
+            <q-checkbox dense :disable="readonly" v-model="leadershipAreas" val="Problem Solving and Decision Making"
+              label="Problem Solving &amp; Decision Making" />
+            <q-checkbox dense :disable="readonly" v-model="leadershipAreas"
+              val="Building Collaborative and Inclusive Working Relationships"
+              label="Building Collaborative &amp; Inclusive Working Relationships" />
+            <q-checkbox dense :disable="readonly" v-model="leadershipAreas"
+              val="Managing Performance and Coaching for Results"
+              label="Managing Performance &amp; Coaching for Results" />
           </div>
         </div>
 
@@ -63,10 +82,12 @@
         </p>
         <ul class="lpr-rating-legend">
           <li><strong>5</strong> - Outstandingly contributed to the effective discharge of the learner's functions</li>
-          <li><strong>4</strong> - Very satisfactorily contributed to the effective discharge of the learner's functions</li>
+          <li><strong>4</strong> - Very satisfactorily contributed to the effective discharge of the learner's functions
+          </li>
           <li><strong>3</strong> - Satisfactorily contributed to the effective discharge of the learner's functions</li>
           <li><strong>2</strong> - Is somehow helpful to the effective discharge of the learner's functions</li>
-          <li><strong>1</strong> - Is of no significant effect to the effective discharge of the learner's functions</li>
+          <li><strong>1</strong> - Is of no significant effect to the effective discharge of the learner's functions
+          </li>
         </ul>
 
         <!-- DEGREE OF APPLICATION TABLE -->
@@ -85,12 +106,8 @@
             <tr v-for="item in competencyList" :key="item">
               <td class="lpr-rating-competency-col">{{ item }}</td>
               <td v-for="n in 5" :key="n" class="lpr-rating-cell">
-                <q-checkbox
-                  dense
-                  :disable="readonly"
-                  :model-value="ratings[item] === 6 - n"
-                  @update:model-value="(checked) => setRating(item, 6 - n, checked)"
-                />
+                <q-checkbox dense :disable="readonly" :model-value="ratings[item] === 6 - n"
+                  @update:model-value="(checked) => setRating(item, 6 - n, checked)" />
               </td>
             </tr>
           </tbody>
@@ -99,7 +116,8 @@
         <!-- REMARKS -->
         <div class="lpr-box lpr-box-full q-mt-md">
           <div class="lpr-box-title">Remarks: (Observed learner's behavioral changes)</div>
-          <q-input dense borderless :readonly="readonly" type="textarea" v-model="remarks" rows="4" class="lpr-textarea" />
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="remarks" rows="4"
+            class="lpr-textarea" />
         </div>
 
         <!-- SIGNATURES -->
@@ -298,11 +316,13 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   position: relative;
 
 }
+
 .lpr-header-img {
- width: 100%;
+  width: 100%;
   height: auto;
   display: block;
 }
+
 .lpr-close-btn {
   position: absolute;
   top: 10px;
@@ -329,12 +349,14 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   gap: 8px;
   margin-bottom: 10px;
 }
+
 .lpr-field-label {
   font-size: 12px;
   font-weight: 650;
   color: #1a1a1a;
   white-space: nowrap;
 }
+
 .lpr-field-line {
   flex: 1;
   border-bottom: 1px solid #333;
@@ -342,6 +364,7 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   font-size: 12px;
   color: #1a1a1a;
 }
+
 .lpr-field-line-short {
   max-width: 200px;
 }
@@ -373,9 +396,11 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   border-radius: 4px;
   padding: 10px 12px;
 }
+
 .lpr-box-full {
   margin-bottom: 14px;
 }
+
 .lpr-box-title {
   font-size: 11px;
   font-weight: 750;
@@ -389,6 +414,7 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   font-size: 12px;
   margin-bottom: 2px;
 }
+
 .lpr-box :deep(.q-checkbox__label) {
   font-size: 12px;
 }
@@ -413,16 +439,19 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   font-size: 12px;
   margin-bottom: 8px;
 }
+
 .lpr-rating-table th,
 .lpr-rating-table td {
   border: 1px solid #333;
   padding: 4px 6px;
   text-align: center;
 }
+
 .lpr-rating-competency-col {
   text-align: left !important;
   width: 45%;
 }
+
 .lpr-rating-cell {
   width: 11%;
 }
@@ -438,11 +467,13 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   margin-top: 24px;
   text-align: left;
 }
+
 .lpr-sig-line {
   border-bottom: 1px solid #333;
   height: 24px;
   margin-top: 24px;
 }
+
 .lpr-sig-caption {
   font-size: 11px;
   font-weight: 650;
@@ -453,5 +484,25 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
 .lpr-footer {
   border-top: 1px solid #e6e9ea;
   padding: 10px 16px;
+}
+
+.lap-remarks-box {
+  border: 1px solid #d83d3d;
+  background: #fdecec;
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.lap-remarks-label {
+  font-size: 11px;
+  font-weight: 750;
+  color: #c73f3f;
+  margin-bottom: 4px;
+}
+
+.lap-remarks-text {
+  font-size: 12px;
+  color: #1a1a1a;
 }
 </style>

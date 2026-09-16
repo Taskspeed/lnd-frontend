@@ -9,7 +9,10 @@
 
       <q-card-section class="lamr-body">
         <div class="lamr-title">Learning Application Monitoring Report</div>
-
+        <div v-if="submission?.status === 'Returned'" class="lap-remarks-box">
+          <div class="lap-remarks-label">Remarks (Returned):</div>
+          <div class="lap-remarks-text">{{ submission.remarks }}</div>
+        </div>
         <!-- BASIC INFO -->
         <div class="lamr-field-row">
           <span class="lamr-field-label">Learner:</span>
@@ -33,31 +36,46 @@
         <div class="lamr-grid-3">
           <div class="lamr-box">
             <div class="lamr-box-title">Core Areas</div>
-            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Delivering Service Excellence" label="Delivering Service Excellence" />
-            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Exemplifying Integrity" label="Exemplifying Integrity" />
-            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Interpersonal Skills" label="Interpersonal Skills" />
+            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Delivering Service Excellence"
+              label="Delivering Service Excellence" />
+            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Exemplifying Integrity"
+              label="Exemplifying Integrity" />
+            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Interpersonal Skills"
+              label="Interpersonal Skills" />
           </div>
           <div class="lamr-box">
             <div class="lamr-box-title">Technical Areas</div>
-            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Planning and Organizing" label="Planning &amp; Organizing" />
-            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Monitoring and Evaluation" label="Monitoring &amp; Evaluation" />
-            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Records Management" label="Records Management" />
-            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Partnering and Networking" label="Partnering &amp; Networking" />
-            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Process Management" label="Process Management" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Planning and Organizing"
+              label="Planning &amp; Organizing" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Monitoring and Evaluation"
+              label="Monitoring &amp; Evaluation" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Records Management"
+              label="Records Management" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Partnering and Networking"
+              label="Partnering &amp; Networking" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Process Management"
+              label="Process Management" />
           </div>
           <div class="lamr-box">
             <div class="lamr-box-title">Leadership Areas</div>
-            <q-checkbox dense :disable="readonly" v-model="leadershipAreas" val="Thinking Strategically and Creativity" label="Thinking Strategically and Creativity" />
-            <q-checkbox dense :disable="readonly" v-model="leadershipAreas" val="Problem Solving and Decision Making" label="Problem Solving &amp; Decision Making" />
-            <q-checkbox dense :disable="readonly" v-model="leadershipAreas" val="Building Collaborative and Inclusive Working Relationships" label="Building Collaborative &amp; Inclusive Working Relationships" />
-            <q-checkbox dense :disable="readonly" v-model="leadershipAreas" val="Managing Performance and Coaching for Results" label="Managing Performance &amp; Coaching for Results" />
+            <q-checkbox dense :disable="readonly" v-model="leadershipAreas" val="Thinking Strategically and Creativity"
+              label="Thinking Strategically and Creativity" />
+            <q-checkbox dense :disable="readonly" v-model="leadershipAreas" val="Problem Solving and Decision Making"
+              label="Problem Solving &amp; Decision Making" />
+            <q-checkbox dense :disable="readonly" v-model="leadershipAreas"
+              val="Building Collaborative and Inclusive Working Relationships"
+              label="Building Collaborative &amp; Inclusive Working Relationships" />
+            <q-checkbox dense :disable="readonly" v-model="leadershipAreas"
+              val="Managing Performance and Coaching for Results"
+              label="Managing Performance &amp; Coaching for Results" />
           </div>
         </div>
 
         <!-- MONITORING FIELDS -->
         <div class="lamr-box lamr-box-full">
           <div class="lamr-box-title lamr-box-title-left">Goals</div>
-          <q-input dense borderless :readonly="readonly" type="textarea" v-model="goals" rows="2" class="lamr-textarea" />
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="goals" rows="2"
+            class="lamr-textarea" />
         </div>
         <div class="lamr-box lamr-box-full">
           <div class="lamr-box-title lamr-box-title-left">Key Performance Indicator</div>
@@ -65,11 +83,13 @@
         </div>
         <div class="lamr-box lamr-box-full">
           <div class="lamr-box-title lamr-box-title-left">Learning Strategies Applied</div>
-          <q-input dense borderless :readonly="readonly" type="textarea" v-model="strategiesApplied" rows="2" class="lamr-textarea" />
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="strategiesApplied" rows="2"
+            class="lamr-textarea" />
         </div>
         <div class="lamr-box lamr-box-full">
           <div class="lamr-box-title lamr-box-title-left">Required Resources</div>
-          <q-input dense borderless :readonly="readonly" type="textarea" v-model="requiredResources" rows="2" class="lamr-textarea" />
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="requiredResources" rows="2"
+            class="lamr-textarea" />
         </div>
         <div class="lamr-box lamr-box-full">
           <div class="lamr-box-title lamr-box-title-left">Target Date of Completion</div>
@@ -77,16 +97,13 @@
         </div>
 
         <!-- STATUS UPDATES -->
-        <div
-          v-for="(status, index) in statusUpdates"
-          :key="index"
-          class="lamr-box lamr-box-full"
-        >
+        <div v-for="(status, index) in statusUpdates" :key="index" class="lamr-box lamr-box-full">
           <div class="lamr-status-row">
             <span class="lamr-box-title lamr-box-title-left lamr-status-label">Status as of</span>
             <!-- <q-input dense borderless :readonly="readonly" v-model="status.date" class="lamr-status-date" /> -->
           </div>
-          <q-input dense borderless :readonly="readonly" type="textarea" v-model="status.notes" rows="2" class="lamr-textarea" />
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="status.notes" rows="2"
+            class="lamr-textarea" />
         </div>
         <div v-if="!readonly" class="lamr-add-status">
           <q-btn flat dense size="sm" icon="add" label="Add status update" color="primary" @click="addStatusUpdate" />
@@ -95,7 +112,8 @@
         <!-- REMARKS -->
         <div class="lamr-box lamr-box-full">
           <div class="lamr-box-title lamr-box-title-left">Remarks</div>
-          <q-input dense borderless :readonly="readonly" type="textarea" v-model="remarks" rows="3" class="lamr-textarea" />
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="remarks" rows="3"
+            class="lamr-textarea" />
         </div>
 
         <!-- SIGNATURES -->
@@ -275,6 +293,7 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   height: auto;
   display: block;
 }
+
 .lamr-close-btn {
   position: absolute;
   top: 10px;
@@ -301,12 +320,14 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   gap: 8px;
   margin-bottom: 10px;
 }
+
 .lamr-field-label {
   font-size: 12px;
   font-weight: 650;
   color: #1a1a1a;
   white-space: nowrap;
 }
+
 .lamr-field-line {
   flex: 1;
   border-bottom: 1px solid #333;
@@ -335,9 +356,11 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   border-radius: 4px;
   padding: 10px 12px;
 }
+
 .lamr-box-full {
   margin-bottom: 10px;
 }
+
 .lamr-box-title {
   font-size: 11px;
   font-weight: 750;
@@ -345,6 +368,7 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   margin-bottom: 8px;
   color: #1a1a1a;
 }
+
 .lamr-box-title-left {
   text-align: left;
 }
@@ -354,6 +378,7 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   font-size: 12px;
   margin-bottom: 2px;
 }
+
 .lamr-box :deep(.q-checkbox__label) {
   font-size: 12px;
 }
@@ -369,10 +394,12 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   gap: 8px;
   margin-bottom: 4px;
 }
+
 .lamr-status-label {
   margin-bottom: 0;
   white-space: nowrap;
 }
+
 .lamr-status-date {
   flex: 1;
   border-bottom: 1px solid #333;
@@ -391,10 +418,12 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   margin-top: 30px;
   text-align: center;
 }
+
 .lamr-sig-line {
   border-bottom: 1px solid #333;
   height: 24px;
 }
+
 .lamr-sig-caption {
   font-size: 11px;
   font-weight: 650;
@@ -405,5 +434,25 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
 .lamr-footer {
   border-top: 1px solid #e6e9ea;
   padding: 10px 16px;
+}
+
+.lap-remarks-box {
+  border: 1px solid #d83d3d;
+  background: #fdecec;
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.lap-remarks-label {
+  font-size: 11px;
+  font-weight: 750;
+  color: #c73f3f;
+  margin-bottom: 4px;
+}
+
+.lap-remarks-text {
+  font-size: 12px;
+  color: #1a1a1a;
 }
 </style>

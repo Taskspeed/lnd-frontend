@@ -11,6 +11,10 @@
         <div class="lap-title">Learning Application Plan</div>
         <div class="lap-subtitle">(LAP Form)</div>
 
+        <div v-if="submission?.status === 'Returned'" class="lap-remarks-box">
+          <div class="lap-remarks-label">Remarks (Returned):</div>
+          <div class="lap-remarks-text">{{ submission.remarks }}</div>
+        </div>
         <!-- BASIC INFO -->
         <div class="lap-field-row">
           <span class="lap-field-label">Office:</span>
@@ -47,49 +51,73 @@
         <div class="lap-grid-2">
           <div class="lap-box">
             <div class="lap-box-title">Foundation Competencies</div>
-            <q-checkbox dense :disable="readonly" v-model="foundation" val="Delivering Service Excellence" label="Delivering Service  Excellence" />
-            <q-checkbox dense :disable="readonly" v-model="foundation" val="Exemplifying Integrity" label="Exemplifying Integrity" />
-            <q-checkbox dense :disable="readonly" v-model="foundation" val="Interpersonal Skills" label="Interpersonal Skills" />
+            <q-checkbox dense :disable="readonly" v-model="foundation" val="Delivering Service Excellence"
+              label="Delivering Service  Excellence" />
+            <q-checkbox dense :disable="readonly" v-model="foundation" val="Exemplifying Integrity"
+              label="Exemplifying Integrity" />
+            <q-checkbox dense :disable="readonly" v-model="foundation" val="Interpersonal Skills"
+              label="Interpersonal Skills" />
           </div>
           <div class="lap-box">
             <div class="lap-box-title">Technical Competencies</div>
-            <q-checkbox dense :disable="readonly" v-model="technical" val="Planning and Organizing" label="Planning and Organizing" />
-            <q-checkbox dense :disable="readonly" v-model="technical" val="Monitoring and Evaluation" label="Monitoring and Evaluation" />
-            <q-checkbox dense :disable="readonly" v-model="technical" val="Records Management" label="Records Management" />
-            <q-checkbox dense :disable="readonly" v-model="technical" val="Partnering and Networking" label="Partnering and Networking" />
-            <q-checkbox dense :disable="readonly" v-model="technical" val="Process Management" label="Process Management" />
-            <q-checkbox dense :disable="readonly" v-model="technical" val="Attention to Detail" label="Attention to Detail" />
+            <q-checkbox dense :disable="readonly" v-model="technical" val="Planning and Organizing"
+              label="Planning and Organizing" />
+            <q-checkbox dense :disable="readonly" v-model="technical" val="Monitoring and Evaluation"
+              label="Monitoring and Evaluation" />
+            <q-checkbox dense :disable="readonly" v-model="technical" val="Records Management"
+              label="Records Management" />
+            <q-checkbox dense :disable="readonly" v-model="technical" val="Partnering and Networking"
+              label="Partnering and Networking" />
+            <q-checkbox dense :disable="readonly" v-model="technical" val="Process Management"
+              label="Process Management" />
+            <q-checkbox dense :disable="readonly" v-model="technical" val="Attention to Detail"
+              label="Attention to Detail" />
           </div>
           <div class="lap-box">
             <div class="lap-box-title">Supervisory Competencies</div>
-            <q-checkbox dense :disable="readonly" v-model="supervisory" val="Managing Performance and Coaching Results" label="Managing Performance and Coaching Results" />
-            <q-checkbox dense :disable="readonly" v-model="supervisory" val="Building Collaborative and Inclusive Working Relationships" label="Building Collaborative and Inclusive Working Relationships" />
+            <q-checkbox dense :disable="readonly" v-model="supervisory" val="Managing Performance and Coaching Results"
+              label="Managing Performance and Coaching Results" />
+            <q-checkbox dense :disable="readonly" v-model="supervisory"
+              val="Building Collaborative and Inclusive Working Relationships"
+              label="Building Collaborative and Inclusive Working Relationships" />
           </div>
           <div class="lap-box">
             <div class="lap-box-title">Managerial Competencies</div>
-            <q-checkbox dense :disable="readonly" v-model="managerial" val="Managing Performance and Coaching Results" label="Managing Performance and Coaching Results" />
-            <q-checkbox dense :disable="readonly" v-model="managerial" val="Building Collaborative and Inclusive Working Relationships" label="Building Collaborative and Inclusive Working Relationships" />
-            <q-checkbox dense :disable="readonly" v-model="managerial" val="Thinking Strategically and Creatively" label="Thinking Strategically and Creatively" />
-            <q-checkbox dense :disable="readonly" v-model="managerial" val="Problem Solving and Decision Making" label="Problem Solving and Decision Making" />
+            <q-checkbox dense :disable="readonly" v-model="managerial" val="Managing Performance and Coaching Results"
+              label="Managing Performance and Coaching Results" />
+            <q-checkbox dense :disable="readonly" v-model="managerial"
+              val="Building Collaborative and Inclusive Working Relationships"
+              label="Building Collaborative and Inclusive Working Relationships" />
+            <q-checkbox dense :disable="readonly" v-model="managerial" val="Thinking Strategically and Creatively"
+              label="Thinking Strategically and Creatively" />
+            <q-checkbox dense :disable="readonly" v-model="managerial" val="Problem Solving and Decision Making"
+              label="Problem Solving and Decision Making" />
           </div>
         </div>
 
         <!-- SIGNIFICANT LEARNING -->
         <div class="lap-box lap-box-full">
           <div class="lap-box-title">Significant Learning/Insight:</div>
-          <q-input dense borderless :readonly="readonly" type="textarea" v-model="insight" rows="3" class="lap-textarea" />
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="insight" rows="3"
+            class="lap-textarea" />
         </div>
 
         <!-- STRATEGIES / KPI -->
         <div class="lap-grid-2">
           <div class="lap-box">
             <div class="lap-box-title">Learning Strategies to be implemented</div>
-            <q-checkbox dense :disable="readonly" v-model="strategies" val="Immediate Application of new skills acquired" label="Immediate Application of new skills acquired" />
-            <q-checkbox dense :disable="readonly" v-model="strategies" val="Knowledge Sharing" label="Knowledge Sharing" />
-            <q-checkbox dense :disable="readonly" v-model="strategies" val="Peer Coaching and Collaboration" label="Peer Coaching and Collaboration" />
-            <q-checkbox dense :disable="readonly" v-model="strategies" val="Develop office policies and guidelines" label="Develop office policies and guidelines" />
-            <q-checkbox dense :disable="readonly" v-model="strategies" val="Create a Pilot Project" label="Create a Pilot Project" />
-            <q-checkbox dense :disable="readonly" v-model="strategies" val="Include in the IPCR" label="Include in the IPCR" />
+            <q-checkbox dense :disable="readonly" v-model="strategies"
+              val="Immediate Application of new skills acquired" label="Immediate Application of new skills acquired" />
+            <q-checkbox dense :disable="readonly" v-model="strategies" val="Knowledge Sharing"
+              label="Knowledge Sharing" />
+            <q-checkbox dense :disable="readonly" v-model="strategies" val="Peer Coaching and Collaboration"
+              label="Peer Coaching and Collaboration" />
+            <q-checkbox dense :disable="readonly" v-model="strategies" val="Develop office policies and guidelines"
+              label="Develop office policies and guidelines" />
+            <q-checkbox dense :disable="readonly" v-model="strategies" val="Create a Pilot Project"
+              label="Create a Pilot Project" />
+            <q-checkbox dense :disable="readonly" v-model="strategies" val="Include in the IPCR"
+              label="Include in the IPCR" />
           </div>
           <div class="lap-box">
             <div class="lap-box-title">Key Performance Indicator (based on the IPCR)</div>
@@ -103,19 +131,29 @@
         <div class="lap-grid-2">
           <div class="lap-box">
             <div class="lap-box-title">Resources to be utilized</div>
-            <q-checkbox dense :disable="readonly" v-model="resources" val="Digital & Technologies" label="Digital & Technologies" />
-            <q-checkbox dense :disable="readonly" v-model="resources" val="Physical & Printed Resources" label="Physical & Printed Resources" />
-            <q-checkbox dense :disable="readonly" v-model="resources" val="Human Resources & Organizational Support" label="Human Resources & Organizational Support" />
-            <q-checkbox dense :disable="readonly" v-model="resources" val="Financial & Logistical Support" label="Financial & Logistical Support" />
-            <q-checkbox dense :disable="readonly" v-model="resources" val="Policy & Process Resources" label="Policy & Process Resources" />
+            <q-checkbox dense :disable="readonly" v-model="resources" val="Digital & Technologies"
+              label="Digital & Technologies" />
+            <q-checkbox dense :disable="readonly" v-model="resources" val="Physical & Printed Resources"
+              label="Physical & Printed Resources" />
+            <q-checkbox dense :disable="readonly" v-model="resources" val="Human Resources & Organizational Support"
+              label="Human Resources & Organizational Support" />
+            <q-checkbox dense :disable="readonly" v-model="resources" val="Financial & Logistical Support"
+              label="Financial & Logistical Support" />
+            <q-checkbox dense :disable="readonly" v-model="resources" val="Policy & Process Resources"
+              label="Policy & Process Resources" />
           </div>
           <div class="lap-box">
             <div class="lap-box-title">Beneficiaries of the Strategies Applied</div>
-            <q-checkbox dense :disable="readonly" v-model="beneficiaries" val="Employees and Staff" label="Employees and Staff" />
-            <q-checkbox dense :disable="readonly" v-model="beneficiaries" val="Supervisors and Managers" label="Supervisors and Managers" />
-            <q-checkbox dense :disable="readonly" v-model="beneficiaries" val="The Office/Department" label="The Office/Department" />
-            <q-checkbox dense :disable="readonly" v-model="beneficiaries" val="The City Government/Organization" label="The City Government/Organization" />
-            <q-checkbox dense :disable="readonly" v-model="beneficiaries" val="Clients, Stakeholders & the General Public" label="Clients, Stakeholders & the General Public" />
+            <q-checkbox dense :disable="readonly" v-model="beneficiaries" val="Employees and Staff"
+              label="Employees and Staff" />
+            <q-checkbox dense :disable="readonly" v-model="beneficiaries" val="Supervisors and Managers"
+              label="Supervisors and Managers" />
+            <q-checkbox dense :disable="readonly" v-model="beneficiaries" val="The Office/Department"
+              label="The Office/Department" />
+            <q-checkbox dense :disable="readonly" v-model="beneficiaries" val="The City Government/Organization"
+              label="The City Government/Organization" />
+            <q-checkbox dense :disable="readonly" v-model="beneficiaries"
+              val="Clients, Stakeholders & the General Public" label="Clients, Stakeholders & the General Public" />
           </div>
         </div>
 
@@ -123,10 +161,14 @@
         <div class="lap-box lap-box-full">
           <div class="lap-box-title lap-box-title-center">Target Date of Completion</div>
           <div class="lap-target-options">
-            <q-checkbox dense :disable="readonly" v-model="targetDate" val="within2weeks" label="Within 2 weeks after the training" />
-            <q-checkbox dense :disable="readonly" v-model="targetDate" val="within1month" label="Within 1 month after the training" />
-            <q-checkbox dense :disable="readonly" v-model="targetDate" val="within2months" label="Within 2 months after the training" />
-            <q-checkbox dense :disable="readonly" v-model="targetDate" val="within3months" label="Within 3 months after the training" />
+            <q-checkbox dense :disable="readonly" v-model="targetDate" val="within2weeks"
+              label="Within 2 weeks after the training" />
+            <q-checkbox dense :disable="readonly" v-model="targetDate" val="within1month"
+              label="Within 1 month after the training" />
+            <q-checkbox dense :disable="readonly" v-model="targetDate" val="within2months"
+              label="Within 2 months after the training" />
+            <q-checkbox dense :disable="readonly" v-model="targetDate" val="within3months"
+              label="Within 3 months after the training" />
           </div>
         </div>
 
@@ -171,6 +213,10 @@ const props = defineProps({
   modelValue: Boolean,
   // Buong `form_data` object galing sa GET /event/employee/form response
   formData: {
+    type: Object,
+    default: null,
+  },
+  submission: {                 // 👈 bagong prop
     type: Object,
     default: null,
   },
@@ -360,6 +406,7 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   height: auto;
   display: block;
 }
+
 .lap-close-btn {
   position: absolute;
   top: 10px;
@@ -378,6 +425,7 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   font-size: 15px;
   color: #1a1a1a;
 }
+
 .lap-subtitle {
   text-align: center;
   font-size: 12px;
@@ -391,12 +439,14 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   gap: 8px;
   margin-bottom: 10px;
 }
+
 .lap-field-label {
   font-size: 12px;
   font-weight: 650;
   color: #1a1a1a;
   white-space: nowrap;
 }
+
 .lap-field-line {
   flex: 1;
   border-bottom: 1px solid #333;
@@ -404,6 +454,7 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   font-size: 12px;
   color: #1a1a1a;
 }
+
 .lap-field-line-short {
   max-width: 200px;
 }
@@ -435,9 +486,11 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   border-radius: 4px;
   padding: 10px 12px;
 }
+
 .lap-box-full {
   margin-bottom: 14px;
 }
+
 .lap-box-title {
   font-size: 11px;
   font-weight: 750;
@@ -445,6 +498,7 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   margin-bottom: 8px;
   color: #1a1a1a;
 }
+
 .lap-box-title-center {
   text-align: center;
 }
@@ -454,6 +508,7 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   font-size: 12px;
   margin-bottom: 2px;
 }
+
 .lap-box :deep(.q-checkbox__label) {
   font-size: 12px;
 }
@@ -480,10 +535,12 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
   margin-top: 30px;
   text-align: center;
 }
+
 .lap-sig-line {
   border-bottom: 1px solid #333;
   height: 24px;
 }
+
 .lap-sig-caption {
   font-size: 11px;
   font-weight: 650;
@@ -494,5 +551,25 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
 .lap-footer {
   border-top: 1px solid #e6e9ea;
   padding: 10px 16px;
+}
+
+.lap-remarks-box {
+  border: 1px solid #d83d3d;
+  background: #fdecec;
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.lap-remarks-label {
+  font-size: 11px;
+  font-weight: 750;
+  color: #c73f3f;
+  margin-bottom: 4px;
+}
+
+.lap-remarks-text {
+  font-size: 12px;
+  color: #1a1a1a;
 }
 </style>

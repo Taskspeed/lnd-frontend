@@ -14,23 +14,26 @@
 
       <q-card-section class="lir-body">
         <div class="lir-title">Learning Implementation Report</div>
-
+        <div v-if="submission?.status === 'Returned'" class="lap-remarks-box">
+          <div class="lap-remarks-label">Remarks (Returned):</div>
+          <div class="lap-remarks-text">{{ submission.remarks }}</div>
+        </div>
         <!-- BASIC INFO -->
         <div class="lir-field-row">
           <span class="lir-field-label">Learner:</span>
-          <span class="lir-field-line"></span>
+          <span class="lir-field-line">{{ learner }}</span>
         </div>
         <div class="lir-field-row">
           <span class="lir-field-label">L&amp;D Attended:</span>
-          <span class="lir-field-line"></span>
+          <span class="lir-field-line">{{ lndAttended }}</span>
         </div>
         <div class="lir-field-row">
           <span class="lir-field-label">Date of Attendance:</span>
-          <span class="lir-field-line"></span>
+          <span class="lir-field-line">{{ dateOfAttendance }}</span>
         </div>
         <div class="lir-field-row">
           <span class="lir-field-label">Competency Developed/Acquired:</span>
-          <span class="lir-field-line"></span>
+          <span class="lir-field-line">{{ competencyDeveloped }}</span>
         </div>
 
         <!-- COMPETENCY AREAS AND PROFICIENCY LEVELS -->
@@ -38,24 +41,38 @@
         <div class="lir-grid-3">
           <div class="lir-box">
             <div class="lir-box-title">Core Areas</div>
-            <q-checkbox dense v-model="coreAreas" val="Delivering Service Excellence" label="Delivering Service Excellence" />
-            <q-checkbox dense v-model="coreAreas" val="Exemplifying Integrity" label="Exemplifying Integrity" />
-            <q-checkbox dense v-model="coreAreas" val="Interpersonal Skills" label="Interpersonal Skills" />
+            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Delivering Service Excellence"
+              label="Delivering Service Excellence" />
+            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Exemplifying Integrity"
+              label="Exemplifying Integrity" />
+            <q-checkbox dense :disable="readonly" v-model="coreAreas" val="Interpersonal Skills"
+              label="Interpersonal Skills" />
           </div>
           <div class="lir-box">
             <div class="lir-box-title">Technical Areas</div>
-            <q-checkbox dense v-model="technicalAreas" val="Planning and Organizing" label="Planning &amp; Organizing" />
-            <q-checkbox dense v-model="technicalAreas" val="Monitoring and Evaluation" label="Monitoring &amp; Evaluation" />
-            <q-checkbox dense v-model="technicalAreas" val="Records Management" label="Records Management" />
-            <q-checkbox dense v-model="technicalAreas" val="Partnering and Networking" label="Partnering &amp; Networking" />
-            <q-checkbox dense v-model="technicalAreas" val="Process Management" label="Process Management" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Planning and Organizing"
+              label="Planning &amp; Organizing" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Monitoring and Evaluation"
+              label="Monitoring &amp; Evaluation" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Records Management"
+              label="Records Management" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Partnering and Networking"
+              label="Partnering &amp; Networking" />
+            <q-checkbox dense :disable="readonly" v-model="technicalAreas" val="Process Management"
+              label="Process Management" />
           </div>
           <div class="lir-box">
             <div class="lir-box-title">Leadership Areas</div>
-            <q-checkbox dense v-model="leadershipAreas" val="Thinking Strategically and Creativity" label="Thinking Strategically and Creativity" />
-            <q-checkbox dense v-model="leadershipAreas" val="Problem Solving and Decision Making" label="Problem Solving &amp; Decision Making" />
-            <q-checkbox dense v-model="leadershipAreas" val="Building Collaborative and Inclusive Working Relationships" label="Building Collaborative &amp; Inclusive Working Relationships" />
-            <q-checkbox dense v-model="leadershipAreas" val="Managing Performance and Coaching for Results" label="Managing Performance &amp; Coaching for Results" />
+            <q-checkbox dense :disable="readonly" v-model="leadershipAreas" val="Thinking Strategically and Creativity"
+              label="Thinking Strategically and Creativity" />
+            <q-checkbox dense :disable="readonly" v-model="leadershipAreas" val="Problem Solving and Decision Making"
+              label="Problem Solving &amp; Decision Making" />
+            <q-checkbox dense :disable="readonly" v-model="leadershipAreas"
+              val="Building Collaborative and Inclusive Working Relationships"
+              label="Building Collaborative &amp; Inclusive Working Relationships" />
+            <q-checkbox dense :disable="readonly" v-model="leadershipAreas"
+              val="Managing Performance and Coaching for Results"
+              label="Managing Performance &amp; Coaching for Results" />
           </div>
         </div>
 
@@ -64,7 +81,8 @@
           <div class="lir-box-title lir-box-title-left">
             {{ field.label }} <span class="lir-box-subtext">({{ field.question }})</span>
           </div>
-          <q-input dense borderless type="textarea" v-model="form[field.model]" rows="2" class="lir-textarea" />
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="form[field.model]" rows="2"
+            class="lir-textarea" />
         </div>
 
         <!-- SIGNATURES -->
@@ -86,17 +104,25 @@
 
       <q-card-actions align="right" class="lir-footer">
         <q-btn flat label="Close" color="grey-8" v-close-popup />
-        <q-btn unelevated label="Save" color="primary" />
+        <q-btn v-if="!readonly" unelevated label="Save" color="primary" />
       </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 
 const props = defineProps({
   modelValue: Boolean,
+  formData: {
+    type: Object,
+    default: () => null,
+  },
+  readonly: {
+    type: Boolean,
+    default: false,
+  },
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -105,39 +131,50 @@ const show = computed({
   set: (val) => emit('update:modelValue', val),
 })
 
-// Static/local state lang muna — walang API binding pa
 const coreAreas = ref([])
 const technicalAreas = ref([])
 const leadershipAreas = ref([])
 
+// Basic info fields — pinopulate mula sa formData
+const learner = ref('')
+const lndAttended = ref('')
+const dateOfAttendance = ref('')
+const competencyDeveloped = ref('')
+
 const reflectionFields = [
   {
     model: 'strategiesApplied',
+    apiKey: 'learning_strategies_applied',
     label: 'Learning Strategies Applied',
     question: 'What strategies did I apply to meet my learning goals?',
   },
   {
     model: 'resourcesUsed',
+    apiKey: 'resources_used',
     label: 'Resources Used',
     question: 'What resources did I use to achieve the learning goal?',
   },
   {
     model: 'beneficiaries',
+    apiKey: 'beneficiaries_strategies_applied',
     label: 'Beneficiaries of the Strategies Applied',
     question: 'Who were the beneficiaries of the strategies applied?',
   },
   {
     model: 'kpiBehavior',
+    apiKey: 'performance_indicators_behavior_toward_work',
     label: 'Key Performance Indicators/Behavior Toward Work',
     question: 'How did I demonstrate to myself and others that I have achieved this learning goal?',
   },
   {
     model: 'financialAid',
+    apiKey: 'financial_aid_training_attended',
     label: 'Financial Aid on the Training Attended',
     question: 'How much was spent for my attendance to the training?',
   },
   {
     model: 'returnOfFinancialAid',
+    apiKey: 'return_financial_aid',
     label: 'Return of Financial Aid',
     question:
       'How much was saved/gained by the office in relation to the training I attended, or what other benefits did the office enjoy aside from financial returns?',
@@ -146,6 +183,67 @@ const reflectionFields = [
 
 const form = reactive(
   Object.fromEntries(reflectionFields.map((f) => [f.model, '']))
+)
+
+// Checkbox key maps — para maitugma yung "1"/"0" string values ng API sa checkbox labels
+const coreKeyMap = {
+  delivering_service_excellence: 'Delivering Service Excellence',
+  exemplifying_integrity: 'Exemplifying Integrity',
+  interpersonal_skills: 'Interpersonal Skills',
+}
+const technicalKeyMap = {
+  planning_organizing: 'Planning and Organizing',
+  monitoring_evaluation: 'Monitoring and Evaluation',
+  records_management: 'Records Management',
+  partnering_networking: 'Partnering and Networking',
+  process_management: 'Process Management',
+}
+const leadershipKeyMap = {
+  thinking_strategically_creatively: 'Thinking Strategically and Creativity',
+  problem_solving_decision_making: 'Problem Solving and Decision Making',
+  building_collaborative_inclusive_working_relationships: 'Building Collaborative and Inclusive Working Relationships',
+  managing_performance_coaching_results: 'Managing Performance and Coaching for Results',
+}
+
+function checkedLabelsFrom(obj, keyMap) {
+  if (!obj) return []
+  return Object.entries(keyMap)
+    .filter(([apiKey]) => obj[apiKey] === '1' || obj[apiKey] === 1)
+    .map(([, label]) => label)
+}
+
+function populateFromFormData(data) {
+  if (!data) {
+    learner.value = ''
+    lndAttended.value = ''
+    dateOfAttendance.value = ''
+    competencyDeveloped.value = ''
+    reflectionFields.forEach((f) => (form[f.model] = ''))
+    coreAreas.value = []
+    technicalAreas.value = []
+    leadershipAreas.value = []
+    return
+  }
+
+  learner.value = data.learner || ''
+  lndAttended.value = data.lnd_attended || ''
+  dateOfAttendance.value = data.date_of_attendance || ''
+  competencyDeveloped.value = data.competency_developed_acquired || ''
+
+  reflectionFields.forEach((f) => {
+    form[f.model] = data[f.apiKey] ?? ''
+  })
+
+  coreAreas.value = checkedLabelsFrom(data.core_implementation, coreKeyMap)
+  technicalAreas.value = checkedLabelsFrom(data.technical_implementation, technicalKeyMap)
+  leadershipAreas.value = checkedLabelsFrom(data.learder_ship_implementation, leadershipKeyMap)
+}
+
+// Populate agad kapag may pumasok na formData — 'immediate' para sakop din ang unang open
+watch(
+  () => props.formData,
+  (val) => populateFromFormData(val),
+  { immediate: true }
 )
 </script>
 
@@ -166,11 +264,13 @@ const form = reactive(
   border-bottom: 1px solid #e6e9ea;
   position: relative;
 }
-.lpr-header-img{
+
+.lpr-header-img {
   width: 100%;
   height: auto;
   display: block;
 }
+
 .lir-form-code {
   position: absolute;
   top: 6px;
@@ -180,6 +280,7 @@ const form = reactive(
   color: #333;
   text-align: right;
 }
+
 .lir-close-btn {
   position: absolute;
   top: 10px;
@@ -206,16 +307,21 @@ const form = reactive(
   gap: 8px;
   margin-bottom: 10px;
 }
+
 .lir-field-label {
   font-size: 12px;
   font-weight: 650;
   color: #1a1a1a;
   white-space: nowrap;
 }
+
 .lir-field-line {
   flex: 1;
   border-bottom: 1px solid #333;
   height: 16px;
+  font-size: 12px;
+  color: #1a1a1a;
+  padding-bottom: 2px;
 }
 
 .lir-section-label {
@@ -238,9 +344,11 @@ const form = reactive(
   border-radius: 4px;
   padding: 10px 12px;
 }
+
 .lir-box-full {
   margin-bottom: 10px;
 }
+
 .lir-box-title {
   font-size: 11px;
   font-weight: 750;
@@ -248,9 +356,11 @@ const form = reactive(
   margin-bottom: 8px;
   color: #1a1a1a;
 }
+
 .lir-box-title-left {
   text-align: left;
 }
+
 .lir-box-subtext {
   font-weight: 400;
   font-style: italic;
@@ -262,6 +372,7 @@ const form = reactive(
   font-size: 12px;
   margin-bottom: 2px;
 }
+
 .lir-box :deep(.q-checkbox__label) {
   font-size: 12px;
 }
@@ -277,15 +388,18 @@ const form = reactive(
   margin-top: 30px;
   text-align: center;
 }
+
 .lir-sig-single {
   width: 45%;
   margin: 24px auto 0;
   text-align: center;
 }
+
 .lir-sig-line {
   border-bottom: 1px solid #333;
   height: 24px;
 }
+
 .lir-sig-caption {
   font-size: 11px;
   font-weight: 650;
@@ -296,5 +410,25 @@ const form = reactive(
 .lir-footer {
   border-top: 1px solid #e6e9ea;
   padding: 10px 16px;
+}
+
+.lap-remarks-box {
+  border: 1px solid #d83d3d;
+  background: #fdecec;
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.lap-remarks-label {
+  font-size: 11px;
+  font-weight: 750;
+  color: #c73f3f;
+  margin-bottom: 4px;
+}
+
+.lap-remarks-text {
+  font-size: 12px;
+  color: #1a1a1a;
 }
 </style>
