@@ -3,7 +3,7 @@
     <!-- =====================================================
          WELCOME BANNER
     ====================================================== -->
-    <section class="welcome-banner">
+    <!-- <section class="welcome-banner">
       <div class="welcome-content">
         <div class="welcome-label">
           <span class="welcome-dot"></span>
@@ -23,7 +23,7 @@
           loading="lazy"
         />
       </div>
-    </section>
+    </section> -->
 
     <!-- =====================================================
          STATISTICS
@@ -58,14 +58,14 @@
         </div>
 
         <div class="stat-content">
-          <div class="stat-label">Total Participants</div>
+          <div class="stat-label">Complete</div>
 
           <div class="stat-value">856</div>
 
-          <div class="stat-change stat-change-blue">
+          <!-- <div class="stat-change stat-change-blue">
             <q-icon name="arrow_upward" size="13px" />
             +128 this month
-          </div>
+          </div> -->
         </div>
 
         <div class="stat-arrow stat-arrow-blue">
@@ -80,14 +80,14 @@
         </div>
 
         <div class="stat-content">
-          <div class="stat-label">Certificates Issued</div>
+          <div class="stat-label">Up-coming</div>
 
           <div class="stat-value">642</div>
 
-          <div class="stat-change stat-change-yellow">
+          <!-- <div class="stat-change stat-change-yellow">
             <q-icon name="arrow_upward" size="13px" />
             +95 this month
-          </div>
+          </div> -->
         </div>
 
         <div class="stat-arrow stat-arrow-yellow">
@@ -102,14 +102,14 @@
         </div>
 
         <div class="stat-content">
-          <div class="stat-label">Assessments</div>
+          <div class="stat-label">On-going</div>
 
           <div class="stat-value">78</div>
-
+<!-- 
           <div class="stat-change stat-change-purple">
             <q-icon name="arrow_upward" size="13px" />
             +12 this month
-          </div>
+          </div> -->
         </div>
 
         <div class="stat-arrow stat-arrow-purple">
@@ -122,163 +122,11 @@
          MAIN CONTENT
     ====================================================== -->
     <section class="dashboard-grid">
-      <!-- ===================================================
-           LEFT COLUMN
-      ==================================================== -->
-      <div class="dashboard-left">
-        <!-- Upcoming Events -->
-        <q-card flat class="dashboard-card">
-          <div class="card-header">
-            <div class="card-title-wrapper">
-              <div class="card-icon green">
-                <q-icon name="event" size="19px" />
-              </div>
-
-              <h2>Upcoming Events</h2>
-            </div>
-
-            <q-btn
-              flat
-              no-caps
-              class="view-all-btn"
-              label="View All"
-              icon-right="chevron_right"
-            />
-          </div>
-
-          <div class="events-list">
-            <!-- Event 1 -->
-            <div class="event-item">
-              <div class="event-date">
-                <div class="event-month">AUG</div>
-
-                <div class="event-day">25</div>
-              </div>
-
-              <div class="event-details">
-                <div class="event-title">Leadership & Management Training</div>
-
-                <div class="event-meta">
-                  <span>
-                    <q-icon name="schedule" />
-                    8:00 AM – 5:00 PM
-                  </span>
-
-                  <span>
-                    <q-icon name="location_on" />
-                    Ayala Hall, City Hall of Tagum
-                  </span>
-                </div>
-              </div>
-
-              <q-badge
-                class="event-status status-scheduled"
-                label="Scheduled"
-              />
-            </div>
-
-            <!-- Event 2 -->
-            <div class="event-item">
-              <div class="event-date">
-                <div class="event-month">AUG</div>
-
-                <div class="event-day">28</div>
-              </div>
-
-              <div class="event-details">
-                <div class="event-title">Digital Transformation Seminar</div>
-
-                <div class="event-meta">
-                  <span>
-                    <q-icon name="schedule" />
-                    9:00 AM – 4:00 PM
-                  </span>
-
-                  <span>
-                    <q-icon name="location_on" />
-                    Atrium, City Hall of Tagum
-                  </span>
-                </div>
-              </div>
-
-              <q-badge
-                class="event-status status-registration"
-                label="Open for Registration"
-              />
-            </div>
-
-            <!-- Event 3 -->
-            <div class="event-item">
-              <div class="event-date">
-                <div class="event-month">SEP</div>
-
-                <div class="event-day">05</div>
-              </div>
-
-              <div class="event-details">
-                <div class="event-title">Public Service Ethics</div>
-
-                <div class="event-meta">
-                  <span>
-                    <q-icon name="schedule" />
-                    8:30 AM – 4:30 PM
-                  </span>
-
-                  <span>
-                    <q-icon name="location_on" />
-                    AVR 4, City Hall of Tagum
-                  </span>
-                </div>
-              </div>
-
-              <q-badge
-                class="event-status status-approval"
-                label="For Approval"
-              />
-            </div>
-
-            <!-- Event 4 -->
-            <div class="event-item">
-              <div class="event-date">
-                <div class="event-month">SEP</div>
-
-                <div class="event-day">25</div>
-              </div>
-
-              <div class="event-details">
-                <div class="event-title">
-                  Basic Data Privacy and Cybersecurity Awareness
-                </div>
-
-                <div class="event-meta">
-                  <span>
-                    <q-icon name="schedule" />
-                    8:00 AM – 5:00 PM
-                  </span>
-
-                  <span>
-                    <q-icon name="location_on" />
-                    AVR 5, City Hall of Tagum
-                  </span>
-                </div>
-              </div>
-
-              <q-badge
-                class="event-status status-approval"
-                label="For Approval"
-              />
-            </div>
-          </div>
-        </q-card>
-      </div>
-
-      <!-- ===================================================
-           RIGHT COLUMN
-      ==================================================== -->
+     
       <div class="dashboard-right">
         <!-- Calendar -->
         <q-card flat class="dashboard-card calendar-card">
-          <div class="card-header">
+          <!-- <div class="card-header">
             <div class="card-title-wrapper">
               <div class="card-icon green">
                 <q-icon name="calendar_month" size="19px" />
@@ -296,142 +144,25 @@
 
               <q-btn outline no-caps dense label="Today" class="today-btn" />
             </div>
-          </div>
-
-          <div class="calendar">
-            <div class="calendar-weekdays">
-              <span>Sun</span>
-              <span>Mon</span>
-              <span>Tue</span>
-              <span>Wed</span>
-              <span>Thu</span>
-              <span>Fri</span>
-              <span>Sat</span>
-            </div>
-
-            <div class="calendar-days">
-              <!-- Previous month -->
-              <div class="calendar-day muted">26</div>
-
-              <div class="calendar-day muted">27</div>
-
-              <div class="calendar-day muted">28</div>
-
-              <div class="calendar-day muted">29</div>
-
-              <div class="calendar-day muted">30</div>
-
-              <div class="calendar-day muted">31</div>
-
-              <div class="calendar-day">
-                1
-                <span class="calendar-dot green-dot"></span>
-              </div>
-
-              <div class="calendar-day">2</div>
-
-              <div class="calendar-day">
-                3
-                <span class="calendar-dot green-dot"></span>
-              </div>
-
-              <div class="calendar-day">4</div>
-
-              <div class="calendar-day">5</div>
-
-              <div class="calendar-day">6</div>
-
-              <div class="calendar-day">7</div>
-
-              <div class="calendar-day">8</div>
-
-              <div class="calendar-day">9</div>
-
-              <div class="calendar-day">
-                10
-                <span class="calendar-dot purple-dot"></span>
-              </div>
-
-              <div class="calendar-day">
-                11
-                <span class="calendar-dot blue-dot"></span>
-              </div>
-
-              <div class="calendar-day">
-                12
-                <span class="calendar-dot yellow-dot"></span>
-              </div>
-
-              <div class="calendar-day">13</div>
-
-              <div class="calendar-day">
-                14
-                <span class="calendar-dot purple-dot"></span>
-              </div>
-
-              <div class="calendar-day">15</div>
-
-              <div class="calendar-day">16</div>
-
-              <div class="calendar-day">17</div>
-
-              <div class="calendar-day">18</div>
-
-              <div class="calendar-day">19</div>
-
-              <div class="calendar-day">20</div>
-
-              <div class="calendar-day">21</div>
-
-              <div class="calendar-day">22</div>
-
-              <div class="calendar-day">23</div>
-
-              <div class="calendar-day">24</div>
-
-              <div class="calendar-day today">25</div>
-
-              <div class="calendar-day">26</div>
-
-              <div class="calendar-day">
-                27
-                <span class="calendar-dot blue-dot"></span>
-              </div>
-
-              <div class="calendar-day">
-                28
-                <span class="calendar-dot yellow-dot"></span>
-              </div>
-
-              <div class="calendar-day">29</div>
-
-              <div class="calendar-day">30</div>
-
-              <div class="calendar-day">31</div>
-
-              <!-- September -->
-              <div class="calendar-day muted">1</div>
-
-              <div class="calendar-day muted">2</div>
-
-              <div class="calendar-day muted">3</div>
-
-              <div class="calendar-day muted">4</div>
-
-              <div class="calendar-day muted">5</div>
-            </div>
-          </div>
+          </div> -->
+        <EventCalendar/>
+         
         </q-card>
       </div>
     </section>
   </q-page>
 </template>
-
 <script>
 import { defineComponent, ref } from "vue";
 
+import EventCalendar from "src/components/calendar/EventCalendar.vue";
+
 export default defineComponent({
   name: "DashboardPage",
+
+  components: {
+    EventCalendar,
+  },
 
   props: {
     officeView: {
@@ -442,10 +173,7 @@ export default defineComponent({
 
   setup() {
     const userName = ref("Admin");
-
-    return {
-      userName,
-    };
+    return { userName };
   },
 });
 </script>
@@ -739,9 +467,9 @@ export default defineComponent({
 ========================================================= */
 
 .dashboard-grid {
-  display: grid;
+  /* display: grid;
 
-  grid-template-columns: 1.45fr 1fr;
+  grid-template-columns: 1.45fr 1fr; */
 
   gap: 16px;
 
