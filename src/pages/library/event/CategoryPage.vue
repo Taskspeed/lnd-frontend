@@ -5,12 +5,12 @@
     ====================================================== -->
         <section class="page-header">
             <div>
-                <h5>Category Management</h5>
+                <h5>Competency Management</h5>
 
                 <!-- <p>Manage learning and development Categorys and their schedules.</p> -->
             </div>
 
-            <q-btn unelevated no-caps icon="add" label="Add Category" class="add-Category-btn" @click="openAddCategory" />
+            <q-btn unelevated no-caps icon="add" label="Add Compentecy" class="add-Category-btn" @click="openAddCategory" />
         </section>
 
         <!-- =====================================================
@@ -22,7 +22,7 @@
       ==================================================== -->
             <div class="filter-section">
                 <q-input v-model="search" outlined dense clearable
-                    placeholder="Search by Category name, venue, or status..." class="search-input">
+                    placeholder="Search by compentecy" class="search-input">
                     <template #prepend>
                         <q-icon name="search" />
                     </template>
@@ -60,17 +60,17 @@
                             <div class="action-buttons">
                                 <q-btn flat round dense icon="visibility" class="action-view"
                                     @click="viewCategory(props.row.categoryId)">
-                                    <q-tooltip>View Category</q-tooltip>
+                                    <q-tooltip>View Compentecy</q-tooltip>
                                 </q-btn>
 
                                 <q-btn flat round dense icon="edit" class="action-edit"
                                     @click="editCategory(props.row.categoryId)">
-                                    <q-tooltip>Edit Category</q-tooltip>
+                                    <q-tooltip>Edit Compentecy</q-tooltip>
                                 </q-btn>
 
                                 <q-btn flat round dense icon="delete" class="action-delete"
                                     @click="confirmDeleteCategory(props.row.categoryId)">
-                                    <q-tooltip>Delete Category</q-tooltip>
+                                    <q-tooltip>Delete Compentecy</q-tooltip>
                                 </q-btn>
                             </div>
                         </q-td>
@@ -108,7 +108,7 @@
                 <q-card-section class="dialog-header">
                     <div>
                         <div class="dialog-category">Edit</div>
-                        <div class="dialog-subcategory">Edit this Category name</div>
+                        <div class="dialog-subcategory">Edit this Compentecy name</div>
                     </div>
 
                     <q-btn flat round dense icon="close" v-close-popup />
@@ -121,10 +121,10 @@
                         {{ CategoryStore.error }}
                     </q-banner>
 
-                    <div class="section-label">Category Details</div>
+                    <div class="section-label">Compentecy Details</div>
 
                     <div class="form-grid">
-                        <q-input v-model="editForm.category_name" outlined dense label="Category Name" class="col-span-2" />
+                        <q-input v-model="editForm.category_name" outlined dense label="Compentecy Name" class="col-span-2" />
                     </div>
                 </q-card-section>
 
@@ -143,9 +143,9 @@
             <q-card class="Category-dialog">
                 <q-card-section class="dialog-header">
                     <div>
-                        <div class="dialog-category">Category Details</div>
+                        <div class="dialog-category">Compentecy Details</div>
                         <div class="dialog-subcategory">
-                            View information for this category.
+                            View information for this Compentecy.
                         </div>
                     </div>
 
@@ -155,10 +155,10 @@
                 <q-separator />
 
                 <q-card-section class="dialog-body">
-                    <div class="section-label">Category Details</div>
+                    <div class="section-label">Compentecy Details</div>
 
                     <div class="form-grid">
-                        <q-input :model-value="viewingCategory?.category_name" outlined dense readonly label="Category Name"
+                        <q-input :model-value="viewingCategory?.category_name" outlined dense readonly label="Compentecy Name"
                             class="col-span-2" />
 
                         <q-input :model-value="viewingCategory?.created_at" outlined dense readonly label="Created At"
@@ -178,7 +178,7 @@
         <q-dialog v-model="showDeleteDialog">
             <q-card class="delete-dialog">
                 <q-card-section class="dialog-body">
-                    <div class="delete-category">Delete Category</div>
+                    <div class="delete-category">Delete Compentecy</div>
                     <div class="delete-message">
                         Are you sure you want to delete
                         <strong>{{ CategoryToDelete?.category_name }}</strong>? This action cannot be undone.
@@ -200,8 +200,8 @@
             <q-card class="Category-dialog">
                 <q-card-section class="dialog-header">
                     <div>
-                        <div class="dialog-category">Add Category</div>
-                        <div class="dialog-subcategory">Create a new Category</div>
+                        <div class="dialog-category">Add Compentecy</div>
+                        <div class="dialog-subcategory">Create a new Compentecy</div>
                     </div>
 
                     <q-btn flat round dense icon="close" v-close-popup />
@@ -214,17 +214,17 @@
                         {{ CategoryStore.error }}
                     </q-banner>
 
-                    <div class="section-label">Category Details</div>
+                    <div class="section-label">Compentecy Details</div>
 
                     <div class="form-grid">
-                        <q-input v-model="addForm.category_name" outlined dense label="Category Name" class="col-span-2" />
+                        <q-input v-model="addForm.category_name" outlined dense label="Compentecy Name" class="col-span-2" />
                     </div>
                 </q-card-section>
 
                 <q-card-actions align="right" class="dialog-actions">
                     <q-btn flat no-caps label="Cancel" class="cancel-btn" v-close-popup />
 
-                    <q-btn unelevated no-caps label="Create Category" class="save-btn" :loading="CategoryStore.loading"
+                    <q-btn unelevated no-caps label="Create Compentecy" class="save-btn" :loading="CategoryStore.loading"
                         @click="createCategorySubmit" />
                 </q-card-actions>
             </q-card>
@@ -252,7 +252,7 @@ export default defineComponent({
             { name: "categoryId", label: "id", field: "categoryId", align: "left" },
             {
                 name: "category",
-                label: "Category Name",
+                label: "Competency",
                 field: "category_name",
                 align: "left",
                 sortable: true,

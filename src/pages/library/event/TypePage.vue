@@ -5,12 +5,12 @@
     ====================================================== -->
         <section class="page-header">
             <div>
-                <h5>Type Management</h5>
+                <h5>Activity Management</h5>
 
                 <!-- <p>Manage learning and development Types and their schedules.</p> -->
             </div>
 
-            <q-btn unelevated no-caps icon="add" label="Add Type" class="add-Type-btn" @click="openAddType" />
+            <q-btn unelevated no-caps icon="add" label="Add Activity" class="add-Type-btn" @click="openAddType" />
         </section>
 
         <!-- =====================================================
@@ -22,7 +22,7 @@
       ==================================================== -->
             <div class="filter-section">
                 <q-input v-model="search" outlined dense clearable
-                    placeholder="Search by Type name, venue, or status..." class="search-input">
+                    placeholder="Search" class="search-input">
                     <template #prepend>
                         <q-icon name="search" />
                     </template>
@@ -60,17 +60,17 @@
                             <div class="action-buttons">
                                 <q-btn flat round dense icon="visibility" class="action-view"
                                     @click="viewType(props.row.typeId)">
-                                    <q-tooltip>View Type</q-tooltip>
+                                    <q-tooltip>View Activity</q-tooltip>
                                 </q-btn>
 
                                 <q-btn flat round dense icon="edit" class="action-edit"
                                     @click="editType(props.row.typeId)">
-                                    <q-tooltip>Edit Type</q-tooltip>
+                                    <q-tooltip>Edit Activity</q-tooltip>
                                 </q-btn>
 
                                 <q-btn flat round dense icon="delete" class="action-delete"
                                     @click="confirmDeleteType(props.row.typeId)">
-                                    <q-tooltip>Delete Type</q-tooltip>
+                                    <q-tooltip>Delete Activity</q-tooltip>
                                 </q-btn>
                             </div>
                         </q-td>
@@ -78,7 +78,7 @@
 
                     <!-- EMPTY STATE -->
                     <template #no-data>
-                        <div class="table-empty">No Types found.</div>
+                        <div class="table-empty">No Activity found.</div>
                     </template>
                 </q-table>
             </div>
@@ -92,7 +92,7 @@
                     <strong>{{ filteredRows.length }}</strong>
                     of
                     <strong>{{ TypeStore.Types.length }}</strong>
-                    Types
+                    Activity
                 </span>
             </div>
         </q-card>
@@ -108,7 +108,7 @@
                 <q-card-section class="dialog-header">
                     <div>
                         <div class="dialog-type">Edit</div>
-                        <div class="dialog-subtype">Edit this Type name</div>
+                        <div class="dialog-subtype">Edit this Activity name</div>
                     </div>
 
                     <q-btn flat round dense icon="close" v-close-popup />
@@ -121,10 +121,10 @@
                         {{ TypeStore.error }}
                     </q-banner>
 
-                    <div class="section-label">Type Details</div>
+                    <div class="section-label">Activity Details</div>
 
                     <div class="form-grid">
-                        <q-input v-model="editForm.type_name" outlined dense label="Type Name" class="col-span-2" />
+                        <q-input v-model="editForm.type_name" outlined dense label="Activity Name" class="col-span-2" />
                     </div>
                 </q-card-section>
 
@@ -143,9 +143,9 @@
             <q-card class="Type-dialog">
                 <q-card-section class="dialog-header">
                     <div>
-                        <div class="dialog-type">Type Details</div>
+                        <div class="dialog-type">Activity Details</div>
                         <div class="dialog-subtype">
-                            View information for this type.
+                            View information for this Activity.
                         </div>
                     </div>
 
@@ -155,10 +155,10 @@
                 <q-separator />
 
                 <q-card-section class="dialog-body">
-                    <div class="section-label">Type Details</div>
+                    <div class="section-label">Activity Details</div>
 
                     <div class="form-grid">
-                        <q-input :model-value="viewingType?.type_name" outlined dense readonly label="Type Name"
+                        <q-input :model-value="viewingType?.type_name" outlined dense readonly label="Activity Name"
                             class="col-span-2" />
 
                         <q-input :model-value="viewingType?.created_at" outlined dense readonly label="Created At"
@@ -178,7 +178,7 @@
         <q-dialog v-model="showDeleteDialog">
             <q-card class="delete-dialog">
                 <q-card-section class="dialog-body">
-                    <div class="delete-type">Delete Type</div>
+                    <div class="delete-type">Delete Activity</div>
                     <div class="delete-message">
                         Are you sure you want to delete
                         <strong>{{ TypeToDelete?.type_name }}</strong>? This action cannot be undone.
@@ -200,8 +200,8 @@
             <q-card class="Type-dialog">
                 <q-card-section class="dialog-header">
                     <div>
-                        <div class="dialog-type">Add Type</div>
-                        <div class="dialog-subtype">Create a new Type</div>
+                        <div class="dialog-type">Add Activity</div>
+                        <div class="dialog-subtype">Create a new Activity</div>
                     </div>
 
                     <q-btn flat round dense icon="close" v-close-popup />
@@ -214,17 +214,17 @@
                         {{ TypeStore.error }}
                     </q-banner>
 
-                    <div class="section-label">Type Details</div>
+                    <div class="section-label">Activity Details</div>
 
                     <div class="form-grid">
-                        <q-input v-model="addForm.type_name" outlined dense label="Type Name" class="col-span-2" />
+                        <q-input v-model="addForm.type_name" outlined dense label="Activity Name" class="col-span-2" />
                     </div>
                 </q-card-section>
 
                 <q-card-actions align="right" class="dialog-actions">
                     <q-btn flat no-caps label="Cancel" class="cancel-btn" v-close-popup />
 
-                    <q-btn unelevated no-caps label="Create Type" class="save-btn" :loading="TypeStore.loading"
+                    <q-btn unelevated no-caps label="Create Activity" class="save-btn" :loading="TypeStore.loading"
                         @click="createTypeSubmit" />
                 </q-card-actions>
             </q-card>
@@ -250,7 +250,7 @@ export default defineComponent({
             { name: "typeId", label: "id", field: "typeId", align: "left" },
             {
                 name: "type",
-                label: "Type Name",
+                label: "Activity",
                 field: "type_name",
                 align: "left",
                 sortable: true,
