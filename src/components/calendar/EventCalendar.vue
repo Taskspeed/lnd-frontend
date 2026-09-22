@@ -35,7 +35,7 @@
       <!-- MAIN CALENDAR -->
       <section class="ec-main">
         <q-calendar-month ref="calendar" v-model="selectedDate" bordered :weekdays="[1, 2, 3, 4, 5, 6, 0]"
-          :day-min-height="104" :day-style="dayStyle" locale="en-PH">
+          :day-min-height="120" :day-style="dayStyle" locale="en-PH">
           <!-- HEAT MAP: bilang ng events (kulay ng buong cell = dayStyle sa script)
                DEFAULT: spacer lang, para lumaki ang row kasya ang mga bar -->
           <template #day="{ scope: { timestamp, outside } }">
@@ -511,6 +511,7 @@ const goToday = () => calendar.value?.moveToToday()
   border: 1px solid var(--ec-border);
   border-radius: 12px;
   padding: 12px;
+  height: 100%;
 }
 
 /* q-date may minimum na 290px ang lapad, kaya 320px ang sidebar */
