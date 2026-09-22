@@ -166,6 +166,18 @@
 
                 <q-item-section> Certification </q-item-section>
               </q-item>
+
+            <div class="nav-section">Forms</div>
+              
+              <q-item clickable v-ripple :to="{ name: 'list_of_submission' }" class="nav-item"
+                active-class="nav-item-active">
+                <q-item-section avatar>
+                  <q-icon name="fact_check" />
+                </q-item-section>
+
+                <q-item-section> Submission</q-item-section>
+              </q-item>
+
               <!-- Management -->
               <div class="nav-section">MANAGEMENT</div>
 

@@ -49,6 +49,15 @@ const routes = [
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
 
+
+      {
+        path: "list_of_submission",
+        name: "list_of_submission",
+        component: () => import("pages/administrator/employee/submission/ListEmployeeSubmissionPage.vue"),
+        meta: { requiresAuth: true, roles: ["hr_admin"] },
+      },
+
+
       {
         path: "library",
         name: "library",
