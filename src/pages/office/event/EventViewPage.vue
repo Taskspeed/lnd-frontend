@@ -23,7 +23,7 @@
       ==================================================== -->
       <q-card flat bordered class="detail-card">
         <div class="section-head">
-          <span class="section-badge">1</span>
+          <!-- <span class="section-badge">1</span> -->
           <div class="section-head-text">
             <div class="section-title">Schedule Details</div>
             <div class="section-sub">Event and schedule information</div>
@@ -130,7 +130,7 @@
       ==================================================== -->
       <q-card flat bordered class="detail-card">
         <div class="section-head">
-          <span class="section-badge">2</span>
+          <!-- <span class="section-badge">2</span> -->
           <div class="section-head-text">
             <div class="section-title">Qualified Employees for this Event</div>
             <div class="section-sub"> Employees who are qualified and tagged by HRM for this event.</div>
@@ -151,7 +151,7 @@
 ==================================================== -->
     <q-card flat bordered class="detail-card">
       <div class="section-head">
-        <span class="section-badge">3</span>
+        <!-- <span class="section-badge">3</span> -->
         <div class="section-head-text">
           <div class="section-title">Nomination</div>
           <div class="section-sub">Select employees to nominate for this schedule</div>
@@ -173,12 +173,24 @@
                   {{ props.row.is_attended ? 'Yes' : 'No' }}
                 </q-badge>
               </template>
-              <template v-else-if="col.name === 'nominate_status'">
+              <!-- <template v-else-if="col.name === 'nominate_status'">
                 <q-badge
                   :color="props.row.nominate_status === 'approved' ? 'green' : (props.row.nominate_status === 'rejected' ? 'red' : 'orange')">
-                  {{ props.row.nominate_status || 'Pending' }}
+                  {{ props.row.nominate_status}}
                 </q-badge>
-              </template>
+              </template> -->
+              <template v-else-if="col.name === 'nominate_status'">
+              <q-badge
+                class="status-badge"
+                :class="{
+                  'status-approved': props.row.nominate_status === 'Approved',
+                  'status-disapproved': props.row.nominate_status === 'Disapproved',
+                  'status-pending': props.row.nominate_status === 'Pending'
+                }"
+              >
+                {{ props.row.nominate_status }}
+              </q-badge>
+            </template>
               <!-- ✅ NEW: truncated reason with tooltip -->
               <template v-else-if="col.name === 'nominate_reason'">
                 <span class="reason-cell">
@@ -189,6 +201,7 @@
                 </span>
               </template>
               <template v-else-if="col.name === 'action'">
+
                 <div class="row-actions">
                   <q-btn flat dense round icon="visibility" color="primary"
                     @click.stop="viewNominationDetails(props.row)">
@@ -317,7 +330,7 @@
     </q-dialog>
 
     <q-dialog v-model="showEmployeeRecordDialog">
-      <q-card style="width: 600px; max-width: 90vw;">
+      <q-card style="width:100%; max-width: 90vw;">
         <q-card-section class="dialog-header">
           <div class="section-title">{{ viewedEmployee?.name }}</div>
           <div class="section-sub">
@@ -352,7 +365,7 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat no-caps label="Close" v-close-popup />
+          <q-btn color="green" no-caps label="Close" v-close-popup />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -399,7 +412,8 @@
         <q-separator />
 
         <q-card-section>
-          <q-input v-model="editReasonText" outlined type="textarea" autogrow dense
+           <div>Reason</div>
+          <q-input v-model="editReasonText" outlined type="textarea" autogrow dense 
             placeholder="Reason for nominating..." :rules="[val => !!val?.trim() || 'Reason is required']" />
         </q-card-section>
 
@@ -454,7 +468,7 @@ export default defineComponent({
       { name: "name", label: "Name", field: "name", align: "left" },
       // { name: "office", label: "Office", field: "office", align: "left" },
       { name: "position", label: "Position", field: "position", align: "left" },
-      // { name: "isAlreadyTrained", label: "Status", field: "isAlreadyTrained", align: "center" },
+      { name: "isAlreadyTrained", label: "Trained", field: "isAlreadyTrained", align: "center" },
       { name: "status", label: "Status", field: "status", align: "center" },
       { name: "action", label: "", field: "action", align: "center" },
     ];
@@ -482,7 +496,7 @@ export default defineComponent({
       { name: "name", label: "Name", field: "name", align: "left" },
       { name: "position", label: "Position", field: "position", align: "left" },
       { name: "status", label: "Status", field: "status", align: "left" },
-      // { name: "office", label: "Office", field: "office", align: "left" },
+      // { name: "nominate_status", label: "Nomination Status", field: "nominate_status", align: "left" },
       { name: "nominate_reason", label: "Reason", field: "nominate_reason", align: "left" },
     ];
     function viewEmployeeRecord(emp) {
@@ -547,8 +561,9 @@ export default defineComponent({
       // { name: "office", label: "Office", field: "office", align: "left" },
       { name: "designation", label: "Position", field: "designation", align: "left" },
       { name: "status", label: "Status", field: "status", align: "left" },
-      { name: "nominate_reason", label: "Reason", field: "nominate_reason", align: "left", style: "max-width: 200px" },
-      { name: "action", label: "Action", field: "action", align: "left" },
+      { name: "nominate_status", label: "Nomination Status", field: "nominate_status", align: "center" },
+      // { name: "nominate_reason", label: "Reason", field: "nominate_reason", align: "left", style: "max-width: 200px" },
+      { name: "action", label: "Action", field: "action", align: "center" },
     ];
     function truncateText(text, maxLength = 24) {
       if (!text) return "—";
@@ -1103,7 +1118,7 @@ export default defineComponent({
    STATUS BADGE
 ========================================================= */
 
-.status-badge {
+/* .status-badge {
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
@@ -1138,7 +1153,7 @@ export default defineComponent({
 .status-cancelled {
   color: #c73f3f;
   background: #fbe9e9;
-}
+} */
 
 /* =========================================================
    SECTIONS 2 & 3 — TABLES
@@ -1261,7 +1276,9 @@ export default defineComponent({
 .row-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 2px;
+  white-space: nowrap;
 }
 
 /* =========================================================
