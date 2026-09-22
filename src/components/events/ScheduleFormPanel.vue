@@ -51,77 +51,13 @@
 
     <!-- CATEGORY / TYPE / MODE / CONDUCTOR / SOURCE / HOURS / QUALIFICATIONS / FEE -->
     <div class="two-column-fields">
-      <LabeledField label="Category">
-        <q-select
-          v-model="eventForm.category_name"
-          outlined
-          dense
-          use-input
-          hide-selected
-          fill-input
-          input-debounce="400"
-          new-value-mode="add-unique"
-          :options="categoryOptions"
-          :loading="categoryLoading"
-          @filter="filterCategory"
-          @input-value="onCategoryInput"
-          popup-content-class="title-dropdown-scroll"
-          placeholder="Enter event category"
-          class="custom-input"
-        />
-      </LabeledField>
+     <LabeledField label="Learning Type">
+          <q-select v-model="eventForm.intervention_name" outlined dense emit-value map-options
+            :options="interventionOptions" placeholder="Select Intervention" class="custom-input" :display-value="eventForm.intervention_name ? undefined : 'Select Intervention'
+              " />
+        </LabeledField>
 
-      <LabeledField label="Type">
-        <q-select
-          v-model="eventForm.type_name"
-          outlined
-          dense
-          use-input
-          hide-selected
-          fill-input
-          input-debounce="400"
-          new-value-mode="add-unique"
-          :options="typeOptions"
-          :loading="typeLoading"
-          @filter="filterType"
-          @input-value="onTypeInput"
-          placeholder="Enter event type"
-          popup-content-class="title-dropdown-scroll"
-          class="custom-input"
-        />
-      </LabeledField>
-
-      <LabeledField label="Mode">
-        <q-select
-          v-model="eventForm.mode_name"
-          outlined
-          dense
-          use-input
-          hide-selected
-          fill-input
-          input-debounce="400"
-          new-value-mode="add-unique"
-          :options="modeOptions"
-          :loading="modeLoading"
-          @filter="filterModes"
-          @input-value="onModesInput"
-          placeholder="Enter event mode"
-          popup-content-class="title-dropdown-scroll"
-          class="custom-input"
-        />
-      </LabeledField>
-
-      <LabeledField label="Conductor">
-        <q-input
-          v-model="eventForm.conducted_by"
-          outlined
-          dense
-          placeholder="Enter conductor"
-          class="custom-input"
-        />
-      </LabeledField>
-
-      <!-- SOURCE (DROPDOWN) -->
+              <!-- SOURCE (DROPDOWN) -->
       <LabeledField label="Source">
         <q-select
           v-model="eventForm.source_name"
@@ -142,7 +78,28 @@
           }}
         </div>
       </LabeledField>
+      <LabeledField label="Compentecy">
+        <q-select
+          v-model="eventForm.category_name"
+          outlined
+          dense
+          use-input
+          hide-selected
+          fill-input
+          input-debounce="400"
+          new-value-mode="add-unique"
+          :options="categoryOptions"
+          :loading="categoryLoading"
+          @filter="filterCategory"
+          @input-value="onCategoryInput"
+          popup-content-class="title-dropdown-scroll"
+          placeholder="Enter event category"
+          class="custom-input"
+        />
+      </LabeledField>
 
+
+      
       <LabeledField label="Hours">
         <q-input
           v-model.number="eventForm.hours"
@@ -155,6 +112,67 @@
         />
       </LabeledField>
 
+      <LabeledField label="Activity">
+        <q-select
+          v-model="eventForm.type_name"
+          outlined
+          dense
+          use-input
+          hide-selected
+          fill-input
+          input-debounce="400"
+          new-value-mode="add-unique"
+          :options="typeOptions"
+          :loading="typeLoading"
+          @filter="filterType"
+          @input-value="onTypeInput"
+          placeholder="Enter event type"
+          popup-content-class="title-dropdown-scroll"
+          class="custom-input"
+        />
+      </LabeledField>
+
+         <LabeledField label="Conductor">
+        <q-input
+          v-model="eventForm.conducted_by"
+          outlined
+          dense
+          placeholder="Enter conductor"
+          class="custom-input"
+        />
+      </LabeledField>
+      <LabeledField label="Mode">
+        <q-select
+          v-model="eventForm.mode_name"
+          outlined
+          dense
+          use-input
+          hide-selected
+          fill-input
+          input-debounce="400"
+          new-value-mode="add-unique"
+          :options="modeOptions"
+          :loading="modeLoading"
+          @filter="filterModes"
+          @input-value="onModesInput"
+          placeholder="Enter event mode"
+          popup-content-class="title-dropdown-scroll"
+          class="custom-input"
+        />
+      </LabeledField>
+
+   
+     <LabeledField label="fee">
+        <q-input
+          v-model="eventForm.fee"
+          outlined
+          dense
+          placeholder="fee"
+          class="custom-input"
+        />
+      </LabeledField>
+
+
       <LabeledField label="Qualifications">
         <q-input
           v-model="eventForm.qualifications"
@@ -166,15 +184,7 @@
         />
       </LabeledField>
 
-      <LabeledField label="fee">
-        <q-input
-          v-model="eventForm.fee"
-          outlined
-          dense
-          placeholder="fee"
-          class="custom-input"
-        />
-      </LabeledField>
+ 
     </div>
 
     <div class="section-divider"></div>
@@ -1423,7 +1433,15 @@ export default defineComponent({
     });
 
     function removeDepartment(index) {
-      eventForm.value.departments.splice(index, 1);
+      const [removedDepartment] = eventForm.value.departments.splice(index, 1);
+      const removedOfficeName = removedDepartment?.name;
+
+      if (!removedOfficeName) return;
+
+      eventForm.value.employees = eventForm.value.employees.filter(
+        (employee) => employee.office !== removedOfficeName
+      );
+      delete selectedEmployeesByOffice.value[removedOfficeName];
     }
 
     // =========================================================
@@ -1658,13 +1676,23 @@ export default defineComponent({
     // Reset the active employee office if it was removed from the
     // Department selection, and drop its saved employee basket too.
     watch(selectedOffices, (newVal) => {
-      const stillExists = newVal.some(
-        (o) => o.office_name === activeEmployeeOffice.value
+      const selectedOfficeNames = new Set(
+        newVal.map((office) => office.office_name)
       );
-      if (activeEmployeeOffice.value && !stillExists) {
+
+      Object.keys(selectedEmployeesByOffice.value).forEach((officeName) => {
+        if (!selectedOfficeNames.has(officeName)) {
+          delete selectedEmployeesByOffice.value[officeName];
+        }
+      });
+
+      if (
+        activeEmployeeOffice.value &&
+        !selectedOfficeNames.has(activeEmployeeOffice.value)
+      ) {
         activeEmployeeOffice.value = null;
       }
-    });
+    }, { deep: true });
 
     // "View Selected Employees" dialog (per department, main table)
     const showDepartmentEmployeesDialog = ref(false);
@@ -1675,26 +1703,58 @@ export default defineComponent({
       showDepartmentEmployeesDialog.value = true;
     }
 
-    function openDepartmentDialog() {
-      officeSearch.value = "";
-      bulkAttendeeCount.value = null;
+    // function openDepartmentDialog() {
+    //   officeSearch.value = "";
+    //   bulkAttendeeCount.value = null;
 
-      const existingOfficeIds = eventForm.value.departments.map((d) => d.id);
-      const preselectedOffices = officeStore.offices
-        .filter((office) => existingOfficeIds.includes(office.officeId))
-        .map((office) => {
-          const existingDept = eventForm.value.departments.find(
-            (d) => d.id === office.officeId
-          );
-          return {
-            ...office,
-            _attendees: existingDept?.attendees || 0,
-          };
-        });
+    //   const existingOfficeIds = eventForm.value.departments.map((d) => d.id);
+    //   const preselectedOffices = officeStore.offices
+    //     .filter((office) => existingOfficeIds.includes(office.officeId))
+    //     .map((office) => {
+    //       const existingDept = eventForm.value.departments.find(
+    //         (d) => d.id === office.office_name
+    //       );
+    //       return {
+    //         ...office,
+    //         _attendees: existingDept?.attendees || 0,
+    //       };
+    //     });
 
-      selectedOffices.value = initializeSelectedOffices(preselectedOffices);
-      showDepartmentDialog.value = true;
-    }
+    //   selectedOffices.value = initializeSelectedOffices(preselectedOffices);
+    //   showDepartmentDialog.value = true;
+    // }
+  function openDepartmentDialog() {
+  officeSearch.value = "";
+  bulkAttendeeCount.value = null;
+
+  const existingDeptNames = eventForm.value.departments.map((d) => d.name);
+  const preselectedOffices = officeStore.offices
+    .filter((office) => existingDeptNames.includes(office.office_name))
+    .map((office) => {
+      const existingDept = eventForm.value.departments.find(
+        (d) => d.name === office.office_name
+      );
+      return { ...office, _attendees: existingDept?.attendees || 0 };
+    });
+
+  selectedOffices.value = initializeSelectedOffices(preselectedOffices);
+
+  // 👇 seed employee basket per office galing sa existing data
+  const grouped = {};
+  (eventForm.value.employees || []).forEach((emp) => {
+    if (!emp.office) return;
+    if (!grouped[emp.office]) grouped[emp.office] = [];
+    grouped[emp.office].push({
+      ControlNo: emp.control_no,
+      name: emp.name,
+      position: emp.position,
+      status: emp.status,
+    });
+  });
+  selectedEmployeesByOffice.value = grouped;
+
+  showDepartmentDialog.value = true;
+}
 
     function updateAttendeeValue(row) {
       const index = selectedOffices.value.findIndex(
@@ -1743,13 +1803,12 @@ export default defineComponent({
 
       // Flat list of every selected employee across all offices — this
       // is what goes into the save payload.
-      eventForm.value.employees = Object.entries(selectedEmployeesByOffice.value).flatMap(
-        ([officeName, employees]) =>
-          employees.map((emp) => ({
+      eventForm.value.employees = selectedOffices.value.flatMap((office) =>
+        (selectedEmployeesByOffice.value[office.office_name] || []).map((emp) => ({
             control_no: emp.ControlNo,
             name: emp.name,
             position: emp.position,
-            office: officeName,
+            office: office.office_name,
             status: emp.status,
           }))
       );
@@ -1848,7 +1907,12 @@ export default defineComponent({
         saving.value = false;
       }
     }
-
+   const interventionOptions = [
+      { label: "Formal Learning", value: "Formal Learning" },
+      { label: "Experiential Learning", value: "Experiential Learning" },
+      { label: "Social Learning", value: "Social Learning" },
+      // { label: "Self-Directed Learning", value: "Self-Directed Learning" },
+    ];
     // =========================================================
     // LOAD OFFICES (needed for Department dialog)
     // =========================================================
@@ -1964,6 +2028,7 @@ export default defineComponent({
 
       // Save
       save,
+      interventionOptions
     };
   },
 });
