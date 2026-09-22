@@ -1,4 +1,4 @@
-import { event } from "quasar";
+
 import { api } from "src/boot/axios";
 
 export const employee_information = (nominatedEmployeeId) => {
@@ -25,4 +25,14 @@ export const employee_view_form_submission = (controlNo, form_name, eventSchedul
       event_schedule_id: eventScheduleId,
     },
   });
+};
+
+
+export const employee_update_form_submission= (nominatedEmployeeId,payload) => {
+  return api.put(`event/employee/submission/update/${nominatedEmployeeId}`,payload);
+};
+
+
+export const employee_attendance= (nominatedEmployeeId) => {
+  return api.get(`event/employee/attendance/employee/${nominatedEmployeeId}`);
 };
