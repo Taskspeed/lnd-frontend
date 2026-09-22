@@ -21,41 +21,47 @@ const routes = [
       {
         path: "dashboard",
         name: "dashboard",
-        component: () => import("pages/DashboardPage.vue"),
+        component: () => import("pages/administrator/DashboardPage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
       {
         path: "events",
         name: "events",
-        component: () => import("pages/event/EventListPage.vue"),
+        component: () => import("pages/administrator/event/EventListPage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
       {
         path: "create-events",
         name: "create events",
-        component: () => import("pages/event/EventCreatePage.vue"),
+        component: () => import("pages/administrator/event/EventCreatePage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
       {
         path: "view-events",
         name: "view events",
-        component: () => import("pages/event/EventViewPage.vue"),
+        component: () => import("pages/administrator/event/EventViewPage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
-   
+      {
+        path: "/events/:eventId/schedules/:scheduleId/nominated",
+        name: "event-nominated-employee",
+        component: () => import("pages/administrator/event/EventNominatedEmployeePage.vue"),
+        meta: { requiresAuth: true, roles: ["hr_admin"] },
+      },
+
       {
         path: "library",
         name: "library",
         component: () => import("pages/LibraryPage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
-        {
+      {
         path: "title",
         name: "title",
         component: () => import("pages/library/event/TitlePage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
-          {
+      {
         path: "mode",
         name: "mode",
         component: () => import("pages/library/event/ModePage.vue"),
@@ -67,20 +73,20 @@ const routes = [
         component: () => import("pages/library/event/VenuePage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
-        {
+      {
         path: "category",
         name: "category",
         component: () => import("pages/library/event/CategoryPage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
-             {
+      {
         path: "type",
         name: "type",
         component: () => import("pages/library/event/TypePage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
 
-        {
+      {
         path: "speaker",
         name: "speaker",
         component: () => import("pages/library/event/SpeakerPage.vue"),
@@ -101,7 +107,7 @@ const routes = [
       {
         path: "",
         redirect: "dashboard",
-      }, 
+      },
 
       // office_admin
       {
@@ -112,29 +118,25 @@ const routes = [
         meta: { requiresAuth: true, roles: ["office_admin"] },
       },
         {
+        path: "office/events2",
+        name: "office-events2",
+        component: () => import("pages/CreateEventPage.vue"),
+        props: { officeView: true },
+        meta: { requiresAuth: true, roles: ["office_admin"] },
+      },
+      {
         path: "office/dashboard",
         name: "office-dashboard",
         component: () => import("pages/DashboardPage.vue"),
         props: { officeView: true },
         meta: { requiresAuth: true, roles: ["office_admin"] },
       },
-      //    {
-      //   path: "office/list-events",
-      //   name: "office-list-events",
-      //   component: () => import("pages/event/EventViewPage.vue"),
-      //   meta: { requiresAuth: true, roles: ["office_admin"] },
-      // },
-      //  {
-      //   path: "office/view-events",
-      //   name: "office-view-events",
-      //   component: () => import("pages/office/event/EventViewPage.vue"),
-      //   meta: { requiresAuth: true, roles: ["office_admin"] },
-      // },
-          {
-      path: "office/events/:scheduleId",
-      name: "office-event-view",
-      component: () => import("pages/office/event/EventViewPage.vue"),
-    },
+
+      {
+        path: "office/events/:scheduleId",
+        name: "office-event-view",
+        component: () => import("pages/office/event/EventViewPage.vue"),
+      },
     ],
   },
   {
