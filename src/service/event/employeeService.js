@@ -36,3 +36,11 @@ export const employee_update_form_submission= (nominatedEmployeeId,payload) => {
 export const employee_attendance= (nominatedEmployeeId) => {
   return api.get(`event/employee/attendance/employee/${nominatedEmployeeId}`);
 };
+
+
+export const employee_form_submission = () => {
+  return api.get(
+    `event/employee/submission/list`);
+};
+
+

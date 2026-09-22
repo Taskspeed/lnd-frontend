@@ -205,7 +205,7 @@
         </template>
       </q-table>
     </q-card>
-    
+
     <q-dialog v-model="showNominationDetailsDialog">
       <q-card style="width: 500px; max-width: 90vw;">
         <q-card-section class="dialog-header">
@@ -261,9 +261,11 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
     <!-- import -->
     <EmployeeInformationModal v-model="showEmployeeModal" :employee-data="EmployeeInformation"
       :loading="loadingEmployeeInfo" @view-submission="handleViewSubmission" />
+      
   </q-page>
 </template>
 <script>
@@ -274,7 +276,7 @@ import { useEventStore } from "src/stores/eventStore";
 import Swal from "sweetalert2";
 
 import EmployeeInformationModal from "src/components/employee/EmployeeInformationModal.vue";
-import { useEmployeeInformationStore } from "src/stores/event/employee/employeeInformationStore";
+import { useEmployeeInformationStore } from "src/stores/administrator/employee/employeeInformationStore";
 export default defineComponent({
   name: "EventNominatedEmployeePage",
   components: { LoadingState, EmployeeInformationModal },
@@ -311,7 +313,7 @@ export default defineComponent({
       if (result.success) {
         EmployeeInformation.value = result.data; // 👈 galing na sa API response
         showEmployeeModal.value = true;
-        
+
       } else {
         Swal.fire({
           title: "Failed",
@@ -381,8 +383,8 @@ export default defineComponent({
       loading.value = false;
     }
 
-    
- 
+
+
     onMounted(async () => {
       await loadNominatedEmployees();
     });

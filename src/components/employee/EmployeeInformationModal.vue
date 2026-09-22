@@ -1,5 +1,5 @@
 <template>
-<q-dialog v-model="show" maximized-mobile>
+  <q-dialog v-model="show" maximized-mobile>
     <q-card class="qs-modal">
       <!-- HEADER -->
       <q-card-section class="qs-header">
@@ -52,14 +52,11 @@
 
             <div class="qs-nomination-block">
               <div class="qs-info-label">Nomination Status</div>
-              <q-badge
-                class="qs-nominate-badge"
-                :class="{
-                  'nominate-approved': employee.nominate_status === 'Approved',
-                  'nominate-disapproved': employee.nominate_status === 'Disapproved',
-                  'nominate-pending': employee.nominate_status === 'Pending',
-                }"
-              >
+              <q-badge class="qs-nominate-badge" :class="{
+                'nominate-approved': employee.nominate_status === 'Approved',
+                'nominate-disapproved': employee.nominate_status === 'Disapproved',
+                'nominate-pending': employee.nominate_status === 'Pending',
+              }">
                 {{ employee.nominate_status || "Pending" }}
               </q-badge>
             </div>
@@ -68,14 +65,8 @@
 
         <!-- RIGHT CONTENT — TABS: FORM SUBMISSIONS / ATTENDANCE -->
         <div class="qs-content">
-          <q-tabs
-            v-model="activeTab"
-            dense
-            class="qs-tabs"
-            active-color="primary"
-            indicator-color="primary"
-            align="left"
-          >
+          <q-tabs v-model="activeTab" dense class="qs-tabs" active-color="primary" indicator-color="primary"
+            align="left">
             <q-tab name="forms" label="Form Submissions" />
             <q-tab name="attendance" label="Attendance" />
           </q-tabs>
@@ -94,25 +85,15 @@
 
               <q-separator class="q-mb-md" />
 
-              <q-table
-                flat
-                :rows="submissions"
-                :columns="submissionColumns"
-                row-key="employee_form_submission_id"
-                :loading="loadingSubmissions"
-                :rows-per-page-options="[0,2,10,20]"
-                class="qs-table"
-              >
+              <q-table flat :rows="submissions" :columns="submissionColumns" row-key="employee_form_submission_id"
+                :loading="loadingSubmissions" :rows-per-page-options="[0, 2, 10, 20]" class="qs-table">
                 <template #body-cell-status="props">
                   <q-td :props="props">
-                    <q-badge
-                      class="qs-status-pill"
-                      :class="{
-                        'status-approved': props.row.status === 'Approved',
-                        'status-returned': props.row.status === 'Returned',
-                        'status-pending': props.row.status === 'Pending',
-                      }"
-                    >
+                    <q-badge class="qs-status-pill" :class="{
+                      'status-approved': props.row.status === 'Approved',
+                      'status-returned': props.row.status === 'Returned',
+                      'status-pending': props.row.status === 'Pending',
+                    }">
                       {{ props.row.status }}
                     </q-badge>
                   </q-td>
@@ -126,24 +107,18 @@
 
                 <template #body-cell-action="props">
                   <q-td :props="props">
-                    <q-btn
-                      flat
-                      dense
-                      round
-                      icon="visibility"
-                      color="primary"
+                    <q-btn flat dense round icon="visibility" color="primary"
                       :loading="loadingFormData && activeRowId === props.row.employee_form_submission_id"
-                      @click="openSubmission(props.row)"
-                    >
+                      @click="openSubmission(props.row)">
                       <q-tooltip>View Submission</q-tooltip>
                     </q-btn>
-                     <q-btn flat dense round icon="task_alt" color="positive" @click.stop="approved(props.row)">
-                        <q-tooltip>Approved</q-tooltip>
-                      </q-btn>
+                    <q-btn flat dense round icon="task_alt" color="positive" @click.stop="approved(props.row)">
+                      <q-tooltip>Approved</q-tooltip>
+                    </q-btn>
 
-                      <q-btn flat dense round icon="cancel" color="negative" @click.stop="returned(props.row)">
-                        <q-tooltip>Returned</q-tooltip>
-                      </q-btn>
+                    <q-btn flat dense round icon="cancel" color="negative" @click.stop="returned(props.row)">
+                      <q-tooltip>Returned</q-tooltip>
+                    </q-btn>
                   </q-td>
                 </template>
 
@@ -168,24 +143,14 @@
 
               <q-separator class="q-mb-md" />
 
-              <q-table
-                flat
-                :rows="attendance"
-                :columns="attendanceColumns"
-                row-key="schedule_date"
-                :loading="loadingAttendance"
-                :rows-per-page-options="[0,5,10,20]"
-                class="qs-table"
-              >
+              <q-table flat :rows="attendance" :columns="attendanceColumns" row-key="schedule_date"
+                :loading="loadingAttendance" :rows-per-page-options="[0, 5, 10, 20]" class="qs-table">
                 <template #body-cell-status="props">
                   <q-td :props="props">
-                    <q-badge
-                      class="qs-status-pill"
-                      :class="{
-                        'status-approved': props.row.status === 'present',
-                        'status-returned': props.row.status === 'absent',
-                      }"
-                    >
+                    <q-badge class="qs-status-pill" :class="{
+                      'status-approved': props.row.status === 'present',
+                      'status-returned': props.row.status === 'absent',
+                    }">
                       {{ props.row.status }}
                     </q-badge>
                   </q-td>
@@ -194,7 +159,8 @@
                 <template #body-cell-morning="props">
                   <q-td :props="props">
                     <div class="qs-time-cell">
-                      <span class="qs-time-scheduled">{{ props.row.scheduled.morning_in }} – {{ props.row.scheduled.morning_out }}</span>
+                      <span class="qs-time-scheduled">{{ props.row.scheduled.morning_in }} – {{
+                        props.row.scheduled.morning_out }}</span>
                       <span v-if="props.row.actual" class="qs-time-actual">
                         {{ props.row.actual.morning_in }} – {{ props.row.actual.morning_out }}
                       </span>
@@ -206,7 +172,8 @@
                 <template #body-cell-afternoon="props">
                   <q-td :props="props">
                     <div class="qs-time-cell">
-                      <span class="qs-time-scheduled">{{ props.row.scheduled.afternoon_in }} – {{ props.row.scheduled.afternoon_out }}</span>
+                      <span class="qs-time-scheduled">{{ props.row.scheduled.afternoon_in }} – {{
+                        props.row.scheduled.afternoon_out }}</span>
                       <span v-if="props.row.actual" class="qs-time-actual">
                         {{ props.row.actual.afternoon_in }} – {{ props.row.actual.afternoon_out }}
                       </span>
@@ -218,22 +185,15 @@
                 <template #body-cell-late="props">
                   <q-td :props="props">
                     <div class="qs-late-cell">
-                      <q-badge
-                        v-if="props.row.is_late_morning"
-                        class="qs-late-pill"
-                      >
+                      <q-badge v-if="props.row.is_late_morning" class="qs-late-pill">
                         AM +{{ props.row.late_minutes_morning }}m
                       </q-badge>
-                      <q-badge
-                        v-if="props.row.is_late_afternoon"
-                        class="qs-late-pill"
-                      >
+                      <q-badge v-if="props.row.is_late_afternoon" class="qs-late-pill">
                         PM +{{ props.row.late_minutes_afternoon }}m
                       </q-badge>
                       <span
                         v-if="props.row.status === 'present' && !props.row.is_late_morning && !props.row.is_late_afternoon"
-                        class="qs-ontime-pill"
-                      >
+                        class="qs-ontime-pill">
                         On time
                       </span>
                     </div>
@@ -251,20 +211,14 @@
     </q-card>
 
     <!-- Dynamic form-view modal — resolved based on the clicked row's form_name -->
-    <component
-      :is="activeFormComponent"
-      v-if="activeFormComponent"
-      v-model="showFormModal"
-      :form-data="activeFormData"
-      :submission="activeSubmission"
-      readonly
-    />
+    <component :is="activeFormComponent" v-if="activeFormComponent" v-model="showFormModal" :form-data="activeFormData"
+      :submission="activeSubmission" readonly />
   </q-dialog>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useEmployeeInformationStore } from 'src/stores/event/employee/employeeInformationStore'
+import { useEmployeeInformationStore } from 'src/stores/administrator/employee/employeeInformationStore'
 import { getFormModalComponent } from 'src/composables/useFormsModal'
 import Swal from 'sweetalert2'
 
@@ -402,7 +356,7 @@ async function openSubmission(row) {
   }
 
   loadingFormData.value = false
-  emit('view-submission', row)
+  // emit('view-submission', row)
 }
 async function approved(row) {
   const result = await Swal.fire({
@@ -557,6 +511,7 @@ watch(
   background: #f5f6f7;
   border-bottom: 1px solid #e6e9ea;
 }
+
 .qs-title {
   font-size: 17px;
   font-weight: 750;
@@ -579,18 +534,21 @@ watch(
   text-align: center;
   background: #fafcfb;
 }
+
 .qs-avatar {
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 14px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
+
 .qs-name {
   font-size: 14px;
   font-weight: 750;
   color: #1a1a1a;
   line-height: 1.3;
 }
+
 .qs-designation {
   margin-top: 3px;
   font-size: 11px;
@@ -598,6 +556,7 @@ watch(
   line-height: 1.5;
   font-weight: 480;
 }
+
 .qs-status-badge {
   margin-top: 10px;
   padding: 4px 14px;
@@ -621,12 +580,14 @@ watch(
   flex-direction: column;
   gap: 10px;
 }
+
 .qs-info-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   text-align: left;
 }
+
 .qs-info-label {
   font-size: 11px;
   font-weight: 700;
@@ -634,6 +595,7 @@ watch(
   letter-spacing: 0.4px;
   text-transform: uppercase;
 }
+
 .qs-info-value {
   font-size: 12px;
   font-weight: 650;
@@ -645,6 +607,7 @@ watch(
   width: 100%;
   text-align: left;
 }
+
 .qs-nominate-badge {
   margin-top: 6px;
   padding: 4px 12px;
@@ -653,9 +616,21 @@ watch(
   font-weight: 700;
   text-transform: uppercase;
 }
-.nominate-approved { background: #e1f7e7; color: #087c42; }
-.nominate-disapproved { background: #fbe9e9; color: #c73f3f; }
-.nominate-pending { background: #fbf3df; color: #b8860b; }
+
+.nominate-approved {
+  background: #e1f7e7;
+  color: #087c42;
+}
+
+.nominate-disapproved {
+  background: #fbe9e9;
+  color: #c73f3f;
+}
+
+.nominate-pending {
+  background: #fbf3df;
+  color: #b8860b;
+}
 
 .qs-reason-text {
   margin-top: 4px;
@@ -684,11 +659,13 @@ watch(
   align-items: center;
   justify-content: space-between;
 }
+
 .qs-section-title {
   font-size: 14px;
   font-weight: 750;
   color: #1a1a1a;
 }
+
 .qs-section-sub {
   margin-top: 2px;
   font-size: 11px;
@@ -698,12 +675,14 @@ watch(
 .qs-table {
   box-shadow: none;
 }
+
 .qs-table :deep(th) {
   font-size: 11px;
   font-weight: 700;
   color: #1a1a1a;
   background: #fafcfb;
 }
+
 .qs-table :deep(td) {
   font-size: 11px;
   color: #000000;
@@ -717,23 +696,38 @@ watch(
   font-weight: 700;
   text-transform: uppercase;
 }
-.status-approved { background: #e1f7e7; color: #087c42; }
-.status-returned { background: #fbe9e9; color: #c73f3f; }
-.status-pending { background: #fbf3df; color: #b8860b; }
+
+.status-approved {
+  background: #e1f7e7;
+  color: #087c42;
+}
+
+.status-returned {
+  background: #fbe9e9;
+  color: #c73f3f;
+}
+
+.status-pending {
+  background: #fbf3df;
+  color: #b8860b;
+}
 
 .qs-time-cell {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
+
 .qs-time-scheduled {
   color: #8a989e;
   font-size: 10.5px;
 }
+
 .qs-time-actual {
   color: #1a1a1a;
   font-weight: 700;
 }
+
 .qs-time-none {
   color: #c73f3f;
   font-weight: 600;
@@ -745,6 +739,7 @@ watch(
   align-items: center;
   gap: 4px;
 }
+
 .qs-late-pill {
   padding: 2px 10px;
   border-radius: 12px;
@@ -753,6 +748,7 @@ watch(
   background: #fbe9e9;
   color: #c73f3f;
 }
+
 .qs-ontime-pill {
   font-size: 10px;
   font-weight: 700;
