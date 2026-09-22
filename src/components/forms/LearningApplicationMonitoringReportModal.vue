@@ -9,10 +9,12 @@
 
       <q-card-section class="lamr-body">
         <div class="lamr-title">Learning Application Monitoring Report</div>
+
         <div v-if="submission?.status === 'Returned'" class="lap-remarks-box">
           <div class="lap-remarks-label">Remarks (Returned):</div>
           <div class="lap-remarks-text">{{ submission.remarks }}</div>
         </div>
+
         <!-- BASIC INFO -->
         <div class="lamr-field-row">
           <span class="lamr-field-label">Learner:</span>
@@ -144,6 +146,10 @@ const props = defineProps({
   modelValue: Boolean,
   // Buong `form_data` object galing sa GET /event/employee/form(s) response
   formData: {
+    type: Object,
+    default: null,
+  },
+    submission: {                 // 👈 bagong prop
     type: Object,
     default: null,
   },

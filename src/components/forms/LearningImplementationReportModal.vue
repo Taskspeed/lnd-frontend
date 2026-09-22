@@ -119,6 +119,10 @@ const props = defineProps({
     type: Object,
     default: () => null,
   },
+    submission: {                 // 👈 bagong prop
+    type: Object,
+    default: null,
+  },
   readonly: {
     type: Boolean,
     default: false,

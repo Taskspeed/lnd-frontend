@@ -157,6 +157,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+    submission: {                 // 👈 bagong prop
+    type: Object,
+    default: null,
+  },
   // true kapag "view submission" lang — hindi na pwedeng i-edit
   readonly: {
     type: Boolean,

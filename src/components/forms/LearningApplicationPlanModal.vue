@@ -15,6 +15,7 @@
           <div class="lap-remarks-label">Remarks (Returned):</div>
           <div class="lap-remarks-text">{{ submission.remarks }}</div>
         </div>
+        
         <!-- BASIC INFO -->
         <div class="lap-field-row">
           <span class="lap-field-label">Office:</span>
