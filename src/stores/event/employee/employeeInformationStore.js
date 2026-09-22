@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { employee_information, employee_submission,employee_view_form_submission} from "src/service/event/employeeService";
+import { employee_information, employee_submission,employee_view_form_submission, employee_update_form_submission, employee_attendance} from "src/service/event/employeeService";
 
 export const useEmployeeInformationStore = defineStore("employeeInformation", {
   state: () => ({
@@ -82,6 +82,43 @@ export const useEmployeeInformationStore = defineStore("employeeInformation", {
         const message = err.response?.data?.message || "Failed to fetch submissions";
         this.error = message;
         return { success: false, message };
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    
+    async approvalEmployeeFormSubmission(nominatedEmployeeId, payload) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await employee_update_form_submission(
+          nominatedEmployeeId,
+          payload
+        );
+        return { success: true, data: response.data.data || response.data };
+      } catch (err) {
+        this.error =
+          err.response?.data?.message || "Failed to fetch employee form submission.";
+        return { success: false, message: this.error };
+      } finally {
+        this.loading = false;
+      }
+    },
+
+      async fetchEmployeeAttendance(nominatedEmployeeId) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await employee_attendance(
+          nominatedEmployeeId,
+       
+        );
+        return { success: true, data: response.data.data || response.data };
+      } catch (err) {
+        this.error =
+          err.response?.data?.message || "Failed to fetch employee attendance.";
+        return { success: false, message: this.error };
       } finally {
         this.loading = false;
       }
