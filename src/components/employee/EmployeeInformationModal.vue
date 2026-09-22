@@ -66,78 +66,186 @@
           </template>
         </div>
 
-        <!-- RIGHT CONTENT — SUBMISSIONS -->
+        <!-- RIGHT CONTENT — TABS: FORM SUBMISSIONS / ATTENDANCE -->
         <div class="qs-content">
-          <div class="qs-content-header">
-            <div>
-              <div class="qs-section-title">Form Submissions</div>
-              <div class="qs-section-sub">L&D forms submitted by employee</div>
-            </div>
-          </div>
+          <q-tabs
+            v-model="activeTab"
+            dense
+            class="qs-tabs"
+            active-color="primary"
+            indicator-color="primary"
+            align="left"
+          >
+            <q-tab name="forms" label="Form Submissions" />
+            <q-tab name="attendance" label="Attendance" />
+          </q-tabs>
 
           <q-separator class="q-mb-md" />
 
-          <q-table
-            flat
-            :rows="submissions"
-            :columns="submissionColumns"
-            row-key="employee_form_submission_id"
-            :loading="loadingSubmissions"
-            :rows-per-page-options="[0,2,10,20]"
-            class="qs-table"
-          >
-            <template #body-cell-status="props">
-              <q-td :props="props">
-                <q-badge
-                  class="qs-status-pill"
-                  :class="{
-                    'status-approved': props.row.status === 'Approved',
-                    'status-returned': props.row.status === 'Returned',
-                    'status-pending': props.row.status === 'Pending',
-                  }"
-                >
-                  {{ props.row.status }}
-                </q-badge>
-              </q-td>
-            </template>
+          <q-tab-panels v-model="activeTab" animated class="qs-tab-panels">
+            <!-- ================= FORM SUBMISSIONS TAB ================= -->
+            <q-tab-panel name="forms" class="q-pa-none">
+              <div class="qs-content-header">
+                <div>
+                  <div class="qs-section-title">Form Submissions</div>
+                  <div class="qs-section-sub">L&D forms submitted by employee</div>
+                </div>
+              </div>
 
-            <template #body-cell-remarks="props">
-              <q-td :props="props">
-                {{ props.row.remarks || " " }}
-              </q-td>
-            </template>
+              <q-separator class="q-mb-md" />
 
-            <template #body-cell-action="props">
-              <q-td :props="props">
-                <q-btn
-                  flat
-                  dense
-                  round
-                  icon="visibility"
-                  color="primary"
-                  :loading="loadingFormData && activeRowId === props.row.employee_form_submission_id"
-                  @click="openSubmission(props.row)"
-                >
-                  <q-tooltip>View Submission</q-tooltip>
-                </q-btn>
-                 <q-btn flat dense round icon="task_alt" color="positive" @click.stop="approved(props.row)">
-                    <q-tooltip>Approved</q-tooltip>
-                  </q-btn>
+              <q-table
+                flat
+                :rows="submissions"
+                :columns="submissionColumns"
+                row-key="employee_form_submission_id"
+                :loading="loadingSubmissions"
+                :rows-per-page-options="[0,2,10,20]"
+                class="qs-table"
+              >
+                <template #body-cell-status="props">
+                  <q-td :props="props">
+                    <q-badge
+                      class="qs-status-pill"
+                      :class="{
+                        'status-approved': props.row.status === 'Approved',
+                        'status-returned': props.row.status === 'Returned',
+                        'status-pending': props.row.status === 'Pending',
+                      }"
+                    >
+                      {{ props.row.status }}
+                    </q-badge>
+                  </q-td>
+                </template>
 
-                  <q-btn flat dense round icon="cancel" color="negative" @click.stop="returned(props.row)">
-                    <q-tooltip>Returned</q-tooltip>
-                  </q-btn>
-              </q-td>
-              
-            </template>
+                <template #body-cell-remarks="props">
+                  <q-td :props="props">
+                    {{ props.row.remarks || " " }}
+                  </q-td>
+                </template>
 
-            <template #no-data>
-              <div class="qs-empty">No form submissions found.</div>
-            </template>
-          </q-table>
-          <q-separator class="qs-divider" />
-          <div class="qs-info-label q-mt-md">Reason</div>
-          <div class="qs-reason-text">{{ employee.nominate_reason || " " }}</div>
+                <template #body-cell-action="props">
+                  <q-td :props="props">
+                    <q-btn
+                      flat
+                      dense
+                      round
+                      icon="visibility"
+                      color="primary"
+                      :loading="loadingFormData && activeRowId === props.row.employee_form_submission_id"
+                      @click="openSubmission(props.row)"
+                    >
+                      <q-tooltip>View Submission</q-tooltip>
+                    </q-btn>
+                     <q-btn flat dense round icon="task_alt" color="positive" @click.stop="approved(props.row)">
+                        <q-tooltip>Approved</q-tooltip>
+                      </q-btn>
+
+                      <q-btn flat dense round icon="cancel" color="negative" @click.stop="returned(props.row)">
+                        <q-tooltip>Returned</q-tooltip>
+                      </q-btn>
+                  </q-td>
+                </template>
+
+                <template #no-data>
+                  <div class="qs-empty">No form submissions found.</div>
+                </template>
+              </q-table>
+
+              <q-separator class="qs-divider" />
+              <div class="qs-info-label q-mt-md">Reason</div>
+              <div class="qs-reason-text">{{ employee.nominate_reason || " " }}</div>
+            </q-tab-panel>
+
+            <!-- ================= ATTENDANCE TAB ================= -->
+            <q-tab-panel name="attendance" class="q-pa-none">
+              <div class="qs-content-header">
+                <div>
+                  <div class="qs-section-title">Attendance</div>
+                  <div class="qs-section-sub">Scheduled vs. actual time-in / time-out per day</div>
+                </div>
+              </div>
+
+              <q-separator class="q-mb-md" />
+
+              <q-table
+                flat
+                :rows="attendance"
+                :columns="attendanceColumns"
+                row-key="schedule_date"
+                :loading="loadingAttendance"
+                :rows-per-page-options="[0,5,10,20]"
+                class="qs-table"
+              >
+                <template #body-cell-status="props">
+                  <q-td :props="props">
+                    <q-badge
+                      class="qs-status-pill"
+                      :class="{
+                        'status-approved': props.row.status === 'present',
+                        'status-returned': props.row.status === 'absent',
+                      }"
+                    >
+                      {{ props.row.status }}
+                    </q-badge>
+                  </q-td>
+                </template>
+
+                <template #body-cell-morning="props">
+                  <q-td :props="props">
+                    <div class="qs-time-cell">
+                      <span class="qs-time-scheduled">{{ props.row.scheduled.morning_in }} – {{ props.row.scheduled.morning_out }}</span>
+                      <span v-if="props.row.actual" class="qs-time-actual">
+                        {{ props.row.actual.morning_in }} – {{ props.row.actual.morning_out }}
+                      </span>
+                      <span v-else class="qs-time-actual qs-time-none">—</span>
+                    </div>
+                  </q-td>
+                </template>
+
+                <template #body-cell-afternoon="props">
+                  <q-td :props="props">
+                    <div class="qs-time-cell">
+                      <span class="qs-time-scheduled">{{ props.row.scheduled.afternoon_in }} – {{ props.row.scheduled.afternoon_out }}</span>
+                      <span v-if="props.row.actual" class="qs-time-actual">
+                        {{ props.row.actual.afternoon_in }} – {{ props.row.actual.afternoon_out }}
+                      </span>
+                      <span v-else class="qs-time-actual qs-time-none">—</span>
+                    </div>
+                  </q-td>
+                </template>
+
+                <template #body-cell-late="props">
+                  <q-td :props="props">
+                    <div class="qs-late-cell">
+                      <q-badge
+                        v-if="props.row.is_late_morning"
+                        class="qs-late-pill"
+                      >
+                        AM +{{ props.row.late_minutes_morning }}m
+                      </q-badge>
+                      <q-badge
+                        v-if="props.row.is_late_afternoon"
+                        class="qs-late-pill"
+                      >
+                        PM +{{ props.row.late_minutes_afternoon }}m
+                      </q-badge>
+                      <span
+                        v-if="props.row.status === 'present' && !props.row.is_late_morning && !props.row.is_late_afternoon"
+                        class="qs-ontime-pill"
+                      >
+                        On time
+                      </span>
+                    </div>
+                  </q-td>
+                </template>
+
+                <template #no-data>
+                  <div class="qs-empty">No attendance records found.</div>
+                </template>
+              </q-table>
+            </q-tab-panel>
+          </q-tab-panels>
         </div>
       </div>
     </q-card>
@@ -183,9 +291,16 @@ const show = computed({
 
 const employee = computed(() => props.employeeData || {})
 
+// --- Tabs ---
+const activeTab = ref('forms')
 
+// --- Form submissions state ---
 const submissions = ref([])
 const loadingSubmissions = ref(false)
+
+// --- Attendance state ---
+const attendance = ref([])
+const loadingAttendance = ref(false)
 
 // --- Dynamic form-view state ---
 const activeFormComponent = ref(null)
@@ -200,6 +315,14 @@ const submissionColumns = [
   { name: 'status', label: 'Status', field: 'status', align: 'left' },
   { name: 'submitted_at', label: 'Submitted', field: 'submitted_at', align: 'center' },
   { name: 'action', label: 'Action', field: 'action', align: 'center' },
+]
+
+const attendanceColumns = [
+  { name: 'schedule_date', label: 'Date', field: 'schedule_date', align: 'left' },
+  { name: 'status', label: 'Status', field: 'status', align: 'left' },
+  { name: 'morning', label: 'Morning (Sched / Actual)', field: 'morning', align: 'left' },
+  { name: 'afternoon', label: 'Afternoon (Sched / Actual)', field: 'afternoon', align: 'left' },
+  { name: 'late', label: 'Late', field: 'late', align: 'center' },
 ]
 
 async function loadSubmissions() {
@@ -223,6 +346,27 @@ async function loadSubmissions() {
   }
 
   loadingSubmissions.value = false
+}
+
+async function loadAttendance() {
+  // Palitan mo ang employee.value.id kung ibang field pala ang tamang
+  // nominated_employee_id sa employeeData mo (hal. employee.value.nominated_employee_id)
+  // if (!employee.value.id) {
+  //   attendance.value = []
+  //   return
+  // }
+
+  loadingAttendance.value = true
+
+  const result = await employeeInformationStore.fetchEmployeeAttendance(employee.value.nominated_employee_id)
+
+  if (result.success) {
+    attendance.value = result.data?.attendance_summary || []
+  } else {
+    attendance.value = []
+  }
+
+  loadingAttendance.value = false
 }
 
 async function openSubmission(row) {
@@ -251,7 +395,7 @@ async function openSubmission(row) {
     activeFormData.value = result.data?.form_data || null
     activeSubmission.value = result.data?.submission || null   // 👈 idagdag
     activeFormComponent.value = component
-    
+
     showFormModal.value = true
   } else {
     console.error('Failed to load form submission:', result.message)
@@ -293,7 +437,7 @@ async function approved(row) {
       timer: 2000,
       timerProgressBar: true,
       scrollbarPadding: false,
-    
+
     });
     await loadSubmissions();
   } else {
@@ -302,7 +446,7 @@ async function approved(row) {
       text: res.message || "Unable to approve this form submission.",
       icon: "error",
       scrollbarPadding: false,
-   
+
     });
   }
 }
@@ -384,12 +528,14 @@ async function returned(row) {
 
 
 
-// Kapag nagbukas ang modal (o nagbago ang employee), i-fetch ang submissions
+// Kapag nagbukas ang modal (o nagbago ang employee), i-fetch ang parehong tabs' data
 watch(
   () => props.modelValue,
   (val) => {
     if (val) {
+      activeTab.value = 'forms'
       loadSubmissions()
+      loadAttendance()
     }
   }
 )
@@ -525,6 +671,14 @@ watch(
   overflow-y: auto;
 }
 
+.qs-tabs {
+  min-height: 32px;
+}
+
+.qs-tab-panels {
+  background: transparent;
+}
+
 .qs-content-header {
   display: flex;
   align-items: center;
@@ -566,6 +720,44 @@ watch(
 .status-approved { background: #e1f7e7; color: #087c42; }
 .status-returned { background: #fbe9e9; color: #c73f3f; }
 .status-pending { background: #fbf3df; color: #b8860b; }
+
+.qs-time-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.qs-time-scheduled {
+  color: #8a989e;
+  font-size: 10.5px;
+}
+.qs-time-actual {
+  color: #1a1a1a;
+  font-weight: 700;
+}
+.qs-time-none {
+  color: #c73f3f;
+  font-weight: 600;
+}
+
+.qs-late-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.qs-late-pill {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #fbe9e9;
+  color: #c73f3f;
+}
+.qs-ontime-pill {
+  font-size: 10px;
+  font-weight: 700;
+  color: #087c42;
+}
 
 .qs-empty {
   padding: 40px 0;
