@@ -87,17 +87,34 @@
             <template v-if="isOfficeAdmin">
               <div class="nav-section">OFFICE</div>
 
+
               <q-item clickable v-ripple :to="{ name: 'office-dashboard' }" class="nav-item"
                 active-class="nav-item-active">
                 <q-item-section avatar><q-icon name="dashboard" /></q-item-section>
                 <q-item-section>Dashboard</q-item-section>
               </q-item>
+
+
               <div class="nav-section">LEARNING</div>
               <q-item clickable v-ripple :to="{ name: 'office-events' }" class="nav-item"
                 active-class="nav-item-active">
                 <q-item-section avatar><q-icon name="event" /></q-item-section>
                 <q-item-section>Events</q-item-section>
               </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'bpm' }" class="nav-item" active-class="nav-item-active">
+                <q-item-section avatar>
+                  <q-icon name="account_tree" />
+                </q-item-section>
+
+                <q-item-section> BPM </q-item-section>
+              </q-item>
+
+               <!-- <q-item clickable v-ripple :to="{ name: 'office-events2' }" class="nav-item"
+                active-class="nav-item-active">
+                <q-item-section avatar><q-icon name="event" /></q-item-section>
+                <q-item-section>Events2</q-item-section>
+              </q-item> -->
             </template>
 
 
@@ -124,21 +141,22 @@
 
                 <q-item-section> Events </q-item-section>
               </q-item>
-              <q-item clickable v-ripple :to="{ name: 'bpm' }" class="nav-item" active-class="nav-item-active">
+
+              <!-- <q-item clickable v-ripple :to="{ name: 'bpm' }" class="nav-item" active-class="nav-item-active">
                 <q-item-section avatar>
                   <q-icon name="account_tree" />
                 </q-item-section>
 
                 <q-item-section> BPM </q-item-section>
-              </q-item>
+              </q-item> -->
 
-              <q-item clickable v-ripple :to="{ name: 'assessment' }" class="nav-item" active-class="nav-item-active">
+              <!-- <q-item clickable v-ripple :to="{ name: 'assessment' }" class="nav-item" active-class="nav-item-active">
                 <q-item-section avatar>
                   <q-icon name="assignment" />
                 </q-item-section>
 
                 <q-item-section> Assessment </q-item-section>
-              </q-item>
+              </q-item> -->
 
               <q-item clickable v-ripple :to="{ name: 'certification' }" class="nav-item"
                 active-class="nav-item-active">
@@ -215,7 +233,7 @@
                     <q-icon name="category" />
                   </q-item-section>
 
-                  <q-item-section> Category </q-item-section>
+                  <q-item-section> Competency </q-item-section>
                 </q-item>
 
                 <q-item clickable v-ripple :to="{ name: 'type' }" class="nav-item nav-subitem"
@@ -224,7 +242,7 @@
                     <q-icon name="event_note" />
                   </q-item-section>
 
-                  <q-item-section> Type </q-item-section>
+                  <q-item-section> Activity </q-item-section>
                 </q-item>
 
 
