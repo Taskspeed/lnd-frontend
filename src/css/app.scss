@@ -35,10 +35,27 @@ body {
     }
   }
 }
+// .swal2-container {
+//   z-index: 3001 !important; // Above Quasar header (2000) and drawer (3000)
+// }
+
 .swal2-container {
-  z-index: 3001 !important; // Above Quasar header (2000) and drawer (3000)
+  z-index: 99999 !important;
 }
 
+.swal2-popup {
+  pointer-events: auto !important;
+}
+
+.swal2-input,
+.swal2-textarea {
+  pointer-events: auto !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  cursor: text !important;
+  position: relative !important;
+  z-index: 100000 !important;
+}
 // =========================================================
 // GLOBAL TABLE TYPOGRAPHY — applies to ALL q-table sa buong app
 // =========================================================
@@ -64,7 +81,7 @@ body {
   align-items: center;
   padding: 4px 10px;
   border-radius: 20px;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.2px;
   text-transform: uppercase;
@@ -74,5 +91,9 @@ body {
 .status-created { color: #2b6cb0; background: #e7f0fb; }
 .status-up-coming { color: #b8860b; background: #fbf3df; }
 .status-ongoing { color: #087c42; background: #e1f7e7; }
-.status-completed { color: #5c6b73; background: #eef1f2; }
+.status-complete { color:  #2b6cb0; background: #eef1f2; }
 .status-cancelled { color: #c73f3f; background: #fbe9e9; }
+
+.status-approved { color: #087c42; background: #e1f7e7; }
+.status-disapproved { color: #c73f3f; background: #fbe9e9; }
+.status-pending  { color: #b8860b; background: #fbf3df; }
