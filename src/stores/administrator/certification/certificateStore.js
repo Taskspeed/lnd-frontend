@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { certificate_preview } from "src/service/certification/certificateService";
+import { certificate_preview,certificate_send } from "src/service/certification/certificateService";
 
 export const useCertificationStore = defineStore("certification", {
   state: () => ({
@@ -44,21 +44,21 @@ export const useCertificationStore = defineStore("certification", {
       }
     },
 
-    // async sendCertificate(nominatedEmployeeId) {
-    //   this.loading = true;
-    //   this.error = null;
+    async sendCertificate(nominatedEmployeeId) {
+      this.loading = true;
+      this.error = null;
 
-    //   try {
-    //     const response = await certificate_send(nominatedEmployeeId); // gagawin mong service function ito
-    //     return { success: true, message: response.data.message };
-    //   } catch (err) {
-    //     const message =
-    //       err.response?.data?.message || "Failed to send certificate";
-    //     this.error = message;
-    //     return { success: false, message };
-    //   } finally {
-    //     this.loading = false;
-    //   }
-    // },
+      try {
+        const response = await certificate_send(nominatedEmployeeId); // gagawin mong service function ito
+        return { success: true, message: response.data.message };
+      } catch (err) {
+        const message =
+          err.response?.data?.message || "Failed to send certificate";
+        this.error = message;
+        return { success: false, message };
+      } finally {
+        this.loading = false;
+      }
+    },
   },
 });

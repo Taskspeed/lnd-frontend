@@ -7,6 +7,6 @@ export const certificate_preview = (nominatedEmployeeId) => {
   });
 };
 
-// export const certificate_send = (nominatedEmployeeId) => {
-//     return api.post(`certification/send/${nominatedEmployeeId}`);
-// };
+export const certificate_send = (nominatedEmployeeId) => {
+    return api.post(`certification/send/${nominatedEmployeeId}`);
+};
