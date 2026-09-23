@@ -147,7 +147,7 @@
         <div class="table-empty">No nominations yet for this schedule.</div>
       </div>
       <q-table v-else flat :rows="nominatedEmployees" :columns="nominatedColumns" row-key="nominated_employee_id"
-        :rows-per-page-options="[0, 5, 10, 20, 50,]" class="detail-table">
+        :rows-per-page-options="[0, 5, 10, 20, 50,]" class="app-table detail-table">
         <template #body="props">
           <q-tr :props="props">
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
@@ -265,7 +265,7 @@
     <!-- import -->
     <EmployeeInformationModal v-model="showEmployeeModal" :employee-data="EmployeeInformation"
       :loading="loadingEmployeeInfo" @view-submission="handleViewSubmission" />
-      
+
   </q-page>
 </template>
 <script>
@@ -528,8 +528,9 @@ export default defineComponent({
 .back-btn {
   padding: 0;
   margin-bottom: 6px;
-  color: #718089;
-  font-size: 11px;
+  color: #060707;
+  font-size: 14px;
+  font-weight: 410;
 }
 
 .page-header h5 {
@@ -842,22 +843,6 @@ export default defineComponent({
 .detail-table {
   box-shadow: none;
   padding: 0 12px;
-}
-
-.detail-table :deep(th) {
-  height: 44px;
-  /* color: #819097; */
-  background: #ffffff;
-  /* font-size: 9px; */
-  /* font-weight: 700; */
-  letter-spacing: 0.3px;
-}
-
-.detail-table :deep(td) {
-  height: 56px;
-  /* color: #425b68; */
-  border-color: #edf1ef;
-  /* font-size: 11px; */
 }
 
 /* =========================================================

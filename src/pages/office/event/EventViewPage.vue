@@ -138,7 +138,7 @@
         </div>
 
         <q-table flat :rows="employeeTags" :columns="employeeTagColumns" row-key="id"
-          :rows-per-page-options="[0, 5, 10, 20, 50, 100]" class="detail-table">
+          :rows-per-page-options="[0, 5, 10, 20, 50, 100]" class="app-table detail-table">
           <template #no-data>
             <div class="table-empty">No tagged employees.</div>
           </template>
@@ -164,7 +164,7 @@
         <div class="table-empty">No nominations yet for this schedule.</div>
       </div>
       <q-table v-else flat :rows="nominatedEmployees" :columns="nominatedColumns" row-key="nominated_employee_id"
-        :rows-per-page-options="[0, 10, 20, 50, 100]" class="detail-table">
+        :rows-per-page-options="[0, 10, 20, 50, 100]" class="app-table detail-table">
         <template #body="props">
           <q-tr :props="props">
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
@@ -180,17 +180,14 @@
                 </q-badge>
               </template> -->
               <template v-else-if="col.name === 'nominate_status'">
-              <q-badge
-                class="status-badge"
-                :class="{
+                <q-badge class="status-badge" :class="{
                   'status-approved': props.row.nominate_status === 'Approved',
                   'status-disapproved': props.row.nominate_status === 'Disapproved',
                   'status-pending': props.row.nominate_status === 'Pending'
-                }"
-              >
-                {{ props.row.nominate_status }}
-              </q-badge>
-            </template>
+                }">
+                  {{ props.row.nominate_status }}
+                </q-badge>
+              </template>
               <!-- ✅ NEW: truncated reason with tooltip -->
               <template v-else-if="col.name === 'nominate_reason'">
                 <span class="reason-cell">
@@ -248,8 +245,8 @@
               <template #prepend><q-icon name="search" /></template>
             </q-input>
 
-            <q-table flat bordered class="offices-table" :rows="filteredNominationEmployees" :columns="employeeColumns"
-              row-key="ControlNo" :loading="employeeStore.loading" selection="multiple"
+            <q-table flat bordered class="app-table offices-table" :rows="filteredNominationEmployees"
+              :columns="employeeColumns" row-key="ControlNo" :loading="employeeStore.loading" selection="multiple"
               v-model:selected="selectedNominees" :rows-per-page-options="[5, 10, 25, 50]">
               <template #body="props">
                 <q-tr :props="props" :class="{ 'trained-row': props.row.isAlreadyTrained }">
@@ -291,7 +288,7 @@
             </div>
 
             <q-table v-else flat bordered :rows="selectedNominees" :columns="reasonColumns" row-key="ControlNo"
-              :rows-per-page-options="[0, 5, 10, 20, 50, 100]" class="offices-table">
+              :rows-per-page-options="[0, 5, 10, 20, 50, 100]" class="app-table offices-table">
               <template #body="props">
                 <q-tr :props="props">
                   <q-td v-for="col in props.cols" :key="col.name" :props="props">
@@ -311,7 +308,7 @@
           <!-- STEP 3: CONFIRMATION -->
           <q-step :name="3" title="Confirmation" icon="fact_check">
             <q-table flat bordered :rows="confirmationRows" :columns="confirmationColumns" row-key="control_no"
-              :rows-per-page-options="[0, 5, 10, 20, 50, 100]" class="offices-table" />
+              :rows-per-page-options="[0, 5, 10, 20, 50, 100]" class="app-table offices-table" />
           </q-step>
 
           <template #navigation>
@@ -359,8 +356,9 @@
           <div class="section-label" v-if="viewedEmployee?.x_training?.length">
             Training History
           </div>
-          <q-table v-if="viewedEmployee?.x_training?.length" flat bordered dense :rows="viewedEmployee.x_training"
-            :columns="trainingColumns" row-key="training" hide-pagination :rows-per-page-options="[0]" />
+          <q-table v-if="viewedEmployee?.x_training?.length" flat bordered dense class="app-table"
+            :rows="viewedEmployee.x_training" :columns="trainingColumns" row-key="training" hide-pagination
+            :rows-per-page-options="[0]" />
           <div v-else class="table-empty">No training history yet.</div>
         </q-card-section>
 
@@ -412,8 +410,8 @@
         <q-separator />
 
         <q-card-section>
-           <div>Reason</div>
-          <q-input v-model="editReasonText" outlined type="textarea" autogrow dense 
+          <div>Reason</div>
+          <q-input v-model="editReasonText" outlined type="textarea" autogrow dense
             placeholder="Reason for nominating..." :rules="[val => !!val?.trim() || 'Reason is required']" />
         </q-card-section>
 
@@ -438,7 +436,7 @@ import Swal from "sweetalert2";
 
 export default defineComponent({
   name: "EventViewPage",
-  components: { LoadingState }, 
+  components: { LoadingState },
 
   setup() {
     const officeEventStore = useOfficeEventStore();
@@ -1162,22 +1160,6 @@ export default defineComponent({
 .detail-table {
   box-shadow: none;
   padding: 0 12px;
-}
-
-.detail-table :deep(th) {
-  height: 44px;
-  /* color: #819097; */
-  background: #ffffff;
-  /* font-size: 9px; */
-  /* font-weight: 700; */
-  letter-spacing: 0.3px;
-}
-
-.detail-table :deep(td) {
-  height: 56px;
-  /* color: #425b68; */
-  border-color: #edf1ef;
-  /* font-size: 11px; */
 }
 
 /* =========================================================

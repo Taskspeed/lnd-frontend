@@ -33,13 +33,13 @@
       ==================================================== -->
             <div class="table-wrapper">
                 <q-table flat :rows="certificateStore.list" :columns="columns" row-key="ControlNo"
-                    v-model:pagination="pagination" :loading="certificateStore.loading" class="submission-table"
-                    @request="onRequest">
+                    v-model:pagination="pagination" :loading="certificateStore.loading"
+                    class="app-table submission-table" @request="onRequest">
                     <!-- EMPLOYEE NAME -->
                     <template #body-cell-name="props">
                         <q-td :props="props">
-                            <div class="employee-name">{{ props.row.name }}</div>
-                            <div class="employee-meta">{{ props.row.ControlNo }}</div>
+                            <div class="app-table-cell-title">{{ props.row.name }}</div>
+                            <!-- <div class="app-table-cell-meta">{{ props.row.ControlNo }}</div> -->
                         </q-td>
                     </template>
                     <!-- ACTIONS -->
@@ -59,7 +59,7 @@
 
                     <!-- EMPTY STATE -->
                     <template #no-data>
-                        <div class="table-empty">No employees found.</div>
+                        <div class="app-table-empty">No employees found.</div>
                     </template>
                 </q-table>
             </div>
@@ -273,45 +273,6 @@ export default defineComponent({
 
 .submission-table {
     box-shadow: none;
-}
-
-.submission-table :deep(th) {
-    height: 48px;
-    color: #819097;
-    background: #ffffff;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-}
-
-.submission-table :deep(td) {
-    height: 68px;
-    color: #425b68;
-    border-color: #edf1ef;
-    font-size: 11px;
-}
-
-.submission-table :deep(tbody tr:hover) {
-    background: #fafffb;
-}
-
-.table-empty {
-    padding: 30px 0;
-    text-align: center;
-    color: #8a989e;
-    font-size: 12px;
-}
-
-.employee-name {
-    color: #19354a;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.employee-meta {
-    margin-top: 3px;
-    color: #8a989e;
-    font-size: 9px;
 }
 
 @media (max-width: 900px) {

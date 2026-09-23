@@ -80,10 +80,10 @@
             <!-- Schedule Table using q-table -->
             <div class="schedule-table-container">
               <q-table :rows="event.schedule || []" :columns="scheduleColumns" row-key="scheduleId"
-                :rows-per-page-options="[5, 10, 25]" v-model:pagination="schedulePagination" class="schedule-table" flat
-                bordered>
+                :rows-per-page-options="[5, 10, 25]" v-model:pagination="schedulePagination"
+                class="app-table schedule-table" flat bordered>
 
-                  <!-- venue -->
+                <!-- venue -->
                 <template #body-cell-venue_name="props">
                   <q-td :props="props">
                     <div class="schedule-date-cell">
@@ -113,14 +113,14 @@
                   </q-td>
                 </template>
 
-                 <template #body-cell-status="props">
+                <template #body-cell-status="props">
                   <q-td :props="props">
-                     <div class="status-badge" :class="'status-' + props.row.computedStatus">
-                {{ props.row.computedStatus }}
-                     </div>
+                    <div class="status-badge" :class="'status-' + props.row.computedStatus">
+                      {{ props.row.computedStatus }}
+                    </div>
                   </q-td>
-                  
-            <!-- <q-td key="computedStatus" :props="props">
+
+                  <!-- <q-td key="computedStatus" :props="props">
               <span class="status-badge" :class="'status-' + props.row.computedStatus">
                 {{ props.row.computedStatus }}
               </span>
@@ -280,7 +280,7 @@ export default defineComponent({
         sortable: true,
         style: "min-width: 120px;",
       },
-        {
+      {
         name: "status",
         label: "Status",
         field: "computedStatus",
@@ -410,10 +410,10 @@ export default defineComponent({
             afternoon_out: to24HourTime(schedule.afternoon_out),
           };
         }),
-  
+
       };
     }
-  
+
     async function editSchedule(item) {
       eventStore.clearError();
 
@@ -709,29 +709,22 @@ export default defineComponent({
 .schedule-table :deep(.q-table th) {
   color: #2b2e31;
   background: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
 }
 
 .schedule-table :deep(.q-table td) {
   padding: 8px 12px;
-  font-size: 12px;
-  height: 68px;
 }
 
 .schedule-date-cell {
   display: flex;
   align-items: center;
   color: #0b0d0e;
-   font-size: 11px;
-  font-weight: 500;
+  font-size: var(--app-table-data-font-size);
 }
 
 .schedule-hours-cell {
   color: #0b0d0e;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: var(--app-table-data-font-size);
   text-align: center;
 }
 
@@ -813,11 +806,10 @@ export default defineComponent({
   .schedule-table :deep(.q-table td),
   .schedule-table :deep(.q-table th) {
     padding: 4px 8px;
-    font-size: 11px;
   }
 
   .schedule-date-cell {
-    font-size: 11px;
+    font-size: var(--app-table-data-font-size);
   }
 }
 

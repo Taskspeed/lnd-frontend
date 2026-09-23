@@ -5,9 +5,9 @@
     ====================================================== -->
     <section class="page-header">
       <div>
-        <h5>{{ "Event Management list" }}</h5>
+        <h5> Event Management</h5>
 
-        <p>{{ "Manage learning and development events and their schedules." }}</p>
+        <p>Manage learning and development events and their schedules.</p>
       </div>
 
       <q-btn unelevated no-caps icon="add" label="Add Event" class="add-event-btn" @click="openAddEvent" />

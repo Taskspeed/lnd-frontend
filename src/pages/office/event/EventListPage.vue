@@ -36,24 +36,24 @@
            TABLE
       ==================================================== -->
       <q-table flat :rows="filteredRows" :columns="columns" row-key="scheduleId" :loading="officeEventStore.loading"
-        v-model:pagination="pagination" class="events-table">
+        v-model:pagination="pagination" class="app-table events-table">
         <!-- Body rows -->
         <template #body="props">
           <q-tr :props="props" class="event-row">
             <q-td key="title_name" :props="props">
-              <div class="event-item">{{ props.row.title_name }}</div>
+              <div class="app-table-cell-title">{{ props.row.title_name }}</div>
             </q-td>
             <q-td key="dateRange" :props="props">
 
-              <div class="event-item"> {{ props.row.dateRange }}</div>
+              <div class="app-table-cell-title"> {{ props.row.dateRange }}</div>
             </q-td>
 
             <q-td key="hours" :props="props">
-              <div class="event-item"> {{ props.row.hours }}</div>
+              <div class="app-table-cell-title"> {{ props.row.hours }}</div>
 
             </q-td>
             <q-td key="category_name" :props="props">
-              <div class="event-item"> {{ props.row.category_name }}</div>
+              <div class="app-table-cell-title"> {{ props.row.category_name }}</div>
 
             </q-td>
 
@@ -73,7 +73,7 @@
 
         <!-- Empty state -->
         <template #no-data>
-          <div class="table-empty">No events found.</div>
+          <div class="app-table-empty">No events found.</div>
         </template>
       </q-table>
     </q-card>
@@ -327,46 +327,7 @@ export default defineComponent({
    TABLE
 ========================================================= */
 
-.events-table {
-  font-size: 12px;
-    color: #000000;
-    
-}
-
-.events-table :deep(thead th) {
-height: 48px;
-
-  color: #2b2e31;
-
-  background: #ffffff;
-
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-}
-
-.events-table :deep(tbody td) {
-  color: #425b68;
-  font-size: 12px;
-    height: 68px;
-
-}
-
-.event-row {
-  transition: background-color 0.15s ease;
-}
-
-.event-row:hover {
-  background: #fafcfa;
-}
-
-.event-title {
-  color: #070808;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.35;
-
-}
+.event-row {}
 
 /* =========================================================
    ACTION / VIEW BUTTON
@@ -376,17 +337,6 @@ height: 48px;
   color: #2b6cb0;
   font-size: 11px;
   font-weight: 650;
-}
-
-/* =========================================================
-   EMPTY STATE
-========================================================= */
-
-.table-empty {
-  padding: 30px 0;
-  text-align: center;
-  color: #8a989e;
-  font-size: 12px;
 }
 
 /* =========================================================
@@ -429,14 +379,6 @@ height: 48px;
   color: #c73f3f;
   background: #fbe9e9;
 } */
-
-.event-item {
-  color: #0b0d0e;
-
-  font-size: 11px;
-  font-weight: 500;
-
-}
 
 /* =========================================================
    RESPONSIVE

@@ -39,13 +39,13 @@
       ==================================================== -->
             <div class="table-wrapper">
                 <q-table flat :rows="submissionStore.list" :columns="columns" row-key="control_no"
-                    v-model:pagination="pagination" :loading="submissionStore.loading" class="submission-table"
-                    @request="onRequest">
+                    v-model:pagination="pagination" :loading="submissionStore.loading"
+                    class="app-table submission-table" @request="onRequest">
                     <!-- FULL NAME -->
                     <template #body-cell-full_name="props">
                         <q-td :props="props">
-                            <div class="employee-name">{{ props.row.full_name }}</div>
-                            <div class="employee-meta">{{ props.row.control_no }}</div>
+                            <div class="app-table-cell-title">{{ props.row.full_name }}</div>
+                            <!-- <div class="app-table-cell-meta">{{ props.row.control_no }}</div> -->
                         </q-td>
                     </template>
 
@@ -72,11 +72,15 @@
                         <q-td :props="props">
                             <div class="action-buttons">
                                 <q-btn flat dense round icon="visibility" color="primary"
-                                    @click.stop="viewEmployeeInformation(props.row)">
+                                    :loading="isViewLoading(props.row.nominated_employee_id)"
+                                    :disable="isAnyViewLoading()" @click.stop="viewEmployeeInformation(props.row)">
                                     <q-tooltip>View Details</q-tooltip>
                                 </q-btn>
+
+
                                 <q-btn flat dense round icon="workspace_premium" color="blue"
-                                    @click.stop="certificatePreview(props.row)">
+                                    :loading="isPreviewLoading(props.row.nominated_employee_id)"
+                                    :disable="isAnyPreviewLoading()" @click.stop="certificatePreview(props.row)">
                                     <q-tooltip>Preview</q-tooltip>
                                 </q-btn>
                             </div>
@@ -85,7 +89,7 @@
 
                     <!-- EMPTY STATE -->
                     <template #no-data>
-                        <div class="table-empty">No submissions found.</div>
+                        <div class="app-table-empty">No submissions found.</div>
                     </template>
                 </q-table>
             </div>
@@ -140,6 +144,7 @@ import { useEmployeeSubmissionStore } from "src/stores/administrator/employee/em
 import { useEmployeeInformationStore } from "src/stores/administrator/employee/employeeInformationStore";
 import EmployeeInformationModal from "src/components/employee/EmployeeInformationModal.vue";
 import { useCertificationStore } from "src/stores/administrator/certification/certificateStore";
+import { useRowLoading } from "src/composables/useRowLoading";
 
 export default defineComponent({
     name: "EmployeeSubmissionPage",
@@ -149,6 +154,8 @@ export default defineComponent({
         const submissionStore = useEmployeeSubmissionStore();
         const employeeInformationStore = useEmployeeInformationStore();
         const certificationStore = useCertificationStore();
+        const { isLoading: isViewLoading, isAnyLoading: isAnyViewLoading, run: runView } = useRowLoading();
+        const { isLoading: isPreviewLoading, isAnyLoading: isAnyPreviewLoading, run: runPreview } = useRowLoading();
         const search = ref("");
 
         // ---------------------------------------------------------------
@@ -224,23 +231,25 @@ export default defineComponent({
         const loadingEmployeeInfo = ref(false);
 
         async function viewEmployeeInformation(row) {
-            loadingEmployeeInfo.value = true;
+            // loadingEmployeeInfo.value = true;
+            return runView(row.nominated_employee_id, async () => {
+                const result = await employeeInformationStore.fetchEmployeeInformation(row.nominated_employee_id);
 
-            const result = await employeeInformationStore.fetchEmployeeInformation(row.nominated_employee_id);
+                loadingEmployeeInfo.value = false;
 
-            loadingEmployeeInfo.value = false;
+                if (result.success) {
+                    EmployeeInformation.value = result.data;
+                    showEmployeeModal.value = true;
+                } else {
+                    Swal.fire({
+                        title: "Failed",
+                        text: result.message || "Unable to fetch employee information.",
+                        icon: "error",
+                        scrollbarPadding: false,
+                    });
+                }
+            })
 
-            if (result.success) {
-                EmployeeInformation.value = result.data;
-                showEmployeeModal.value = true;
-            } else {
-                Swal.fire({
-                    title: "Failed",
-                    text: result.message || "Unable to fetch employee information.",
-                    icon: "error",
-                    scrollbarPadding: false,
-                });
-            }
         }
 
         function handleViewSubmission(row) {
@@ -262,29 +271,33 @@ export default defineComponent({
 
 
         async function certificatePreview(row) {
-            previewingRow.value = row;       // 👈 itago muna
+            previewingRow.value = row;
             showCertificateModal.value = true;
-            loadingCertificate.value = true;
+            // loadingCertificate.value = true;
 
-            const result = await certificationStore.fetchCertificate(row.nominated_employee_id);
+            return runPreview(row.nominated_employee_id, async () => {
+                loadingCertificate.value = true;
+                const result = await certificationStore.fetchCertificate(row.nominated_employee_id);
 
-            loadingCertificate.value = false;
+                loadingCertificate.value = false;
 
-            if (result.success) {
-                const rawUrl = window.URL.createObjectURL(
-                    new Blob([result.blob], { type: "application/pdf" })
-                );
-                certificateUrl.value = `${rawUrl}#zoom=60`;   // 👈 idagdag ang fragment
-            }
-            else {
-                showCertificateModal.value = false;
-                Swal.fire({
-                    title: "Failed",
-                    text: result.message || "Unable to preview certificate.",
-                    icon: "error",
-                    scrollbarPadding: false,
-                });
-            }
+                if (result.success) {
+                    const rawUrl = window.URL.createObjectURL(
+                        new Blob([result.blob], { type: "application/pdf" })
+                    );
+                    certificateUrl.value = `${rawUrl}#zoom=60`;   // 👈 idagdag ang fragment
+                }
+                else {
+                    showCertificateModal.value = false;
+                    Swal.fire({
+                        title: "Failed",
+                        text: result.message || "Unable to preview certificate.",
+                        icon: "error",
+                        scrollbarPadding: false,
+                    });
+                }
+            });
+
         }
 
         async function sendCertificate() {
@@ -381,8 +394,15 @@ export default defineComponent({
             loadingCertificate,
             closeCertificatePreview,
 
-            sendCertificate,        // 👈 idagdag
-            sendingCertificate,     // 👈 idagdag
+
+            sendCertificate,
+            sendingCertificate,
+
+            isViewLoading,
+            isAnyViewLoading,
+            isPreviewLoading,
+            isAnyPreviewLoading,
+
         };
     },
 });
@@ -496,69 +516,12 @@ export default defineComponent({
     box-shadow: none;
 }
 
-.submission-table :deep(th) {
-    height: 48px;
-
-    color: #819097;
-
-    background: #ffffff;
-
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-}
-
-.submission-table :deep(td) {
-    height: 68px;
-
-    color: #425b68;
-
-    border-color: #edf1ef;
-
-    font-size: 11px;
-}
-
-.submission-table :deep(tbody tr:hover) {
-    background: #fafffb;
-}
-
-.table-empty {
-    padding: 30px 0;
-
-    text-align: center;
-
-    color: #8a989e;
-
-    font-size: 12px;
-}
-
-/* =========================================================
-   EMPLOYEE NAME CELL
-========================================================= */
-
-.employee-name {
-    color: #19354a;
-
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.employee-meta {
-    margin-top: 3px;
-
-    color: #8a989e;
-
-    font-size: 9px;
-}
-
 /* =========================================================
    APPROVAL COUNT
 ========================================================= */
 
 .approval-count {
     color: #405967;
-
-    font-size: 11px;
     font-weight: 700;
 }
 
