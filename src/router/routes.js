@@ -57,6 +57,13 @@ const routes = [
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
 
+         {
+        path: "certification",
+        name: "certification",
+        component: () => import("pages/administrator/certification/CertificateListPage.vue"),
+        meta: { requiresAuth: true, roles: ["hr_admin"] },
+      },
+
 
       {
         path: "library",
@@ -118,6 +125,7 @@ const routes = [
         redirect: "dashboard",
       },
 
+
       // office_admin
       {
         path: "office/events",
@@ -126,17 +134,17 @@ const routes = [
         props: { officeView: true },
         meta: { requiresAuth: true, roles: ["office_admin"] },
       },
-        {
-        path: "office/events2",
-        name: "office-events2",
-        component: () => import("pages/CreateEventPage.vue"),
-        props: { officeView: true },
-        meta: { requiresAuth: true, roles: ["office_admin"] },
-      },
+      //   {
+      //   path: "office/events2",
+      //   name: "office-events2",
+      //   component: () => import("pages/CreateEventPage.vue"),
+      //   props: { officeView: true },
+      //   meta: { requiresAuth: true, roles: ["office_admin"] },
+      // },
       {
         path: "office/dashboard",
         name: "office-dashboard",
-        component: () => import("pages/DashboardPage.vue"),
+        component: () => import("pages/office/DashboardPage.vue"),
         props: { officeView: true },
         meta: { requiresAuth: true, roles: ["office_admin"] },
       },
