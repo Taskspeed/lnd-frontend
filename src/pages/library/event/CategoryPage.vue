@@ -10,7 +10,8 @@
                 <!-- <p>Manage learning and development Categorys and their schedules.</p> -->
             </div>
 
-            <q-btn unelevated no-caps icon="add" label="Add Compentecy" class="add-Category-btn" @click="openAddCategory" />
+            <q-btn unelevated no-caps icon="add" label="Add Compentecy" class="add-Category-btn"
+                @click="openAddCategory" />
         </section>
 
         <!-- =====================================================
@@ -21,8 +22,8 @@
            FILTERS
       ==================================================== -->
             <div class="filter-section">
-                <q-input v-model="search" outlined dense clearable
-                    placeholder="Search by compentecy" class="search-input">
+                <q-input v-model="search" outlined dense clearable placeholder="Search by compentecy"
+                    class="search-input">
                     <template #prepend>
                         <q-icon name="search" />
                     </template>
@@ -36,12 +37,11 @@
       ==================================================== -->
             <div class="table-wrapper">
                 <q-table flat :rows="filteredRows" :columns="columns" row-key="Category_id" hide-pagination
-                    :rows-per-page-options="[0]" :loading="CategoryStore.loading" class="Categorys-table">
+                    :rows-per-page-options="[0]" :loading="CategoryStore.loading" class="app-table">
                     <!-- Category NAME -->
                     <template #body-cell-Category="props">
                         <q-td :props="props">
-                            <div class="Category-name">{{ props.row.category_name }}</div>
-                        
+                            <div class="app-table-cell-title">{{ props.row.category_name }}</div>
                         </q-td>
                     </template>
 
@@ -78,7 +78,7 @@
 
                     <!-- EMPTY STATE -->
                     <template #no-data>
-                        <div class="table-empty">No Categorys found.</div>
+                        <div class="app-table-empty">No Categorys found.</div>
                     </template>
                 </q-table>
             </div>
@@ -124,7 +124,8 @@
                     <div class="section-label">Compentecy Details</div>
 
                     <div class="form-grid">
-                        <q-input v-model="editForm.category_name" outlined dense label="Compentecy Name" class="col-span-2" />
+                        <q-input v-model="editForm.category_name" outlined dense label="Compentecy Name"
+                            class="col-span-2" />
                     </div>
                 </q-card-section>
 
@@ -158,8 +159,8 @@
                     <div class="section-label">Compentecy Details</div>
 
                     <div class="form-grid">
-                        <q-input :model-value="viewingCategory?.category_name" outlined dense readonly label="Compentecy Name"
-                            class="col-span-2" />
+                        <q-input :model-value="viewingCategory?.category_name" outlined dense readonly
+                            label="Compentecy Name" class="col-span-2" />
 
                         <q-input :model-value="viewingCategory?.created_at" outlined dense readonly label="Created At"
                             class="col-span-2" />
@@ -217,15 +218,16 @@
                     <div class="section-label">Compentecy Details</div>
 
                     <div class="form-grid">
-                        <q-input v-model="addForm.category_name" outlined dense label="Compentecy Name" class="col-span-2" />
+                        <q-input v-model="addForm.category_name" outlined dense label="Compentecy Name"
+                            class="col-span-2" />
                     </div>
                 </q-card-section>
 
                 <q-card-actions align="right" class="dialog-actions">
                     <q-btn flat no-caps label="Cancel" class="cancel-btn" v-close-popup />
 
-                    <q-btn unelevated no-caps label="Create Compentecy" class="save-btn" :loading="CategoryStore.loading"
-                        @click="createCategorySubmit" />
+                    <q-btn unelevated no-caps label="Create Compentecy" class="save-btn"
+                        :loading="CategoryStore.loading" @click="createCategorySubmit" />
                 </q-card-actions>
             </q-card>
         </q-dialog>
@@ -249,7 +251,7 @@ export default defineComponent({
         // Table
         // ---------------------------------------------------------------
         const columns = [
-            { name: "categoryId", label: "id", field: "categoryId", align: "left" },
+            // { name: "categoryId", label: "id", field: "categoryId", align: "left" },
             {
                 name: "category",
                 label: "Competency",
@@ -559,64 +561,6 @@ export default defineComponent({
     padding: 0 12px;
 }
 
-.Categorys-table {
-    box-shadow: none;
-}
-
-.Categorys-table :deep(th) {
-    height: 48px;
-
-    color: #819097;
-
-    background: #ffffff;
-
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-}
-
-.Categorys-table :deep(td) {
-    height: 68px;
-
-    color: #425b68;
-
-    border-color: #edf1ef;
-
-    font-size: 11px;
-}
-
-.Categorys-table :deep(tbody tr:hover) {
-    background: #fafffb;
-}
-
-.table-empty {
-    padding: 30px 0;
-
-    text-align: center;
-
-    color: #8a989e;
-
-    font-size: 12px;
-}
-
-/* =========================================================
-   Category NAME CELL
-========================================================= */
-
-.Category-name {
-    color: #19354a;
-
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.Category-meta {
-    margin-top: 3px;
-
-    color: #8a989e;
-
-    font-size: 9px;
-}
 
 /* =========================================================
    STATUS BADGE
@@ -880,7 +824,7 @@ export default defineComponent({
         overflow-x: auto;
     }
 
-    .Categorys-table {
+    .app-table {
         min-width: 700px;
     }
 

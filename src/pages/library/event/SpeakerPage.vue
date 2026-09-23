@@ -36,12 +36,12 @@
       ==================================================== -->
             <div class="table-wrapper">
                 <q-table flat :rows="filteredRows" :columns="columns" row-key="Speaker_id" hide-pagination
-                    :rows-per-page-options="[0]" :loading="SpeakerStore.loading" class="Speakers-table">
+                    :rows-per-page-options="[0]" :loading="SpeakerStore.loading" class="app-table">
                     <!-- Speaker NAME -->
                     <template #body-cell-Speaker="props">
                         <q-td :props="props">
-                            <div class="Speaker-name">{{ props.row.speaker_name }}</div>
-                        
+                            <div class="app-table-cell-title">{{ props.row.speaker_name }}</div>
+
                         </q-td>
                     </template>
 
@@ -78,7 +78,7 @@
 
                     <!-- EMPTY STATE -->
                     <template #no-data>
-                        <div class="table-empty">No Speakers found.</div>
+                        <div class="app-table-empty">No Speakers found.</div>
                     </template>
                 </q-table>
             </div>
@@ -124,7 +124,8 @@
                     <div class="section-label">Speaker Details</div>
 
                     <div class="form-grid">
-                        <q-input v-model="editForm.speaker_name" outlined dense label="Speaker Name" class="col-span-2" />
+                        <q-input v-model="editForm.speaker_name" outlined dense label="Speaker Name"
+                            class="col-span-2" />
                     </div>
                 </q-card-section>
 
@@ -158,8 +159,8 @@
                     <div class="section-label">Speaker Details</div>
 
                     <div class="form-grid">
-                        <q-input :model-value="viewingSpeaker?.speaker_name" outlined dense readonly label="Speaker Name"
-                            class="col-span-2" />
+                        <q-input :model-value="viewingSpeaker?.speaker_name" outlined dense readonly
+                            label="Speaker Name" class="col-span-2" />
 
                         <q-input :model-value="viewingSpeaker?.created_at" outlined dense readonly label="Created At"
                             class="col-span-2" />
@@ -217,7 +218,8 @@
                     <div class="section-label">Speaker Details</div>
 
                     <div class="form-grid">
-                        <q-input v-model="addForm.speaker_name" outlined dense label="Speaker Name" class="col-span-2" />
+                        <q-input v-model="addForm.speaker_name" outlined dense label="Speaker Name"
+                            class="col-span-2" />
                     </div>
                 </q-card-section>
 
@@ -559,65 +561,6 @@ export default defineComponent({
     padding: 0 12px;
 }
 
-.Speakers-table {
-    box-shadow: none;
-}
-
-.Speakers-table :deep(th) {
-    height: 48px;
-
-    color: #819097;
-
-    background: #ffffff;
-
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-}
-
-.Speakers-table :deep(td) {
-    height: 68px;
-
-    color: #425b68;
-
-    border-color: #edf1ef;
-
-    font-size: 11px;
-}
-
-.Speakers-table :deep(tbody tr:hover) {
-    background: #fafffb;
-}
-
-.table-empty {
-    padding: 30px 0;
-
-    text-align: center;
-
-    color: #8a989e;
-
-    font-size: 12px;
-}
-
-/* =========================================================
-   Speaker NAME CELL
-========================================================= */
-
-.Speaker-name {
-    color: #19354a;
-
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.Speaker-meta {
-    margin-top: 3px;
-
-    color: #8a989e;
-
-    font-size: 9px;
-}
-
 /* =========================================================
    STATUS BADGE
 ========================================================= */
@@ -880,7 +823,7 @@ export default defineComponent({
         overflow-x: auto;
     }
 
-    .Speakers-table {
+    .app-table {
         min-width: 700px;
     }
 

@@ -21,8 +21,7 @@
            FILTERS
       ==================================================== -->
             <div class="filter-section">
-                <q-input v-model="search" outlined dense clearable
-                    placeholder="Search" class="search-input">
+                <q-input v-model="search" outlined dense clearable placeholder="Search" class="search-input">
                     <template #prepend>
                         <q-icon name="search" />
                     </template>
@@ -36,12 +35,12 @@
       ==================================================== -->
             <div class="table-wrapper">
                 <q-table flat :rows="filteredRows" :columns="columns" row-key="Type_id" hide-pagination
-                    :rows-per-page-options="[0]" :loading="TypeStore.loading" class="Types-table">
+                    :rows-per-page-options="[0]" :loading="TypeStore.loading" class="app-table">
                     <!-- Type NAME -->
                     <template #body-cell-Type="props">
                         <q-td :props="props">
-                            <div class="Type-name">{{ props.row.type_name }}</div>
-                        
+                            <div class="app-table-cell-title">{{ props.row.type_name }}</div>
+
                         </q-td>
                     </template>
 
@@ -78,7 +77,7 @@
 
                     <!-- EMPTY STATE -->
                     <template #no-data>
-                        <div class="table-empty">No Activity found.</div>
+                        <div class="app-table-empty">No Activity found.</div>
                     </template>
                 </q-table>
             </div>
@@ -247,7 +246,7 @@ export default defineComponent({
         // Table
         // ---------------------------------------------------------------
         const columns = [
-            { name: "typeId", label: "id", field: "typeId", align: "left" },
+            // { name: "typeId", label: "id", field: "typeId", align: "left" },
             {
                 name: "type",
                 label: "Activity",
@@ -557,65 +556,6 @@ export default defineComponent({
     padding: 0 12px;
 }
 
-.Types-table {
-    box-shadow: none;
-}
-
-.Types-table :deep(th) {
-    height: 48px;
-
-    color: #819097;
-
-    background: #ffffff;
-
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-}
-
-.Types-table :deep(td) {
-    height: 68px;
-
-    color: #425b68;
-
-    border-color: #edf1ef;
-
-    font-size: 11px;
-}
-
-.Types-table :deep(tbody tr:hover) {
-    background: #fafffb;
-}
-
-.table-empty {
-    padding: 30px 0;
-
-    text-align: center;
-
-    color: #8a989e;
-
-    font-size: 12px;
-}
-
-/* =========================================================
-   Type NAME CELL
-========================================================= */
-
-.Type-name {
-    color: #19354a;
-
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.Type-meta {
-    margin-top: 3px;
-
-    color: #8a989e;
-
-    font-size: 9px;
-}
-
 /* =========================================================
    STATUS BADGE
 ========================================================= */
@@ -878,7 +818,7 @@ export default defineComponent({
         overflow-x: auto;
     }
 
-    .Types-table {
+    .app-table {
         min-width: 700px;
     }
 

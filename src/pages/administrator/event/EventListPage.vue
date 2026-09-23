@@ -36,18 +36,18 @@
       ==================================================== -->
       <div class="table-wrapper">
         <q-table flat :rows="filteredRows" :columns="columns" row-key="event_id"
-          :rows-per-page-options="[0, 2, 10, 40, 100]" :loading="eventStore.loading" class="events-table">
+          :rows-per-page-options="[0, 2, 10, 40, 100]" :loading="eventStore.loading" class="app-table">
           <!-- EVENT NAME -->
           <template #body-cell-event="props">
             <q-td :props="props">
-              <div class="event-name">{{ props.row.title_name }}</div>
+              <div class="app-table-cell-title">{{ props.row.title_name }}</div>
               <!-- <div class="event-meta">{{ props.row.type_name || "—" }} need to change LND type</div> -->
             </q-td>
           </template>
 
           <template #body-cell-schedule="props">
             <q-td :props="props">
-              <span class="event-name">{{ props.row.latest_schedule }}</span>
+              <span class="app-table-cell-title">{{ props.row.latest_schedule }}</span>
             </q-td>
           </template>
 
@@ -83,7 +83,7 @@
 
           <!-- EMPTY STATE -->
           <template #no-data>
-            <div class="table-empty">No events found.</div>
+            <div class="app-table-empty">No events found.</div>
           </template>
         </q-table>
       </div>
@@ -589,60 +589,6 @@ export default defineComponent({
   padding: 0 12px;
 }
 
-.events-table {
-  box-shadow: none;
-}
-
-.events-table :deep(th) {
-  height: 48px;
-  color: #2b2e31;
-  background: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-}
-
-.events-table :deep(td) {
-  height: 68px;
-  color: #425b68;
-  border-color: #edf1ef;
-  font-size: 11px;
-}
-
-.events-table :deep(tbody tr:hover) {
-  background: #fafffb;
-}
-
-.table-empty {
-  padding: 30px 0;
-
-  text-align: center;
-
-  color: #8a989e;
-
-  font-size: 12px;
-}
-
-/* =========================================================
-   EVENT NAME CELL
-========================================================= */
-
-.event-name {
-  color: #0b0d0e;
-
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.event-meta {
-  margin-top: 3px;
-
-  color: #8a989e;
-
-  font-size: 9px;
-}
-
-
 /* =========================================================
    ACTIONS
 ========================================================= */
@@ -866,7 +812,7 @@ export default defineComponent({
     overflow-x: auto;
   }
 
-  .events-table {
+  .app-table {
     min-width: 700px;
   }
 

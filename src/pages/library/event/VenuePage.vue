@@ -36,12 +36,12 @@
       ==================================================== -->
             <div class="table-wrapper">
                 <q-table flat :rows="filteredRows" :columns="columns" row-key="Venue_id" hide-pagination
-                    :rows-per-page-options="[0]" :loading="VenueStore.loading" class="Venues-table">
+                    :rows-per-page-options="[0]" :loading="VenueStore.loading" class="app-table">
                     <!-- Venue NAME -->
                     <template #body-cell-Venue="props">
                         <q-td :props="props">
-                            <div class="Venue-name">{{ props.row.venue_name }}</div>
-                        
+                            <div class="app-table-cell-title">{{ props.row.venue_name }}</div>
+
                         </q-td>
                     </template>
 
@@ -78,7 +78,7 @@
 
                     <!-- EMPTY STATE -->
                     <template #no-data>
-                        <div class="table-empty">No Venues found.</div>
+                        <div class="app-table-empty">No Venues found.</div>
                     </template>
                 </q-table>
             </div>
@@ -241,7 +241,6 @@ export default defineComponent({
 
     setup() {
         const $q = useQuasar();
-        const router = useRouter();
         const VenueStore = useVenueStore();
         const search = ref("");
 
@@ -249,7 +248,7 @@ export default defineComponent({
         // Table
         // ---------------------------------------------------------------
         const columns = [
-            { name: "venueId", label: "id", field: "venueId", align: "left" },
+            // { name: "venueId", label: "id", field: "venueId", align: "left" },
             {
                 name: "venue",
                 label: "Venue Name",
@@ -559,65 +558,6 @@ export default defineComponent({
     padding: 0 12px;
 }
 
-.Venues-table {
-    box-shadow: none;
-}
-
-.Venues-table :deep(th) {
-    height: 48px;
-
-    color: #819097;
-
-    background: #ffffff;
-
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-}
-
-.Venues-table :deep(td) {
-    height: 68px;
-
-    color: #425b68;
-
-    border-color: #edf1ef;
-
-    font-size: 11px;
-}
-
-.Venues-table :deep(tbody tr:hover) {
-    background: #fafffb;
-}
-
-.table-empty {
-    padding: 30px 0;
-
-    text-align: center;
-
-    color: #8a989e;
-
-    font-size: 12px;
-}
-
-/* =========================================================
-   Venue NAME CELL
-========================================================= */
-
-.Venue-name {
-    color: #19354a;
-
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.Venue-meta {
-    margin-top: 3px;
-
-    color: #8a989e;
-
-    font-size: 9px;
-}
-
 /* =========================================================
    STATUS BADGE
 ========================================================= */
@@ -880,7 +820,7 @@ export default defineComponent({
         overflow-x: auto;
     }
 
-    .Venues-table {
+    .app-table {
         min-width: 700px;
     }
 

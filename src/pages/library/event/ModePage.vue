@@ -36,12 +36,12 @@
       ==================================================== -->
             <div class="table-wrapper">
                 <q-table flat :rows="filteredRows" :columns="columns" row-key="Mode_id" hide-pagination
-                    :rows-per-page-options="[0]" :loading="modeStore.loading" class="Modes-table">
+                    :rows-per-page-options="[0]" :loading="modeStore.loading" class="app-table">
                     <!-- Mode NAME -->
                     <template #body-cell-Mode="props">
                         <q-td :props="props">
-                            <div class="Mode-name">{{ props.row.mode_name }}</div>
-                        
+                            <div class="app-table-cell-title">{{ props.row.mode_name }}</div>
+
                         </q-td>
                     </template>
 
@@ -78,7 +78,7 @@
 
                     <!-- EMPTY STATE -->
                     <template #no-data>
-                        <div class="table-empty">No Modes found.</div>
+                        <div class="app-table-empty">No Modes found.</div>
                     </template>
                 </q-table>
             </div>
@@ -249,7 +249,7 @@ export default defineComponent({
         // Table
         // ---------------------------------------------------------------
         const columns = [
-            { name: "modeId", label: "id", field: "modeId", align: "left" },
+            // { name: "modeId", label: "id", field: "modeId", align: "left" },
             {
                 name: "mode",
                 label: "Mode Name",
@@ -559,65 +559,6 @@ export default defineComponent({
     padding: 0 12px;
 }
 
-.Modes-table {
-    box-shadow: none;
-}
-
-.Modes-table :deep(th) {
-    height: 48px;
-
-    color: #819097;
-
-    background: #ffffff;
-
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-}
-
-.Modes-table :deep(td) {
-    height: 68px;
-
-    color: #425b68;
-
-    border-color: #edf1ef;
-
-    font-size: 11px;
-}
-
-.Modes-table :deep(tbody tr:hover) {
-    background: #fafffb;
-}
-
-.table-empty {
-    padding: 30px 0;
-
-    text-align: center;
-
-    color: #8a989e;
-
-    font-size: 12px;
-}
-
-/* =========================================================
-   Mode NAME CELL
-========================================================= */
-
-.Mode-name {
-    color: #19354a;
-
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.Mode-meta {
-    margin-top: 3px;
-
-    color: #8a989e;
-
-    font-size: 9px;
-}
-
 /* =========================================================
    STATUS BADGE
 ========================================================= */
@@ -880,7 +821,7 @@ export default defineComponent({
         overflow-x: auto;
     }
 
-    .Modes-table {
+    .app-table {
         min-width: 700px;
     }
 

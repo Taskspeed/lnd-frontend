@@ -36,12 +36,12 @@
       ==================================================== -->
             <div class="table-wrapper">
                 <q-table flat :rows="filteredRows" :columns="columns" row-key="Title_id" hide-pagination
-                    :rows-per-page-options="[0]" :loading="TitleStore.loading" class="Titles-table">
+                    :rows-per-page-options="[0]" :loading="TitleStore.loading" class="app-table">
                     <!-- Title NAME -->
                     <template #body-cell-Title="props">
                         <q-td :props="props">
-                            <div class="Title-name">{{ props.row.title_name }}</div>
-                        
+                            <div class="app-table-cell-title">{{ props.row.title_name }}</div>
+
                         </q-td>
                     </template>
 
@@ -78,7 +78,7 @@
 
                     <!-- EMPTY STATE -->
                     <template #no-data>
-                        <div class="table-empty">No Titles found.</div>
+                        <div class="app-table-empty">No Titles found.</div>
                     </template>
                 </q-table>
             </div>
@@ -233,7 +233,7 @@
 </template>
 <script>
 import { defineComponent, computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+
 import { useQuasar } from "quasar";
 import { useTitleStore } from "src/stores/library/event/titleStore";
 export default defineComponent({
@@ -241,7 +241,6 @@ export default defineComponent({
 
     setup() {
         const $q = useQuasar();
-        const router = useRouter();
         const TitleStore = useTitleStore();
         const search = ref("");
 
@@ -249,7 +248,7 @@ export default defineComponent({
         // Table
         // ---------------------------------------------------------------
         const columns = [
-            { name: "titleId", label: "id", field: "titleId", align: "left" },
+            // { name: "titleId", label: "id", field: "titleId", align: "left" },
             {
                 name: "title",
                 label: "Title Name",
@@ -559,65 +558,6 @@ export default defineComponent({
     padding: 0 12px;
 }
 
-.Titles-table {
-    box-shadow: none;
-}
-
-.Titles-table :deep(th) {
-    height: 48px;
-
-    color: #819097;
-
-    background: #ffffff;
-
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-}
-
-.Titles-table :deep(td) {
-    height: 68px;
-
-    color: #425b68;
-
-    border-color: #edf1ef;
-
-    font-size: 11px;
-}
-
-.Titles-table :deep(tbody tr:hover) {
-    background: #fafffb;
-}
-
-.table-empty {
-    padding: 30px 0;
-
-    text-align: center;
-
-    color: #8a989e;
-
-    font-size: 12px;
-}
-
-/* =========================================================
-   Title NAME CELL
-========================================================= */
-
-.Title-name {
-    color: #19354a;
-
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.Title-meta {
-    margin-top: 3px;
-
-    color: #8a989e;
-
-    font-size: 9px;
-}
-
 /* =========================================================
    STATUS BADGE
 ========================================================= */
@@ -880,7 +820,7 @@ export default defineComponent({
         overflow-x: auto;
     }
 
-    .Titles-table {
+    .app-table {
         min-width: 700px;
     }
 
