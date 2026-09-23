@@ -4,8 +4,8 @@ import {
   nominated_employee,
   suggested_employees,
   nomination_approval,
-} from "src/service/event/eventService";
-import { employee_update_form_submission } from "src/service/event/employeeService";
+} from "src/service/administrator/event/eventService";
+import { employee_update_form_submission } from "src/service/administrator/event/employeeService";
 
 export const useEventStore = defineStore("event", {
   state: () => ({

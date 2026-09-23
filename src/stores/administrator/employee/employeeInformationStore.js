@@ -1,5 +1,11 @@
 import { defineStore } from "pinia";
-import { employee_information, employee_submission,employee_view_form_submission, employee_update_form_submission, employee_attendance} from "src/service/event/employeeService";
+import {
+  employee_information,
+  employee_submission,
+  employee_view_form_submission,
+  employee_update_form_submission,
+  employee_attendance,
+} from "src/service/administrator/event/employeeService";
 
 export const useEmployeeInformationStore = defineStore("employeeInformation", {
   state: () => ({
@@ -26,7 +32,8 @@ export const useEmployeeInformationStore = defineStore("employeeInformation", {
           return { success: false, message: response.data.message };
         }
       } catch (err) {
-        const message = err.response?.data?.message || "Failed to fetch employee";
+        const message =
+          err.response?.data?.message || "Failed to fetch employee";
         this.error = message;
         return { success: false, message };
       } finally {
@@ -40,12 +47,17 @@ export const useEmployeeInformationStore = defineStore("employeeInformation", {
       this.error = null;
 
       try {
-        const response = await employee_submission(controlNo, eventId, eventScheduleId);
+        const response = await employee_submission(
+          controlNo,
+          eventId,
+          eventScheduleId
+        );
 
         if (response.data.success) {
           return {
             success: true,
-            message: response.data.message || "Submissions fetched successfully",
+            message:
+              response.data.message || "Submissions fetched successfully",
             data: response.data.data,
           };
         } else {
@@ -53,7 +65,8 @@ export const useEmployeeInformationStore = defineStore("employeeInformation", {
           return { success: false, message: response.data.message };
         }
       } catch (err) {
-        const message = err.response?.data?.message || "Failed to fetch submissions";
+        const message =
+          err.response?.data?.message || "Failed to fetch submissions";
         this.error = message;
         return { success: false, message };
       } finally {
@@ -61,17 +74,26 @@ export const useEmployeeInformationStore = defineStore("employeeInformation", {
       }
     },
 
-     async fetchEmployeeViewFormSubmission(controlNo, form_name, eventScheduleId) {
+    async fetchEmployeeViewFormSubmission(
+      controlNo,
+      form_name,
+      eventScheduleId
+    ) {
       this.loading = true;
       this.error = null;
 
       try {
-        const response = await employee_view_form_submission(controlNo, form_name, eventScheduleId);
+        const response = await employee_view_form_submission(
+          controlNo,
+          form_name,
+          eventScheduleId
+        );
 
         if (response.data.success) {
           return {
             success: true,
-            message: response.data.message || "Submissions fetched successfully",
+            message:
+              response.data.message || "Submissions fetched successfully",
             data: response.data.data,
           };
         } else {
@@ -79,7 +101,8 @@ export const useEmployeeInformationStore = defineStore("employeeInformation", {
           return { success: false, message: response.data.message };
         }
       } catch (err) {
-        const message = err.response?.data?.message || "Failed to fetch submissions";
+        const message =
+          err.response?.data?.message || "Failed to fetch submissions";
         this.error = message;
         return { success: false, message };
       } finally {
@@ -87,7 +110,6 @@ export const useEmployeeInformationStore = defineStore("employeeInformation", {
       }
     },
 
-    
     async approvalEmployeeFormSubmission(nominatedEmployeeId, payload) {
       this.loading = true;
       this.error = null;
@@ -99,21 +121,19 @@ export const useEmployeeInformationStore = defineStore("employeeInformation", {
         return { success: true, data: response.data.data || response.data };
       } catch (err) {
         this.error =
-          err.response?.data?.message || "Failed to fetch employee form submission.";
+          err.response?.data?.message ||
+          "Failed to fetch employee form submission.";
         return { success: false, message: this.error };
       } finally {
         this.loading = false;
       }
     },
 
-      async fetchEmployeeAttendance(nominatedEmployeeId) {
+    async fetchEmployeeAttendance(nominatedEmployeeId) {
       this.loading = true;
       this.error = null;
       try {
-        const response = await employee_attendance(
-          nominatedEmployeeId,
-       
-        );
+        const response = await employee_attendance(nominatedEmployeeId);
         return { success: true, data: response.data.data || response.data };
       } catch (err) {
         this.error =

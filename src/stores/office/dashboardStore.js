@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
-import { dashboard_event_calendar } from "src/service/administrator/dashboardService";
-
+import { dashboard_event_calendar } from "src/service/office/dashboardService";
 export const useDashboardStore = defineStore("dashboard", {
   state: () => ({
     loading: false,

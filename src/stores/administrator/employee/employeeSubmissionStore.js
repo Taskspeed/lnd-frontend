@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { employee_form_submission } from "src/service/event/employeeService";
+import { employee_form_submission } from "src/service/administrator/event/employeeService";
 export const useEmployeeSubmissionStore = defineStore("employeeSubmission", {
   state: () => ({
     list: [],
@@ -56,7 +56,5 @@ export const useEmployeeSubmissionStore = defineStore("employeeSubmission", {
         this.loading = false;
       }
     },
-
-    
   },
 });
