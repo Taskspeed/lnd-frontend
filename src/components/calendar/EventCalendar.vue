@@ -263,10 +263,7 @@ watch(
   () => selectedDate.value.slice(0, 7),
   () => {
     const [y, m] = selectedDate.value.split('-').map(Number)
-      ;[-1, 0, 1].forEach((offset) => {
-        const d = new Date(y, m - 1 + offset, 1)
-        loadMonth(d.getFullYear(), d.getMonth() + 1)
-      })
+    loadMonth(y, m)
   },
   { immediate: true }
 )
