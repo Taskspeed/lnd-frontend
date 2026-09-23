@@ -13,45 +13,50 @@ export const useEmployeeSubmissionStore = defineStore("employeeSubmission", {
     },
 
     async fetchEmployeeSubmission(params = {}) {
-    this.loading = true;
-    this.error = null;
+      this.loading = true;
+      this.error = null;
 
-    try {
+      try {
         const response = await employee_form_submission(params);
 
         if (response.data.success) {
-            const paginator = response.data.data;
+          const paginator = response.data.data;
 
-            // i-guard: kung hindi array ang laman, huwag basta i-assign
-            this.list = Array.isArray(paginator?.data) ? paginator.data : [];
+          // i-guard: kung hindi array ang laman, huwag basta i-assign
+          this.list = Array.isArray(paginator?.data) ? paginator.data : [];
 
-            this.pagination = {
-                page: paginator?.current_page ?? 1,
-                per_page: paginator?.per_page ?? 10,
-                total: paginator?.total ?? 0,
-                last_page: paginator?.last_page ?? 1,
-            };
+          this.pagination = {
+            page: paginator?.current_page ?? 1,
+            per_page: paginator?.per_page ?? 10,
+            total: paginator?.total ?? 0,
+            last_page: paginator?.last_page ?? 1,
+          };
 
-            if (!Array.isArray(paginator?.data)) {
-                console.warn('Unexpected paginator shape:', paginator);
-            }
+          if (!Array.isArray(paginator?.data)) {
+            console.warn("Unexpected paginator shape:", paginator);
+          }
 
-            return {
-                success: true,
-                message: response.data.message || "Employee submission fetched successfully",
-                data: paginator,
-            };
+          return {
+            success: true,
+            message:
+              response.data.message ||
+              "Employee submission fetched successfully",
+            data: paginator,
+          };
         } else {
-            this.error = response.data.message;
-            return { success: false, message: response.data.message };
+          this.error = response.data.message;
+          return { success: false, message: response.data.message };
         }
-    } catch (err) {
-        const message = err.response?.data?.message || "Failed to fetch employee";
+      } catch (err) {
+        const message =
+          err.response?.data?.message || "Failed to fetch employee";
         this.error = message;
         return { success: false, message };
-    } finally {
+      } finally {
         this.loading = false;
-    }
-},
+      }
+    },
+
+    
   },
 });

@@ -38,9 +38,6 @@ export const employee_attendance= (nominatedEmployeeId) => {
 };
 
 
-export const employee_form_submission = () => {
-  return api.get(
-    `event/employee/submission/list`);
+export const employee_form_submission = (params = {}) => {
+  return api.get(`event/employee/submission/list`, { params });
 };
-
-

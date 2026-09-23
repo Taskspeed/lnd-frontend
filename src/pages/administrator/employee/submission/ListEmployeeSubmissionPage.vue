@@ -23,14 +23,13 @@
                     <template #prepend>
                         <q-icon name="search" />
                     </template>
-                </q-input> -->
-                <q-input v-model="search" outlined dense clearable
-                placeholder="Search by name..." class="search-input"
-                @update:model-value="onSearchInput">
-                <template #prepend>
-                    <q-icon name="search" />
-                </template>
-            </q-input>
+</q-input> -->
+                <q-input v-model="search" outlined dense clearable placeholder="Search by name..." class="search-input"
+                    @update:model-value="onSearchInput">
+                    <template #prepend>
+                        <q-icon name="search" />
+                    </template>
+                </q-input>
 
                 <q-btn flat no-caps icon="filter_alt_off" label="Clear" class="clear-btn" @click="clearFilters" />
             </div>
@@ -39,56 +38,56 @@
            TABLE
       ==================================================== -->
             <div class="table-wrapper">
-             <q-table flat :rows="submissionStore.list" :columns="columns" row-key="control_no"
-    v-model:pagination="pagination" :loading="submissionStore.loading" class="submission-table"
-    @request="onRequest">
-    <!-- FULL NAME -->
-    <template #body-cell-full_name="props">
-        <q-td :props="props">
-            <div class="employee-name">{{ props.row.full_name }}</div>
-            <div class="employee-meta">{{ props.row.control_no }}</div>
-        </q-td>
-    </template>
+                <q-table flat :rows="submissionStore.list" :columns="columns" row-key="control_no"
+                    v-model:pagination="pagination" :loading="submissionStore.loading" class="submission-table"
+                    @request="onRequest">
+                    <!-- FULL NAME -->
+                    <template #body-cell-full_name="props">
+                        <q-td :props="props">
+                            <div class="employee-name">{{ props.row.full_name }}</div>
+                            <div class="employee-meta">{{ props.row.control_no }}</div>
+                        </q-td>
+                    </template>
 
-    <!-- APPROVALS PROGRESS -->
-    <template #body-cell-approved="props">
-        <q-td :props="props">
-            <span class="approval-count">
-                {{ props.row.approved }} / {{ props.row.required_approvals }}
-            </span>
-        </q-td>
-    </template>
+                    <!-- APPROVALS PROGRESS -->
+                    <template #body-cell-approved="props">
+                        <q-td :props="props">
+                            <span class="approval-count">
+                                {{ props.row.approved }} / {{ props.row.required_approvals }}
+                            </span>
+                        </q-td>
+                    </template>
 
-    <!-- CERTIFICATE STATUS -->
-    <template #body-cell-certificate_status="props">
-        <q-td :props="props">
-            <span class="status-badge" :class="statusClass(props.row.certificate_status)">
-                {{ props.row.certificate_status }}
-            </span>
-        </q-td>
-    </template>
+                    <!-- CERTIFICATE STATUS -->
+                    <template #body-cell-certificate_status="props">
+                        <q-td :props="props">
+                            <span class="status-badge" :class="statusClass(props.row.certificate_status)">
+                                {{ props.row.certificate_status }}
+                            </span>
+                        </q-td>
+                    </template>
 
-    <!-- ACTIONS -->
-    <template #body-cell-actions="props">
-        <q-td :props="props">
-            <div class="action-buttons">
-                <q-btn flat dense round icon="visibility" color="primary"
-                    @click.stop="viewEmployeeInformation(props.row)">
-                    <q-tooltip>View Details</q-tooltip>
-                </q-btn>
-                <q-btn flat dense round icon="workspace_premium" color="blue"
-                    @click.stop="certificatePreview(props.row)">
-                    <q-tooltip>Preview</q-tooltip>
-                </q-btn>
-            </div>
-        </q-td>
-    </template>
+                    <!-- ACTIONS -->
+                    <template #body-cell-actions="props">
+                        <q-td :props="props">
+                            <div class="action-buttons">
+                                <q-btn flat dense round icon="visibility" color="primary"
+                                    @click.stop="viewEmployeeInformation(props.row)">
+                                    <q-tooltip>View Details</q-tooltip>
+                                </q-btn>
+                                <q-btn flat dense round icon="workspace_premium" color="blue"
+                                    @click.stop="certificatePreview(props.row)">
+                                    <q-tooltip>Preview</q-tooltip>
+                                </q-btn>
+                            </div>
+                        </q-td>
+                    </template>
 
-    <!-- EMPTY STATE -->
-    <template #no-data>
-        <div class="table-empty">No submissions found.</div>
-    </template>
-</q-table>
+                    <!-- EMPTY STATE -->
+                    <template #no-data>
+                        <div class="table-empty">No submissions found.</div>
+                    </template>
+                </q-table>
             </div>
 
             <!-- ===================================================
@@ -108,12 +107,6 @@
 
                 <q-separator />
 
-                <!-- <q-card-section class="q-pa-none">
-                    <q-inner-loading :showing="loadingCertificate" color="primary" />
-
-                    <iframe v-if="certificateUrl" :src="certificateUrl" class="certificate-frame" title="Certificate Preview">
-                    </iframe>
-                </q-card-section> -->
                 <q-card-section class="q-pa-none certificate-body">
                     <q-inner-loading :showing="loadingCertificate" color="primary" />
                     <iframe v-if="certificateUrl" :src="certificateUrl" class="certificate-frame"
@@ -127,6 +120,7 @@
                     <q-btn unelevated no-caps label="Send Certificate" icon="send" class="send-cert-btn"
                         :loading="sendingCertificate" :disable="!certificateUrl" @click="sendCertificate" />
                 </q-card-actions>
+
             </q-card>
         </q-dialog>
 
@@ -174,53 +168,53 @@ export default defineComponent({
             rowsNumber: 0,   // kailangan ito para malaman ng q-table ang total count mula sa server
         });
 
-     
-          async function loadSubmissions() {
-        const result = await submissionStore.fetchEmployeeSubmission({
-            page: pagination.value.page,
-            per_page: pagination.value.rowsPerPage,
-            search: search.value || undefined,
-        });
 
-        if (result.success) {
-            pagination.value.rowsNumber = submissionStore.pagination.total;
+        async function loadSubmissions() {
+            const result = await submissionStore.fetchEmployeeSubmission({
+                page: pagination.value.page,
+                per_page: pagination.value.rowsPerPage,
+                search: search.value || undefined,
+            });
+
+            if (result.success) {
+                pagination.value.rowsNumber = submissionStore.pagination.total;
+            }
         }
-    }
 
-    // tinatawag ito ng q-table mismo tuwing magpapalit ng page/rows-per-page/sort
-    function onRequest(requestProp) {
-        pagination.value.page = requestProp.pagination.page;
-        pagination.value.rowsPerPage = requestProp.pagination.rowsPerPage;
-        loadSubmissions();
-    }
-
-    // debounce ang search — hintayin munang tumigil sa pag-type ng 400ms
-    // bago mag-request, para hindi umapak ng API call sa bawat letrang type
-    let searchTimeout = null;
-    function onSearchInput() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            pagination.value.page = 1;   // balik sa page 1 tuwing may bagong search
+        // tinatawag ito ng q-table mismo tuwing magpapalit ng page/rows-per-page/sort
+        function onRequest(requestProp) {
+            pagination.value.page = requestProp.pagination.page;
+            pagination.value.rowsPerPage = requestProp.pagination.rowsPerPage;
             loadSubmissions();
-        }, 400);
-    }
-
-    function clearFilters() {
-        search.value = "";
-        pagination.value.page = 1;
-        loadSubmissions();
-    }
-
-    function statusClass(status) {
-        switch (status) {
-            case "Complete":
-                return "status-releasing";
-            case "Incomplete":
-                return "status-incomplete";
-            default:
-                return "status-incomplete";
         }
-    }
+
+        // debounce ang search — hintayin munang tumigil sa pag-type ng 400ms
+        // bago mag-request, para hindi umapak ng API call sa bawat letrang type
+        let searchTimeout = null;
+        function onSearchInput() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                pagination.value.page = 1;   // balik sa page 1 tuwing may bagong search
+                loadSubmissions();
+            }, 400);
+        }
+
+        function clearFilters() {
+            search.value = "";
+            pagination.value.page = 1;
+            loadSubmissions();
+        }
+
+        function statusClass(status) {
+            switch (status) {
+                case "Complete":
+                    return "status-releasing";
+                case "Incomplete":
+                    return "status-incomplete";
+                default:
+                    return "status-incomplete";
+            }
+        }
 
         // ---------------------------------------------------------------
         // VIEW EMPLOYEE INFORMATION
@@ -357,7 +351,7 @@ export default defineComponent({
         // ---------------------------------------------------------------
         // FETCH ON MOUNT
         // ---------------------------------------------------------------
-         onMounted(() => {
+        onMounted(() => {
             loadSubmissions();
         });
 
@@ -367,10 +361,10 @@ export default defineComponent({
 
             search,
             columns,
-                 pagination,
-                       onRequest,
-        onSearchInput,
-        
+            pagination,
+            onRequest,
+            onSearchInput,
+
             clearFilters,
             statusClass,
 
