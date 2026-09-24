@@ -200,6 +200,12 @@
                     </div>
                   </q-td>
                 </template>
+                <template #body-cell-action="props">
+                    <q-td :props="props">
+                     <q-btn dense unelevated no-caps color="positive" label="Present"
+                        class="present-btn" @click.stop="present(props.row)" />
+                    </q-td>
+                  </template>
 
                 <template #no-data>
                   <div class="qs-empty">No attendance records found.</div>
@@ -223,6 +229,7 @@ import { useEmployeeInformationStore } from 'src/stores/administrator/employee/e
 import { getFormModalComponent } from 'src/composables/useFormsModal'
 import Swal from 'sweetalert2'
 import { useEmployeeImage } from 'src/composables/useEmployeeImage'
+import { useAttendanceStore } from 'src/stores/administrator/attendance/attendanceStore'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -239,6 +246,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'view-submission'])
 
 const employeeInformationStore = useEmployeeInformationStore()
+const attendanceStore = useAttendanceStore()
 
 const show = computed({
   get: () => props.modelValue,
@@ -278,7 +286,8 @@ const attendanceColumns = [
   { name: 'status', label: 'Status', field: 'status', align: 'left' },
   { name: 'morning', label: 'Morning (Sched / Actual)', field: 'morning', align: 'left' },
   { name: 'afternoon', label: 'Afternoon (Sched / Actual)', field: 'afternoon', align: 'left' },
-  { name: 'late', label: 'Late', field: 'late', align: 'center' },
+  { name: 'late', label: 'Status', field: 'late', align: 'center' },
+  { name: 'action', label: 'Action', field: 'action', align: 'center' },
 ]
 
 async function loadSubmissions() {
@@ -485,6 +494,74 @@ async function returned(row) {
 const { src: photoSrc, loading: photoLoading } = useEmployeeImage(
   () => employee.value.photo_url
 )
+
+// gawing HH:mm:ss ang oras (hal. "08:00" -> "08:00:00")
+function toTime(value) {
+  if (!value) return null
+
+  const match = String(value).trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?$/)
+  if (!match) return null
+
+  let hours = parseInt(match[1], 10)
+  const minutes = match[2]
+  const seconds = match[3] ?? '00'
+  const meridiem = match[4]?.toLowerCase()
+
+  if (meridiem === 'pm' && hours < 12) hours += 12
+  if (meridiem === 'am' && hours === 12) hours = 0
+
+  return `${String(hours).padStart(2, '0')}:${minutes}:${seconds}`
+}
+async function present(row) {
+  const result = await Swal.fire({
+    title: 'Mark as Present',
+    text: `Are you sure you want to mark ${employee.value.full_name} as present on ${row.schedule_date}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, present',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#18b64d',
+    cancelButtonColor: '#9e9e9e',
+    reverseButtons: true,
+    scrollbarPadding: false,
+    heightAuto: false,
+  })
+
+  if (!result.isConfirmed) return
+
+  const payload = {
+    nominated_employee_id: employee.value.nominated_employee_id,
+    scan_date: row.schedule_date,
+    morning_in: toTime(row.scheduled.morning_in),
+    morning_out: toTime(row.scheduled.morning_out),
+    afternoon_in: toTime(row.scheduled.afternoon_in),
+    afternoon_out: toTime(row.scheduled.afternoon_out),
+  }
+
+  const res = await attendanceStore.storeAttendance(payload)
+
+  if (res.success) {
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: res.message || 'Marked as present.',
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+      scrollbarPadding: false,
+    })
+
+    await loadAttendance()
+  } else {
+    Swal.fire({
+      title: 'Failed',
+      text: res.message || 'Unable to mark as present.',
+      icon: 'error',
+      scrollbarPadding: false,
+    })
+  }
+}
 
 // Kapag nagbukas ang modal (o nagbago ang employee), i-fetch ang parehong tabs' data
 watch(
@@ -764,5 +841,12 @@ watch(
   text-align: center;
   color: #9aa5aa;
   font-size: 12px;
+}
+.present-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  min-height: 24px;
+  border-radius: 4px;
 }
 </style>
