@@ -8,7 +8,7 @@
         <q-btn flat round dense icon="menu" class="menu-btn" @click="toggleLeftDrawer" />
 
         <div class="header-office">
-          <div class="office-name">{{ officeName }}</div>
+          <!-- <div class="office-name">{{ officeName }}</div> -->
         </div>
 
         <!-- NOTIFICATION BELL -->
@@ -43,7 +43,7 @@
         </q-btn>
 
         <!-- User -->
-        <q-btn flat no-caps class="header-user q-px-md">
+        <!-- <q-btn flat no-caps class="header-user q-px-md">
           <q-avatar class="header-avatar">
             {{ userInitials }}
           </q-avatar>
@@ -57,7 +57,22 @@
               {{ userRole }}
             </div>
           </div>
-        </q-btn>
+        </q-btn> -->
+        <q-btn flat no-caps class="header-user q-px-md" @click="goToProfile">
+        <q-avatar class="header-avatar">
+          {{ userInitials }}
+        </q-avatar>
+
+        <div class="header-user-info">
+          <div class="header-user-name">
+            {{ userName }}
+          </div>
+
+          <div class="header-user-role">
+            {{ userRole }}
+          </div>
+        </div>
+      </q-btn>
       </q-toolbar>
     </q-header>
 
@@ -70,7 +85,7 @@
              BRAND
         ================================================== -->
         <div class="sidebar-brand">
-          <img src="/image/LD.png" alt="L&D Logo" class="sidebar-logo" loading="lazy" />
+          <img src="/src/assets/image/logo.png" alt="L&D Logo" class="sidebar-logo" loading="lazy" />
 
           <div class="sidebar-brand-text">
             <div class="sidebar-title">Learning & Development</div>
@@ -360,6 +375,7 @@ export default defineComponent({
       console.warn("Unknown notification type:", data.type);
     }
   }
+
     onMounted(() => {
       notificationStore.fetchNotifications();
       pollInterval = setInterval(() => {
@@ -570,7 +586,7 @@ export default defineComponent({
    SIDEBAR BRAND
 ========================================================= */
 
-.sidebar-brand {
+/* .sidebar-brand {
   display: flex;
   align-items: center;
   padding: 20px 16px 16px;
@@ -587,8 +603,29 @@ export default defineComponent({
 .sidebar-brand-text {
   margin-left: 10px;
   min-width: 0;
+} */
+
+.sidebar-brand {
+  display: flex;
+  flex-direction: column;   /* logo sa taas, text sa baba */
+  align-items: center;
+  text-align: center;
+  padding: 22px 16px 18px;
+  border-bottom: 1px solid #e6eee8;
 }
 
+.sidebar-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-text {
+  margin-left: 0;           /* dati 10px, tanggalin na */
+  margin-top: 10px;
+  min-width: 0;
+}
 .sidebar-title {
   font-size: 13px;
   font-weight: 750;
