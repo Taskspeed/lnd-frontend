@@ -184,15 +184,20 @@
 
                 <div class="row-actions">
                   <q-btn flat dense round icon="visibility" color="primary"
+                    :loading="isViewLoading(props.row.nominated_employee_id)" :disable="isAnyViewLoading()"
                     @click.stop="viewEmployeeInformation(props.row)">
                     <q-tooltip>View Details</q-tooltip>
                   </q-btn>
 
-                  <q-btn flat dense round icon="task_alt" color="positive" @click.stop="approveNomination(props.row)">
+                  <q-btn flat dense round icon="task_alt" color="positive"
+                    :loading="isApproveLoading(props.row.nominated_employee_id)" :disable="isAnyApproveLoading()"
+                    @click.stop="approveNomination(props.row)">
                     <q-tooltip>Approve</q-tooltip>
                   </q-btn>
 
-                  <q-btn flat dense round icon="cancel" color="negative" @click.stop="disapproveNomination(props.row)">
+                  <q-btn flat dense round icon="cancel" color="negative" 
+                       :loading="isDisapproveLoading(props.row.nominated_employee_id)" :disable="isAnyDisapproveLoading()"
+                    @click.stop="disapproveNomination(props.row)">
                     <q-tooltip>Disapprove</q-tooltip>
                   </q-btn>
                 </div>
@@ -277,6 +282,9 @@ import Swal from "sweetalert2";
 
 import EmployeeInformationModal from "src/components/employee/EmployeeInformationModal.vue";
 import { useEmployeeInformationStore } from "src/stores/administrator/employee/employeeInformationStore";
+
+import { useRowLoading } from "src/composables/useRowLoading";
+
 export default defineComponent({
   name: "EventNominatedEmployeePage",
   components: { LoadingState, EmployeeInformationModal },
@@ -303,27 +311,34 @@ export default defineComponent({
     const EmployeeInformation = ref({})
     const loadingEmployeeInfo = ref(false); // optional, para may loading state ang modal
 
+    const { isLoading: isViewLoading, isAnyLoading: isAnyViewLoading, run: runView } = useRowLoading();
+    const { isLoading: isApproveLoading, isAnyLoading: isAnyApproveLoading, run: runApprove } = useRowLoading();
+    const { isLoading: isDisapproveLoading, isAnyLoading: isAnyDisapproveLoading, run: runDisapprove } = useRowLoading();
+
+
     async function viewEmployeeInformation(row) {
       loadingEmployeeInfo.value = true;
 
-      const result = await employeeInformationStore.fetchEmployeeInformation(row.nominated_employee_id);
+      return runView(row.nominated_employee_id, async () => {
+        const result = await employeeInformationStore.fetchEmployeeInformation(row.nominated_employee_id);
 
-      loadingEmployeeInfo.value = false;
+        loadingEmployeeInfo.value = false;
 
-      if (result.success) {
-        EmployeeInformation.value = result.data; // 👈 galing na sa API response
-        showEmployeeModal.value = true;
+        if (result.success) {
+          EmployeeInformation.value = result.data; // 👈 galing na sa API response
+          showEmployeeModal.value = true;
 
-      } else {
-        Swal.fire({
-          title: "Failed",
-          text: result.message || "Unable to fetch employee information.",
-          icon: "error",
-          scrollbarPadding: false,
-        });
-      }
+        } else {
+          Swal.fire({
+            title: "Failed",
+            text: result.message || "Unable to fetch employee information.",
+            icon: "error",
+            scrollbarPadding: false,
+          });
+        }
+      });
+
     }
-
 
     function labelize(key) {
       return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -390,89 +405,96 @@ export default defineComponent({
     });
 
     async function approveNomination(row) {
-      const result = await Swal.fire({
-        title: "Approve Nomination",
-        text: `Approve nomination for ${row.full_name}?`,
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Approve",
-        cancelButtonText: "Cancel",
-        confirmButtonColor: "#18b64d",
-        cancelButtonColor: "#9e9e9e",
-        reverseButtons: true,
-        scrollbarPadding: false,
-        heightAuto: false,
+      return runApprove(row.nominated_employee_id, async () => {
+        const result = await Swal.fire({
+          title: "Approve Nomination",
+          text: `Approve nomination for ${row.full_name}?`,
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: "Approve",
+          cancelButtonText: "Cancel",
+          confirmButtonColor: "#18b64d",
+          cancelButtonColor: "#9e9e9e",
+          reverseButtons: true,
+          scrollbarPadding: false,
+          heightAuto: false,
+        });
+
+        if (!result.isConfirmed) return;
+
+
+        const res = await eventStore.approvalNominatedEmployee(row.nominated_employee_id, {
+          nominate_status: "Approved",
+        });
+
+        if (res.success) {
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: "success",
+            title: "Nomination approved.",
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            scrollbarPadding: false,
+          });
+          await loadNominatedEmployees();
+        } else {
+          Swal.fire({
+            title: "Failed",
+            text: res.message || "Unable to approve nomination.",
+            icon: "error",
+            scrollbarPadding: false,
+          });
+        }
       });
 
-      if (!result.isConfirmed) return;
-
-      const res = await eventStore.approvalNominatedEmployee(row.nominated_employee_id, {
-        nominate_status: "Approved",
-      });
-
-      if (res.success) {
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "success",
-          title: "Nomination approved.",
-          showConfirmButton: false,
-          timer: 2000,
-          timerProgressBar: true,
-          scrollbarPadding: false,
-        });
-        await loadNominatedEmployees();
-      } else {
-        Swal.fire({
-          title: "Failed",
-          text: res.message || "Unable to approve nomination.",
-          icon: "error",
-          scrollbarPadding: false,
-        });
-      }
     }
 
     async function disapproveNomination(row) {
-      const result = await Swal.fire({
-        title: "Disapprove Nomination",
-        text: `Disapprove nomination for ${row.full_name}?`,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Disapproved",
-        cancelButtonText: "Cancel",
-        confirmButtonColor: "#d83d3d",
-        cancelButtonColor: "#9e9e9e",
-        reverseButtons: true,
-        scrollbarPadding: false,
-        heightAuto: false,
+      return runDisapprove(row.nominated_employee_id, async () => {
+        const result = await Swal.fire({
+          title: "Disapprove Nomination",
+          text: `Disapprove nomination for ${row.full_name}?`,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Disapproved",
+          cancelButtonText: "Cancel",
+          confirmButtonColor: "#d83d3d",
+          cancelButtonColor: "#9e9e9e",
+          reverseButtons: true,
+          scrollbarPadding: false,
+          heightAuto: false,
+        });
+
+        if (!result.isConfirmed) return;
+
+        const res = await eventStore.approvalNominatedEmployee(row.nominated_employee_id, {
+          nominate_status: "Disapproved",
+        });
+
+        if (res.success) {
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: "success",
+            title: "Nomination disapproved.",
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            scrollbarPadding: false,
+          });
+          await loadNominatedEmployees();
+        } else {
+          Swal.fire({
+            title: "Failed",
+            text: res.message || "Unable to disapprove nomination.",
+            icon: "error",
+            scrollbarPadding: false,
+          });
+        }
       });
 
-      if (!result.isConfirmed) return;
-
-      const res = await eventStore.approvalNominatedEmployee(row.nominated_employee_id, {
-        nominate_status: "Disapproved",
-      });
-
-      if (res.success) {
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "success",
-          title: "Nomination disapproved.",
-          showConfirmButton: false,
-          timer: 2000,
-          timerProgressBar: true,
-          scrollbarPadding: false,
-        });
-        await loadNominatedEmployees();
-      } else {
-        Swal.fire({
-          title: "Failed",
-          text: res.message || "Unable to disapprove nomination.",
-          icon: "error",
-          scrollbarPadding: false,
-        });
-      }
     }
 
 
@@ -497,7 +519,16 @@ export default defineComponent({
 
       showEmployeeModal,
       EmployeeInformation,
-      loadingEmployeeInfo
+      loadingEmployeeInfo,
+
+      isViewLoading,
+      isAnyViewLoading,
+
+      isApproveLoading,
+      isAnyApproveLoading,
+
+      isDisapproveLoading,
+      isAnyDisapproveLoading
     };
   },
 });

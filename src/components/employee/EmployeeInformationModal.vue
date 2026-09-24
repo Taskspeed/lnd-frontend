@@ -16,10 +16,10 @@
             <q-spinner color="green" size="40px" />
           </template>
           <template v-else>
-          <q-avatar square size="100px" class="qs-avatar">
-          <q-spinner v-if="photoLoading" color="green" size="30px" />
-          <img v-else :src="photoSrc || 'https://cdn.quasar.dev/img/avatar.png'" />
-        </q-avatar>
+            <q-avatar square size="100px" class="qs-avatar">
+              <q-spinner v-if="photoLoading" color="green" size="30px" />
+              <img v-else :src="photoSrc || 'https://cdn.quasar.dev/img/avatar.png'" />
+            </q-avatar>
 
             <div class="qs-name">{{ employee.full_name }}</div>
             <div class="qs-designation">{{ employee.designation }}</div>
@@ -113,11 +113,15 @@
                       @click="openSubmission(props.row)">
                       <q-tooltip>View Submission</q-tooltip>
                     </q-btn>
-                    <q-btn flat dense round icon="task_alt" color="positive" @click.stop="approved(props.row)">
+                    <q-btn flat dense round icon="task_alt" color="positive"
+                      :loading="isApproveLoading(props.row.employee_form_submission_id)"
+                      :disable="isAnyApproveLoading()" @click.stop="approved(props.row)">
                       <q-tooltip>Approved</q-tooltip>
                     </q-btn>
 
-                    <q-btn flat dense round icon="cancel" color="negative" @click.stop="returned(props.row)">
+                    <q-btn flat dense round icon="cancel" color="negative"
+                      :loading="isReturnedLoading(props.row.employee_form_submission_id)"
+                      :disable="isAnyReturnedLoading()" @click.stop="returned(props.row)">
                       <q-tooltip>Returned</q-tooltip>
                     </q-btn>
                   </q-td>
@@ -201,11 +205,13 @@
                   </q-td>
                 </template>
                 <template #body-cell-action="props">
-                    <q-td :props="props">
-                     <q-btn dense unelevated no-caps color="positive" label="Present"
-                        class="present-btn" @click.stop="present(props.row)" />
-                    </q-td>
-                  </template>
+                  <q-td :props="props">
+                <q-btn dense unelevated no-caps color="positive" label="Present" class="present-btn"
+                  :loading="isPresentLoading(props.row.schedule_date)"
+                  :disable="isAnyPresentLoading()"
+                  @click.stop="present(props.row)" />
+                  </q-td>
+                </template>
 
                 <template #no-data>
                   <div class="qs-empty">No attendance records found.</div>
@@ -224,12 +230,13 @@
 </template>
 
 <script setup>
-import { ref, computed, watch} from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useEmployeeInformationStore } from 'src/stores/administrator/employee/employeeInformationStore'
 import { getFormModalComponent } from 'src/composables/useFormsModal'
 import Swal from 'sweetalert2'
 import { useEmployeeImage } from 'src/composables/useEmployeeImage'
 import { useAttendanceStore } from 'src/stores/administrator/attendance/attendanceStore'
+import { useRowLoading } from 'src/composables/useRowLoading'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -369,126 +376,137 @@ async function openSubmission(row) {
   loadingFormData.value = false
   // emit('view-submission', row)
 }
-async function approved(row) {
-  const result = await Swal.fire({
-    title: "Approve Form Submission",
-    text: `Approve "${row.form_name}" submitted by ${employee.value.full_name}?`,
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "Approve",
-    cancelButtonText: "Cancel",
-    confirmButtonColor: "#18b64d",
-    cancelButtonColor: "#9e9e9e",
-    reverseButtons: true,
-    scrollbarPadding: false,
-    heightAuto: false,
 
+const { isLoading: isApproveLoading, isAnyLoading: isAnyApproveLoading, run: runApprove } = useRowLoading();
+const { isLoading: isReturnedLoading, isAnyLoading: isAnyReturnedLoading, run: runReturned } = useRowLoading();
+const { isLoading: isPresentLoading, isAnyLoading: isAnyPresentLoading, run: runPresent } = useRowLoading();
+
+async function approved(row) {
+  return runApprove(row.employee_form_submission_id, async () => {
+    const result = await Swal.fire({
+      title: "Approve Form Submission",
+      text: `Approve "${row.form_name}" submitted by ${employee.value.full_name}?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Approve",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#18b64d",
+      cancelButtonColor: "#9e9e9e",
+      reverseButtons: true,
+      scrollbarPadding: false,
+      heightAuto: false,
+
+    });
+
+    if (!result.isConfirmed) return;
+
+    const res = await employeeInformationStore.approvalEmployeeFormSubmission(
+      row.employee_form_submission_id, // ID ng specific form submission na ito, hindi ng buong nomination
+      { status: "Approved" }
+    );
+
+    if (res.success) {
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: "Form submission approved.",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+        scrollbarPadding: false,
+
+      });
+      await loadSubmissions();
+    } else {
+      Swal.fire({
+        title: "Failed",
+        text: res.message || "Unable to approve this form submission.",
+        icon: "error",
+        scrollbarPadding: false,
+
+      });
+    }
   });
 
-  if (!result.isConfirmed) return;
-
-  const res = await employeeInformationStore.approvalEmployeeFormSubmission(
-    row.employee_form_submission_id, // ID ng specific form submission na ito, hindi ng buong nomination
-    { status: "Approved" }
-  );
-
-  if (res.success) {
-    Swal.fire({
-      toast: true,
-      position: "top-end",
-      icon: "success",
-      title: "Form submission approved.",
-      showConfirmButton: false,
-      timer: 2000,
-      timerProgressBar: true,
-      scrollbarPadding: false,
-
-    });
-    await loadSubmissions();
-  } else {
-    Swal.fire({
-      title: "Failed",
-      text: res.message || "Unable to approve this form submission.",
-      icon: "error",
-      scrollbarPadding: false,
-
-    });
-  }
 }
 
 async function returned(row) {
-  const result = await Swal.fire({
-    title: "Return Form Submission",
-    text: `Return "${row.form_name}" submitted by ${employee.value.full_name}?`,
-    icon: "warning",
+  return runReturned(row.employee_form_submission_id, async () => {
+    const result = await Swal.fire({
+      title: "Return Form Submission",
+      text: `Return "${row.form_name}" submitted by ${employee.value.full_name}?`,
+      icon: "warning",
 
-    input: "textarea",
-    inputLabel: "Reason for return",
-    inputPlaceholder: "Ilagay ang dahilan ng pagbalik...",
-    inputAttributes: {
-      "aria-label": "Reason for return",
-      autocapitalize: "off",
-      autocorrect: "off",
-    },
+      input: "textarea",
+      inputLabel: "Reason for return",
+      inputPlaceholder: "Ilagay ang dahilan ng pagbalik...",
+      inputAttributes: {
+        "aria-label": "Reason for return",
+        autocapitalize: "off",
+        autocorrect: "off",
+      },
 
-    showCancelButton: true,
-    confirmButtonText: "Return",
-    cancelButtonText: "Cancel",
-    confirmButtonColor: "#d83d3d",
-    cancelButtonColor: "#9e9e9e",
-    reverseButtons: true,
+      showCancelButton: true,
+      confirmButtonText: "Return",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#d83d3d",
+      cancelButtonColor: "#9e9e9e",
+      reverseButtons: true,
 
-    scrollbarPadding: false,
-    heightAuto: false,
+      scrollbarPadding: false,
+      heightAuto: false,
 
-    didOpen: () => {
-      const textarea = Swal.getInput();
+      didOpen: () => {
+        const textarea = Swal.getInput();
 
-      if (textarea) {
-        textarea.focus();
+        if (textarea) {
+          textarea.focus();
+        }
+      },
+
+      inputValidator: (value) => {
+        if (!value || !value.trim()) {
+          return "Kailangan ng remarks bago i-return.";
+        }
+
+        return undefined;
+      },
+    });
+
+    if (!result.isConfirmed) return;
+
+    const res = await employeeInformationStore.approvalEmployeeFormSubmission(
+      row.employee_form_submission_id,
+      {
+        status: "Returned",
+        remarks: result.value.trim(),
       }
-    },
+    );
 
-    inputValidator: (value) => {
-      if (!value || !value.trim()) {
-        return "Kailangan ng remarks bago i-return.";
-      }
+    if (res.success) {
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: "Form submission returned.",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+        scrollbarPadding: false,
+      });
 
-      return undefined;
-    },
+      await loadSubmissions();
+    } else {
+      Swal.fire({
+        title: "Failed",
+        text: res.message || "Unable to return this form submission.",
+        icon: "error",
+        scrollbarPadding: false,
+      });
+    }
   });
 
-  if (!result.isConfirmed) return;
-
-  const res = await employeeInformationStore.approvalEmployeeFormSubmission(
-    row.employee_form_submission_id,
-    {
-      status: "Returned",
-      remarks: result.value.trim(),
-    }
-  );
-
-  if (res.success) {
-    Swal.fire({
-      toast: true,
-      position: "top-end",
-      icon: "success",
-      title: "Form submission returned.",
-      showConfirmButton: false,
-      timer: 2000,
-      timerProgressBar: true,
-      scrollbarPadding: false,
-    });
-
-    await loadSubmissions();
-  } else {
-    Swal.fire({
-      title: "Failed",
-      text: res.message || "Unable to return this form submission.",
-      icon: "error",
-      scrollbarPadding: false,
-    });
-  }
 }
 
 const { src: photoSrc, loading: photoLoading } = useEmployeeImage(
@@ -512,55 +530,59 @@ function toTime(value) {
 
   return `${String(hours).padStart(2, '0')}:${minutes}:${seconds}`
 }
+
 async function present(row) {
-  const result = await Swal.fire({
-    title: 'Mark as Present',
-    text: `Are you sure you want to mark ${employee.value.full_name} as present on ${row.schedule_date}?`,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'Yes, present',
-    cancelButtonText: 'Cancel',
-    confirmButtonColor: '#18b64d',
-    cancelButtonColor: '#9e9e9e',
-    reverseButtons: true,
-    scrollbarPadding: false,
-    heightAuto: false,
-  })
-
-  if (!result.isConfirmed) return
-
-  const payload = {
-    nominated_employee_id: employee.value.nominated_employee_id,
-    scan_date: row.schedule_date,
-    morning_in: toTime(row.scheduled.morning_in),
-    morning_out: toTime(row.scheduled.morning_out),
-    afternoon_in: toTime(row.scheduled.afternoon_in),
-    afternoon_out: toTime(row.scheduled.afternoon_out),
-  }
-
-  const res = await attendanceStore.storeAttendance(payload)
-
-  if (res.success) {
-    Swal.fire({
-      toast: true,
-      position: 'top-end',
-      icon: 'success',
-      title: res.message || 'Marked as present.',
-      showConfirmButton: false,
-      timer: 2000,
-      timerProgressBar: true,
+  return runPresent(row.schedule_date, async () => {
+    const result = await Swal.fire({
+      title: 'Mark as Present',
+      text: `Are you sure you want to mark ${employee.value.full_name} as present on ${row.schedule_date}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, present',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#18b64d',
+      cancelButtonColor: '#9e9e9e',
+      reverseButtons: true,
       scrollbarPadding: false,
+      heightAuto: false,
     })
 
-    await loadAttendance()
-  } else {
-    Swal.fire({
-      title: 'Failed',
-      text: res.message || 'Unable to mark as present.',
-      icon: 'error',
-      scrollbarPadding: false,
-    })
-  }
+    if (!result.isConfirmed) return
+
+    const payload = {
+      nominated_employee_id: employee.value.nominated_employee_id,
+      scan_date: row.schedule_date,
+      morning_in: toTime(row.scheduled.morning_in),
+      morning_out: toTime(row.scheduled.morning_out),
+      afternoon_in: toTime(row.scheduled.afternoon_in),
+      afternoon_out: toTime(row.scheduled.afternoon_out),
+    }
+
+    const res = await attendanceStore.storeAttendance(payload)
+
+    if (res.success) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: res.message || 'Marked as present.',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+        scrollbarPadding: false,
+      })
+
+      await loadAttendance()
+    } else {
+      Swal.fire({
+        title: 'Failed',
+        text: res.message || 'Unable to mark as present.',
+        icon: 'error',
+        scrollbarPadding: false,
+      })
+    }
+  });
+
 }
 
 // Kapag nagbukas ang modal (o nagbago ang employee), i-fetch ang parehong tabs' data
@@ -842,6 +864,7 @@ watch(
   color: #9aa5aa;
   font-size: 12px;
 }
+
 .present-btn {
   font-size: 12px;
   font-weight: 600;
