@@ -16,9 +16,10 @@
             <q-spinner color="green" size="40px" />
           </template>
           <template v-else>
-            <q-avatar square size="100px" class="qs-avatar">
-              <img :src="employee.photo_url || 'https://cdn.quasar.dev/img/avatar.png'" />
-            </q-avatar>
+          <q-avatar square size="100px" class="qs-avatar">
+          <q-spinner v-if="photoLoading" color="green" size="30px" />
+          <img v-else :src="photoSrc || 'https://cdn.quasar.dev/img/avatar.png'" />
+        </q-avatar>
 
             <div class="qs-name">{{ employee.full_name }}</div>
             <div class="qs-designation">{{ employee.designation }}</div>
@@ -217,10 +218,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch} from 'vue'
 import { useEmployeeInformationStore } from 'src/stores/administrator/employee/employeeInformationStore'
 import { getFormModalComponent } from 'src/composables/useFormsModal'
 import Swal from 'sweetalert2'
+import { useEmployeeImage } from 'src/composables/useEmployeeImage'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -480,7 +482,9 @@ async function returned(row) {
   }
 }
 
-
+const { src: photoSrc, loading: photoLoading } = useEmployeeImage(
+  () => employee.value.photo_url
+)
 
 // Kapag nagbukas ang modal (o nagbago ang employee), i-fetch ang parehong tabs' data
 watch(
