@@ -158,6 +158,11 @@
         </div>
         <q-btn no-caps unelevated icon="add" label="Nominate Employees" class="nominate-btn"
           @click="openNominationDialog" />
+    <q-btn no-caps unelevated icon="print" label="Nomination Form"
+      class="nominate-form-btn nominate-form-btn--light"
+      :loading="isNominationFormLoading(scheduleId)"
+      :disable="isAnyNominationFormLoading()"
+      @click.stop="inHouseNominationPreview" />
       </div>
 
       <div class="detail-body" v-if="!nominatedEmployees.length">
@@ -422,6 +427,16 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <!-- <q-dialog v-model="showFormPreview" maximized @hide="closeFormPreview">
+      <q-card class="column no-wrap">
+        <q-bar>
+          <div>Inhouse Nomination Form</div>
+          <q-space />
+          <q-btn dense flat icon="close" v-close-popup />
+        </q-bar>
+        <iframe v-if="formPreviewUrl" :src="formPreviewUrl" style="flex: 1; width: 100%; border: 0" />
+      </q-card>
+    </q-dialog> -->
   </q-page>
 </template>
 
@@ -433,6 +448,8 @@ import { useOfficeEventStore } from "src/stores/office/event/eventStore";
 import { useEmployeeStore } from "src/stores/office/event/employeeStore";
 import LoadingState from "src/components/LoadingStatePage.vue";
 import Swal from "sweetalert2";
+import { useFormStore } from "src/stores/office/form/formStore";
+import { useRowLoading } from "src/composables/useRowLoading";
 
 export default defineComponent({
   name: "EventViewPage",
@@ -442,7 +459,7 @@ export default defineComponent({
     const officeEventStore = useOfficeEventStore();
     const employeeStore = useEmployeeStore();
     const route = useRoute();
-
+    const formStore = useFormStore();
     const scheduleId = route.params.scheduleId;
 
     const loading = ref(true);
@@ -460,6 +477,11 @@ export default defineComponent({
 
     const showEmployeeRecordDialog = ref(false);
     const viewedEmployee = ref(null);
+    const showFormPreview = ref(false);
+    const formPreviewUrl = ref("");
+
+    const { isLoading: isNominationFormLoading, isAnyLoading: isAnyNominationFormLoading, run: runNominationForm } = useRowLoading();
+    // const { isLoading: isApproveLoading, isAnyLoading: isAnyApproveLoading, run: runApprove } = useRowLoading();
 
     const employeeColumns = [
       { name: "ControlNo", label: "Control No.", field: "ControlNo", align: "left" },
@@ -754,6 +776,57 @@ export default defineComponent({
         }
       });
     }
+    function closeFormPreview() {
+      if (formPreviewUrl.value) {
+        URL.revokeObjectURL(formPreviewUrl.value.split("#")[0]);
+      }
+      formPreviewUrl.value = "";
+    }
+
+    // async function inHouseNominationPreview() {
+    //   const result = await formStore.fetchInhouseNomination(
+    //     eventInfo.value.event_id,
+    //     scheduleId
+    //   );
+
+    //   if (!result.success) {
+    //     Swal.fire({
+    //       title: "Failed",
+    //       text: result.message || "Unable to preview nomination form.",
+    //       icon: "error",
+    //       scrollbarPadding: false,
+    //     });
+    //     return;
+    //   }
+
+    //   closeFormPreview();
+    //   const blobUrl = URL.createObjectURL(
+    //     new Blob([result.blob], { type: "application/pdf" })
+    //   );
+    //   formPreviewUrl.value = `${blobUrl}#zoom=60`;
+    //   showFormPreview.value = true;
+    // }
+    async function inHouseNominationPreview() {
+      return runNominationForm(scheduleId,async () => {
+        const result = await formStore.fetchInhouseNomination(eventInfo.value.event_id,
+          scheduleId);
+
+        if (result.success) {
+          const url = window.URL.createObjectURL(
+            new Blob([result.blob], { type: "application/pdf" })
+          );
+          window.open(url, "_blank");
+        } else {
+          Swal.fire({
+            title: "Failed",
+            text: result.message || "Unable to preview certificate.",
+            icon: "error",
+            scrollbarPadding: false,
+          });
+        }
+      });
+
+    }
 
     onMounted(async () => {
       await loadSchedule();
@@ -815,6 +888,14 @@ export default defineComponent({
       editReasonText,
       openEditReasonDialog,
       saveEditedReason,
+      formStore,
+      showFormPreview,
+      formPreviewUrl,
+      closeFormPreview,
+      inHouseNominationPreview,
+      isAnyNominationFormLoading,
+      isNominationFormLoading,
+      scheduleId
 
     };
   },
@@ -1187,6 +1268,56 @@ export default defineComponent({
   background: linear-gradient(135deg, #18b64d, #0ca344);
   font-size: 11px;
   font-weight: 650;
+}
+
+.nominate-form-btn {
+  min-height: 38px;
+  padding: 0 20px;
+  border-radius: 10px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0a3fd6 0%, #1e6bff 100%);
+  border: 1px solid #0a3fd6;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 12px rgba(10, 63, 214, 0.28);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.nominate-form-btn .q-icon {
+  font-size: 18px;
+  margin-right: 2px;
+}
+
+.nominate-form-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 8px 18px rgba(10, 63, 214, 0.35);
+}
+
+.nominate-form-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(10, 63, 214, 0.3);
+}
+
+.nominate-form-btn:focus-visible {
+  outline: 3px solid rgba(30, 107, 255, 0.35);
+  outline-offset: 2px;
+}
+
+/* White / outline variant */
+.nominate-form-btn--light {
+  color: #0a3fd6;
+  background: #ffffff;
+  border: 1px solid #b9cbff;
+  box-shadow: 0 2px 6px rgba(10, 63, 214, 0.08);
+}
+
+.nominate-form-btn--light:hover {
+  background: #f1f5ff;
+  border-color: #0a3fd6;
+  filter: none;
+  box-shadow: 0 6px 14px rgba(10, 63, 214, 0.16);
 }
 
 .nomination-dialog {
