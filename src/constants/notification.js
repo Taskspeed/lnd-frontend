@@ -9,5 +9,12 @@ export const notificationRoutes = {
       scheduleId: data.event_schedule_id,
     },
   }),
+   employees_nominated: (data) => ({
+    name: "event-nominated-employee",
+    params: {
+      eventId: data.event_id,
+      scheduleId: data.schedule_id,
+    },
+  }),
 
 };
