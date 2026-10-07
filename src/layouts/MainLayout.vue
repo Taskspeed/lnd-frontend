@@ -116,12 +116,12 @@
                 <q-item-section avatar><q-icon name="event" /></q-item-section>
                 <q-item-section>Events</q-item-section>
               </q-item>
-
+              <div class="nav-section">VITALS SIGNS</div>
               <q-item clickable v-ripple :to="{ name: 'bpm' }" class="nav-item" active-class="nav-item-active">
                 <q-item-section avatar>
                   <q-icon name="account_tree" />
                 </q-item-section>
-
+       
                 <q-item-section> BPM </q-item-section>
               </q-item>
 
