@@ -5,11 +5,10 @@
   --base-font-size: calc(14px + (16 - 14) * ((100vw - 300px) / (1920 - 300)));
 }
 
-html {
-  font-size: var(--base-font-size);
-  font-size: 12px; /* Adjust as needed */
-
-}
+// html {
+//   font-size: var(--base-font-size);
+//   font-size: 12px; /* Adjust as needed */
+// }
 
 body {
   font-family: "Poppins", sans-serif;
@@ -59,22 +58,21 @@ body {
 // =========================================================
 // GLOBAL TABLE TYPOGRAPHY — applies to ALL q-table sa buong app
 // =========================================================
-.q-table {
-  font-family: inherit;
+// .q-table {
+//   font-family: inherit;
 
-  thead tr th {
-    font-size: 12px;
-    font-weight: 700;
-    color: #0d0d0e;
-    letter-spacing: 0.2px;
-  }
+//   thead tr th {
+//     font-size: 12px;
+//     font-weight: 700;
+//     color: #0d0d0e;
+//     letter-spacing: 0.2px;
+//   }
 
-  tbody tr td {
-    font-size: 12px;
-    color: #151718;
-  }
-}
-
+//   tbody tr td {
+//     font-size: 12px;
+//     color: #151718;
+//   }
+// }
 
 .status-badge {
   display: inline-flex;
@@ -88,12 +86,88 @@ body {
   white-space: nowrap;
 }
 
-.status-created { color: #2b6cb0; background: #e7f0fb; }
-.status-up-coming { color: #b8860b; background: #fbf3df; }
-.status-ongoing { color: #087c42; background: #e1f7e7; }
-.status-complete { color:  #2b6cb0; background: #eef1f2; }
-.status-cancelled { color: #c73f3f; background: #fbe9e9; }
+.status-created {
+  color: #2b6cb0;
+  background: #e7f0fb;
+}
+.status-up-coming {
+  color: #b8860b;
+  background: #fbf3df;
+}
+.status-ongoing {
+  color: #087c42;
+  background: #e1f7e7;
+}
+.status-complete {
+  color: #2b6cb0;
+  background: #eef1f2;
+}
+.status-cancelled {
+  color: #c73f3f;
+  background: #fbe9e9;
+}
 
-.status-approved { color: #087c42; background: #e1f7e7; }
-.status-disapproved { color: #c73f3f; background: #fbe9e9; }
-.status-pending  { color: #b8860b; background: #fbf3df; }
+.status-approved {
+  color: #087c42;
+  background: #e1f7e7;
+}
+.status-disapproved {
+  color: #c73f3f;
+  background: #fbe9e9;
+}
+.status-pending {
+  color: #b8860b;
+  background: #fbf3df;
+}
+
+// src/css/app.scss
+
+/* =========================================================
+   SHARED Q-TABLE STYLES — gamitin sa LAHAT ng tables
+========================================================= */
+.app-table {
+  --app-table-data-font-size: 12px;
+
+  box-shadow: none;
+
+  th {
+    height: 48px;
+    color: #0b0d0e;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  td,
+  .q-td {
+    height: 68px;
+    color: #0b0d0e;
+    border-color: #edf1ef;
+    font-size: var(--app-table-data-font-size)!important;
+    font-weight: 410;
+  }
+
+  tbody tr:hover {
+    background: #fafffb;
+  }
+}
+
+.app-table-empty {
+  padding: 30px 0;
+  text-align: center;
+  color: #8a989e;
+  font-size: 12px;
+}
+
+.app-table-cell-title {
+  color: #0b0d0e;
+  font-size: var(--app-table-data-font-size);
+  font-weight: 410;
+}
+
+.app-table-cell-meta {
+  margin-top: 3px;
+  color: #8a989e;
+  font-size: 9px;
+}
