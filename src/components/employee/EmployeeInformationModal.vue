@@ -374,7 +374,7 @@ async function openSubmission(row) {
   }
 
   loadingFormData.value = false
-  // emit('view-submission', row)
+
 }
 
 const { isLoading: isApproveLoading, isAnyLoading: isAnyApproveLoading, run: runApprove } = useRowLoading();
