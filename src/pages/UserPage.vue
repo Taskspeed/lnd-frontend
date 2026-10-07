@@ -10,14 +10,7 @@
         <p>Manage system users, roles, and account access.</p>
       </div>
 
-      <q-btn
-        unelevated
-        no-caps
-        icon="person_add"
-        label="Add User"
-        class="add-user-btn"
-        @click="openAddUser"
-      />
+      <q-btn unelevated no-caps icon="person_add" label="Add User" class="add-user-btn" @click="openAddUser" />
     </section>
 
     <!-- =====================================================
@@ -28,53 +21,32 @@
            FILTERS
       ==================================================== -->
       <div class="filter-section">
-        <q-input
-          v-model="search"
-          outlined
-          dense
-          clearable
-          placeholder="Search by name, username, office, or control no..."
-          class="search-input"
-        >
+        <q-input v-model="search" outlined dense clearable
+          placeholder="Search by name, username, office, or control no..." class="search-input">
           <template #prepend>
             <q-icon name="search" />
           </template>
         </q-input>
 
-        <q-btn
-          flat
-          no-caps
-          icon="filter_alt_off"
-          label="Clear"
-          class="clear-btn"
-          @click="clearFilters"
-        />
+        <q-btn flat no-caps icon="filter_alt_off" label="Clear" class="clear-btn" @click="clearFilters" />
       </div>
 
       <!-- ===================================================
            TABLE
       ==================================================== -->
       <div class="table-wrapper">
-        <q-table
-          flat
-          :rows="filteredUsers"
-          :columns="columns"
-          row-key="id"
-          hide-pagination
-          :rows-per-page-options="[0]"
-          :loading="userStore.isLoading"
-          class="users-table"
-        >
+        <q-table flat :rows="filteredUsers" :columns="columns" row-key="id" hide-pagination :rows-per-page-options="[0]"
+          :loading="userStore.isLoading" class="app-table users-table">
           <!-- USER -->
           <template #body-cell-user="props">
             <q-td :props="props">
               <div class="user-cell">
                 <div class="user-info">
-                  <div class="user-name">
+                  <div class="app-table-cell-title">
                     {{ props.row.name }}
                   </div>
 
-                  <div class="user-email">@{{ props.row.username }}</div>
+                  <!-- <div class="app-table-cell-meta">@{{ props.row.username }}</div> -->
                 </div>
               </div>
             </q-td>
@@ -84,25 +56,11 @@
           <template #body-cell-actions="props">
             <q-td :props="props">
               <div class="action-buttons">
-                <q-btn
-                  flat
-                  round
-                  dense
-                  icon="edit"
-                  class="action-edit"
-                  @click="editUser(props.row)"
-                >
+                <q-btn flat round dense icon="edit" class="action-edit" @click="editUser(props.row)">
                   <q-tooltip> Edit User </q-tooltip>
                 </q-btn>
 
-                <q-btn
-                  flat
-                  round
-                  dense
-                  icon="delete"
-                  class="action-delete"
-                  @click="confirmDeleteUser(props.row)"
-                >
+                <q-btn flat round dense icon="delete" class="action-delete" @click="confirmDeleteUser(props.row)">
                   <q-tooltip> Delete User </q-tooltip>
                 </q-btn>
               </div>
@@ -111,7 +69,7 @@
 
           <!-- EMPTY STATE -->
           <template #no-data>
-            <div class="table-empty">No users found.</div>
+            <div class="app-table-empty">No users found.</div>
           </template>
         </q-table>
       </div>
@@ -149,89 +107,36 @@
 
         <q-separator />
 
-        <q-stepper
-          v-model="addStep"
-          flat
-          animated
-          header-nav
-          class="wizard-stepper"
-        >
+        <q-stepper v-model="addStep" flat animated header-nav class="wizard-stepper">
           <!-- STEP 1: OFFICE + EMPLOYEE -->
           <q-step :name="1" title="Employee" icon="badge" :done="addStep > 1">
-            <q-banner
-              v-if="officeStore.error"
-              dense
-              rounded
-              class="bg-red-2 text-red-9 q-mb-sm"
-            >
+            <q-banner v-if="officeStore.error" dense rounded class="bg-red-2 text-red-9 q-mb-sm">
               {{ officeStore.error }}
             </q-banner>
 
-            <q-select
-              v-model="selectedOffice"
-              outlined
-              dense
-              use-input
-              input-debounce="0"
-              label="Search and select an office"
-              :options="officeOptions"
-              option-label="office_name"
-              option-value="officeId"
-              :loading="officeStore.loading"
-              class="q-mb-sm"
-              @filter="filterOffices"
-              @update:model-value="onOfficeSelected"
-            />
+            <q-select v-model="selectedOffice" outlined dense use-input input-debounce="0"
+              label="Search and select an office" :options="officeOptions" option-label="office_name"
+              option-value="officeId" :loading="officeStore.loading" class="q-mb-sm" @filter="filterOffices"
+              @update:model-value="onOfficeSelected" />
 
             <template v-if="selectedOffice">
-              <q-input
-                v-model="employeeSearch"
-                outlined
-                dense
-                clearable
-                placeholder="Search employees in this office..."
-                class="q-mb-sm"
-              >
+              <q-input v-model="employeeSearch" outlined dense clearable
+                placeholder="Search employees in this office..." class="q-mb-sm">
                 <template #prepend>
                   <q-icon name="search" />
                 </template>
               </q-input>
 
-              <q-table
-                flat
-                :rows="filteredEmployees"
-                :columns="employeeColumns"
-                row-key="ControlNo"
-                hide-pagination
-                wrap-cells
-                :rows-per-page-options="[0]"
-                :loading="officeStore.loading"
-                class="employee-table"
-              >
+              <q-table flat :rows="filteredEmployees" :columns="employeeColumns" row-key="ControlNo" hide-pagination
+                wrap-cells :rows-per-page-options="[0]" :loading="officeStore.loading" class="app-table employee-table">
                 <template #body="props">
-                  <q-tr
-                    :props="props"
-                    class="employee-row"
-                    :class="{
-                      'employee-row--active':
-                        selectedEmployee?.ControlNo === props.row.ControlNo,
-                    }"
-                    @click="selectEmployee(props.row)"
-                  >
-                    <q-td
-                      v-for="col in props.cols"
-                      :key="col.name"
-                      :props="props"
-                    >
-                      <div
-                        v-if="col.name === 'name'"
-                        class="employee-name-cell"
-                      >
-                        <q-icon
-                          name="check_circle"
-                          size="16px"
-                          class="employee-check"
-                        />
+                  <q-tr :props="props" class="employee-row" :class="{
+                    'employee-row--active':
+                      selectedEmployee?.ControlNo === props.row.ControlNo,
+                  }" @click="selectEmployee(props.row)">
+                    <q-td v-for="col in props.cols" :key="col.name" :props="props">
+                      <div v-if="col.name === 'name'" class="employee-name-cell">
+                        <q-icon name="check_circle" size="16px" class="employee-check" />
                         <span>{{ col.value }}</span>
                       </div>
                       <template v-else>{{ col.value }}</template>
@@ -240,7 +145,7 @@
                 </template>
 
                 <template #no-data>
-                  <div class="table-empty">
+                  <div class="app-table-empty">
                     No employees found for this office.
                   </div>
                 </template>
@@ -255,84 +160,30 @@
 
           <!-- STEP 2: ACCOUNT DETAILS -->
           <q-step :name="2" title="Account" icon="admin_panel_settings">
-            <q-banner
-              v-if="userStore.error"
-              dense
-              rounded
-              class="bg-red-2 text-red-9 q-mb-sm"
-            >
+            <q-banner v-if="userStore.error" dense rounded class="bg-red-2 text-red-9 q-mb-sm">
               {{ userStore.error }}
             </q-banner>
 
             <div class="readonly-grid">
-              <q-input
-                :model-value="selectedEmployee?.name"
-                outlined
-                dense
-                readonly
-                label="Full Name"
-              />
+              <q-input :model-value="selectedEmployee?.name" outlined dense readonly label="Full Name" />
 
-              <q-input
-                :model-value="selectedOffice?.office_name"
-                outlined
-                dense
-                readonly
-                label="Office / Division"
-              />
+              <q-input :model-value="selectedOffice?.office_name" outlined dense readonly label="Office / Division" />
             </div>
 
             <div class="form-grid">
-              <q-input
-                v-model="form.username"
-                outlined
-                dense
-                label="Username"
-              />
+              <q-input v-model="form.username" outlined dense label="Username" />
 
-              <q-input
-                v-model="form.password"
-                outlined
-                dense
-                type="password"
-                label="Password"
-              />
+              <q-input v-model="form.password" outlined dense type="password" label="Password" />
 
-              <q-input
-                v-model="form.control_no"
-                outlined
-                dense
-                label="Control No."
-              />
+              <q-input v-model="form.control_no" outlined dense label="Control No." />
 
-              <q-select
-                v-model="form.role"
-                outlined
-                dense
-                emit-value
-                map-options
-                label="Role"
-                :options="rolePermissionStore.roles"
-                option-label="name"
-                option-value="name"
-                :loading="rolePermissionStore.rolesLoading"
-              />
+              <q-select v-model="form.role" outlined dense emit-value map-options label="Role"
+                :options="rolePermissionStore.roles" option-label="name" option-value="name"
+                :loading="rolePermissionStore.rolesLoading" />
 
-              <q-select
-                v-model="form.permissions"
-                outlined
-                dense
-                multiple
-                use-chips
-                emit-value
-                map-options
-                label="Permissions"
-                :options="rolePermissionStore.permissions"
-                option-label="name"
-                option-value="name"
-                :loading="rolePermissionStore.permissionsLoading"
-                class="col-span-2"
-              />
+              <q-select v-model="form.permissions" outlined dense multiple use-chips emit-value map-options
+                label="Permissions" :options="rolePermissionStore.permissions" option-label="name" option-value="name"
+                :loading="rolePermissionStore.permissionsLoading" class="col-span-2" />
             </div>
           </q-step>
         </q-stepper>
@@ -340,37 +191,15 @@
         <q-separator />
 
         <q-card-actions align="right" class="dialog-actions">
-          <q-btn
-            v-if="addStep > 1"
-            flat
-            no-caps
-            label="Back"
-            class="cancel-btn"
-            @click="goBack"
-          />
+          <q-btn v-if="addStep > 1" flat no-caps label="Back" class="cancel-btn" @click="goBack" />
 
           <q-btn flat no-caps label="Cancel" class="cancel-btn" v-close-popup />
 
-          <q-btn
-            v-if="addStep < 2"
-            unelevated
-            no-caps
-            label="Continue"
-            class="save-btn"
-            :disable="!canContinue"
-            :loading="officeStore.loading"
-            @click="goNext"
-          />
+          <q-btn v-if="addStep < 2" unelevated no-caps label="Continue" class="save-btn" :disable="!canContinue"
+            :loading="officeStore.loading" @click="goNext" />
 
-          <q-btn
-            v-else
-            unelevated
-            no-caps
-            label="Create User"
-            class="save-btn"
-            :loading="userStore.isLoading"
-            @click="createUserFromWizard"
-          />
+          <q-btn v-else unelevated no-caps label="Create User" class="save-btn" :loading="userStore.isLoading"
+            @click="createUserFromWizard" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -393,12 +222,7 @@
         <q-separator />
 
         <q-card-section class="dialog-body">
-          <q-banner
-            v-if="userStore.error"
-            dense
-            rounded
-            class="bg-red-2 text-red-9 q-mb-sm"
-          >
+          <q-banner v-if="userStore.error" dense rounded class="bg-red-2 text-red-9 q-mb-sm">
             {{ userStore.error }}
           </q-banner>
 
@@ -407,63 +231,25 @@
 
             <q-input v-model="form.username" outlined dense label="Username" />
 
-            <q-input
-              v-model="form.password"
-              outlined
-              dense
-              type="password"
-              label="New Password (optional)"
-            />
+            <q-input v-model="form.password" outlined dense type="password" label="New Password (optional)" />
 
-            <q-input
-              v-model="form.control_no"
-              outlined
-              dense
-              label="Control No."
-            />
+            <q-input v-model="form.control_no" outlined dense label="Control No." />
 
-            <q-select
-              v-model="form.role"
-              outlined
-              dense
-              emit-value
-              map-options
-              label="Role"
-              :options="rolePermissionStore.roles"
-              option-label="name"
-              option-value="name"
-              :loading="rolePermissionStore.rolesLoading"
-            />
+            <q-select v-model="form.role" outlined dense emit-value map-options label="Role"
+              :options="rolePermissionStore.roles" option-label="name" option-value="name"
+              :loading="rolePermissionStore.rolesLoading" />
 
-            <q-select
-              v-model="form.permissions"
-              outlined
-              dense
-              multiple
-              use-chips
-              emit-value
-              map-options
-              label="Permissions"
-              :options="rolePermissionStore.permissions"
-              option-label="name"
-              option-value="name"
-              :loading="rolePermissionStore.permissionsLoading"
-              class="col-span-2"
-            />
+            <q-select v-model="form.permissions" outlined dense multiple use-chips emit-value map-options
+              label="Permissions" :options="rolePermissionStore.permissions" option-label="name" option-value="name"
+              :loading="rolePermissionStore.permissionsLoading" class="col-span-2" />
           </div>
         </q-card-section>
 
         <q-card-actions align="right" class="dialog-actions">
           <q-btn flat no-caps label="Cancel" class="cancel-btn" v-close-popup />
 
-          <q-btn
-            unelevated
-            no-caps
-            label="Save Changes"
-            class="save-btn"
-            :loading="userStore.isLoading"
-            @click="saveEditedUser"
-          />
+          <q-btn unelevated no-caps label="Save Changes" class="save-btn" :loading="userStore.isLoading"
+            @click="saveEditedUser" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -477,22 +263,15 @@
           <div class="delete-title">Delete User</div>
           <div class="delete-message">
             Are you sure you want to delete
-            <strong>{{ userToDelete?.name }}</strong
-            >? This action cannot be undone.
+            <strong>{{ userToDelete?.name }}</strong>? This action cannot be undone.
           </div>
         </q-card-section>
 
         <q-card-actions align="right" class="dialog-actions">
           <q-btn flat no-caps label="Cancel" class="cancel-btn" v-close-popup />
 
-          <q-btn
-            unelevated
-            no-caps
-            label="Delete"
-            class="delete-btn"
-            :loading="userStore.isLoading"
-            @click="deleteUser"
-          />
+          <q-btn unelevated no-caps label="Delete" class="delete-btn" :loading="userStore.isLoading"
+            @click="deleteUser" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -530,21 +309,21 @@ export default defineComponent({
       },
       {
         name: "control_no",
-        label: "CONTROL NO.",
+        label: "CONTROL NO",
         field: "control_no",
         align: "left",
       },
       {
         name: "office",
-        label: "OFFICE / DIVISION",
+        label: "OFFICE",
         field: "office",
         align: "left",
       },
       {
         name: "actions",
-        label: "",
+        label: "Action",
         field: "actions",
-        align: "right",
+        align: "center",
       },
     ];
 
@@ -1058,42 +837,6 @@ export default defineComponent({
   box-shadow: none;
 }
 
-.users-table :deep(th) {
-  height: 48px;
-
-  color: #819097;
-
-  background: #ffffff;
-
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-}
-
-.users-table :deep(td) {
-  height: 68px;
-
-  color: #425b68;
-
-  border-color: #edf1ef;
-
-  font-size: 11px;
-}
-
-.users-table :deep(tbody tr:hover) {
-  background: #fafffb;
-}
-
-.table-empty {
-  padding: 30px 0;
-
-  text-align: center;
-
-  color: #8a989e;
-
-  font-size: 12px;
-}
-
 /* =========================================================
    USER CELL
 ========================================================= */
@@ -1118,28 +861,13 @@ export default defineComponent({
   min-width: 0;
 }
 
-.user-name {
-  color: #19354a;
-
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.user-email {
-  margin-top: 3px;
-
-  color: #8a989e;
-
-  font-size: 9px;
-}
-
 /* =========================================================
    ACTIONS
 ========================================================= */
 
 .action-buttons {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
 
   gap: 2px;
 }
@@ -1205,17 +933,6 @@ export default defineComponent({
 
 .employee-table {
   max-height: 280px;
-}
-
-.employee-table :deep(th) {
-  font-size: 9px;
-  font-weight: 700;
-  color: #819097;
-}
-
-.employee-table :deep(td) {
-  font-size: 11px;
-  color: #425b68;
 }
 
 /* Rows are clickable in place of a dedicated "select" column. */
