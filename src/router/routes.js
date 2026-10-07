@@ -7,7 +7,7 @@ const routes = [
       {
         path: "",
         name: "login",
-        component: () => import("pages/LoginPage.vue"),
+        component: () => import("pages/LoginPage2.vue"),
         meta: { requiresAuth: false },
       },
     ],
@@ -153,6 +153,12 @@ const routes = [
         path: "office/events/:scheduleId",
         name: "office-event-view",
         component: () => import("pages/office/event/EventViewPage.vue"),
+      },
+
+         {
+        path: "profile",
+        name: "profile",
+        component: () => import("pages/ProfilePage.vue"),
       },
     ],
   },
