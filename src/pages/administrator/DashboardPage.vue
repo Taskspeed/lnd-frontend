@@ -157,8 +157,7 @@
 <script>
 import { defineComponent, ref } from "vue";
 import { useRouter } from "vue-router";
-import EventCalendar from "src/components/calendar/EventCalendar.vue";
-
+import EventCalendar from "src/components/calendar/administrator/EventCalendar.vue";
 export default defineComponent({
   name: "DashboardPage",
 
