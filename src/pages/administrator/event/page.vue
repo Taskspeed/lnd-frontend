@@ -31,44 +31,16 @@
         </LabeledField>
 
         <!-- L&D INTERVENTION -->
-        <!-- <div class="section-divider"></div>
+        <div class="section-divider"></div>
 
-        <div class="section-title forms-title">L&amp;D Intervention</div> -->
+        <div class="section-title forms-title">L&amp;D Intervention</div>
 
         <!-- INTERVENTION -->
-        <!-- <LabeledField label="Intervention">
+        <LabeledField label="Intervention">
           <q-select v-model="eventForm.intervention_name" outlined dense emit-value map-options
             :options="interventionOptions" placeholder="Select Intervention" class="custom-input" :display-value="eventForm.intervention_name ? undefined : 'Select Intervention'
               " />
-        </LabeledField> -->
-
-
-        <!-- <div class="section-title forms-title">Forms</div>
-        <div class="competency-group">
-          <div class="competency-grid">
-            <q-checkbox v-for="option in formsOptions" :key="option.value" :model-value="true" :val="option.value"
-              :label="option.label" color="green" keep-color dense disable class="competency-checkbox" />
-          </div>
-        </div> -->
-        <div class="section-divider"></div>
-
-        <div class="section-title forms-title">Forms</div>
-        <div class="competency-group">
-          <div class="forms-list">
-            <q-checkbox v-for="option in formsOptions" :key="option.value" v-model="eventForm.forms" :val="option.value"
-              :label="option.label" color="green" keep-color dense disable class="competency-checkbox" />
-          </div>
-        </div>
-
-        <div class="section-divider"></div>
-
-        <div class="section-title forms-title">Evaluation</div>
-        <div class="competency-group">
-          <div class="forms-list">
-            <q-checkbox v-for="option in evaluationOptions" :key="option.value" v-model="eventForm.evaluations"
-              :val="option.value" :label="option.label" color="green" keep-color disable dense class="competency-checkbox" />
-          </div>
-        </div>
+        </LabeledField>
 
       </template>
 
@@ -128,6 +100,7 @@
              the default panel before an Intervention is chosen) -->
         <template v-else>
           <div class="section-title">Schedule Details</div>
+
           <LabeledField label="Venue">
             <q-select v-model="eventForm.venue_name" outlined dense use-input hide-selected fill-input
               input-debounce="400" new-value-mode="add-unique" :options="venueOptions" :loading="venueLoading"
@@ -137,44 +110,22 @@
           </LabeledField>
           <!-- type and category -->
           <div class="two-column-fields">
-            <LabeledField label="Learning Type">
-              <q-select v-model="eventForm.intervention_name" outlined dense emit-value map-options
-                :options="interventionOptions" placeholder="Select Intervention" class="custom-input" :display-value="eventForm.intervention_name ? undefined : 'Select Intervention'
-                  " />
-            </LabeledField>
-            <!-- SOURCE (DROPDOWN) -->
 
-            <LabeledField label="Source">
-              <q-select v-model="eventForm.source_name" outlined dense emit-value map-options :options="sourceOptions"
-                placeholder="Select Source" class="custom-input"
-                :display-value="eventForm.source_name ? undefined : 'Select Source'" />
-
-              <div v-if="eventForm.source_name" class="source-hint">
-                {{ eventForm.source_name === 'internal' ? 'Training conducted by HRDD' : 'Training through Concerned Office' }}
-              </div>
-            </LabeledField>
-
-            <LabeledField label="Competency">
+            <LabeledField label="Category">
               <q-select v-model="eventForm.category_name" outlined dense use-input hide-selected fill-input
                 input-debounce="400" new-value-mode="add-unique" :options="categoryOptions" :loading="categoryLoading"
                 @filter="filterCategory" @input-value="onCategoryInput" popup-content-class="title-dropdown-scroll"
                 placeholder="Enter event category" class="custom-input" />
             </LabeledField>
-            <LabeledField label="Hours">
-              <q-input v-model.number="eventForm.hours" type="number" outlined dense min="0"
-                placeholder="Enter number of hours" class="custom-input" />
-            </LabeledField>
-            <LabeledField label="Activity">
+            <LabeledField label="Type">
               <q-select v-model="eventForm.type_name" outlined dense use-input hide-selected fill-input
                 input-debounce="400" new-value-mode="add-unique" :options="typeOptions" :loading="typeLoading"
                 @filter="filterType" @input-value="onTypeInput" placeholder="Enter event type"
                 popup-content-class="title-dropdown-scroll" class="custom-input" />
             </LabeledField>
 
-            <LabeledField label="Conductor">
-              <q-input v-model.number="eventForm.conducted_by" type="string" outlined dense
-                placeholder="Enter conductor" class="custom-input" />
-            </LabeledField>
+
+
 
             <LabeledField label="Mode">
               <q-select v-model="eventForm.mode_name" outlined dense use-input hide-selected fill-input
@@ -183,35 +134,49 @@
                 popup-content-class="title-dropdown-scroll" class="custom-input" />
             </LabeledField>
 
+            <LabeledField label="Conductor">
+              <q-input v-model.number="eventForm.conductor" type="string" outlined dense placeholder="Enter conductor"
+                class="custom-input" />
+            </LabeledField>
+            <!-- SOURCE (DROPDOWN) -->
+
+            <LabeledField label="Source">
+              <q-select v-model="eventForm.source_name" outlined dense emit-value map-options
+                :options="sourceOptions" placeholder="Select Source" class="custom-input"
+                :display-value="eventForm.source_name ? undefined : 'Select Source'" />
+
+              <div v-if="eventForm.source_name" class="source-hint">
+                {{ eventForm.source_name === 'internal' ? 'Training conducted by HRDD' : 'Training through Concerned Office' }}
+              </div>
+            </LabeledField>
+
+            <LabeledField label="Hours">
+              <q-input v-model.number="eventForm.hours" type="number" outlined dense min="0"
+                placeholder="Enter number of hours" class="custom-input" />
+            </LabeledField>
+            
+           <LabeledField label="Qualifications">
+
+            <q-input v-model="eventForm.qualifications" outlined dense type="text" rows="2"
+              placeholder="Enter qualifications" class="custom-input" />
+          </LabeledField>
+
 
             <LabeledField label="fee">
-              <q-input v-model="eventForm.fee" outlined dense placeholder="fee" class="custom-input" />
+               <q-input v-model="eventForm.fee" outlined dense placeholder="fee"
+                class="custom-input" />
             </LabeledField>
-
-
-
-            <LabeledField label="Qualifications">
-
-              <q-input v-model="eventForm.qualifications" outlined dense type="text" rows="2"
-                placeholder="Enter qualifications" class="custom-input" />
-            </LabeledField>
-
-
-
 
           </div>
-          <div class="section-divider"></div>
+               <div class="section-divider"></div>
           <!-- RESOURCE SPEAKER -->
           <LabeledField label="Resource Speaker" class="speaker-group">
             <div v-for="(speaker, index) in eventForm.speakers" :key="speaker.id" class="speaker-row">
               <q-input v-model="speaker.name" outlined dense placeholder="Enter resource speaker"
                 class="custom-input speaker-input" />
-              <q-input v-model="speaker.position" outlined dense placeholder="Position"
-                class="custom-input speaker-agency-input" />
 
               <q-input v-model="speaker.agency" outlined dense placeholder="Agency"
                 class="custom-input speaker-agency-input" />
-
 
               <q-btn v-if="eventForm.speakers.length > 1" flat round dense icon="close" class="remove-speaker-btn"
                 @click="removeSpeaker(index)">
@@ -281,10 +246,10 @@
                     No dates selected
                   </div>
 
-                  <!-- <div v-if="eventForm.schedules.length" class="total-hours-label">
+                  <div v-if="eventForm.schedules.length" class="total-hours-label">
                     Total Hours: <strong>{{ totalScheduleHours }} hrs</strong>
                     <span class="lunch-note">(lunch break 12:00–1:00 excluded)</span>
-                  </div> -->
+                  </div>
                 </div>
 
                 <q-btn outline no-caps icon="calendar_month" label="Select Date" class="select-date-btn"
@@ -324,8 +289,8 @@
                         </template>
                       </q-input>
 
-                      <!-- START TIME (q-time picker, 24hr storage) -->
-                      <q-input :model-value="formatTimeDisplay(schedule.morning_out)" outlined dense
+                          <!-- START TIME (q-time picker, 24hr storage) -->
+                      <q-input :model-value="formatTimeDisplay(schedule.morning_out)" outlined dense 
                         placeholder="Morning Out" class="time-input">
                         <template #append>
                           <q-icon name="access_time" class="time-picker-icon">
@@ -357,7 +322,7 @@
                           </q-icon>
                         </template>
                       </q-input>
-                      <q-input :model-value="formatTimeDisplay(schedule.afternoon_out)" outlined dense
+                       <q-input :model-value="formatTimeDisplay(schedule.afternoon_out)" outlined dense 
                         placeholder="Afternoon Out" class="time-input">
                         <template #append>
                           <q-icon name="access_time" class="time-picker-icon">
@@ -377,8 +342,6 @@
                   <!-- <div class="hours-column schedule-hours">
                     {{ getScheduleHours(schedule) }} hrs
                   </div> -->
-
-                  <!-- Action Column -->
 
                   <div class="action-column">
                     <q-btn flat round dense icon="delete_outline" class="delete-btn" @click="removeSchedule(index)">
@@ -403,7 +366,6 @@
                     <strong>{{ totalAttendees }}</strong>
                   </div>
                 </div>
-
                 <div class="add-department-wrapper">
                   <q-btn outline no-caps icon="add" label="Add Department" class="add-department-btn"
                     @click="openDepartmentDialog" />
@@ -440,20 +402,12 @@
                   </template>
 
                   <!-- Action Column -->
-
                   <template #body-cell-action="props">
                     <q-td :props="props">
-                      <div class="action-btn-group">
-                        <q-btn flat round dense icon="visibility" color="primary"
-                          @click="openDepartmentEmployeesDialog(props.row)">
-                          <q-tooltip>View Selected Employees</q-tooltip>
-                        </q-btn>
-
-                        <q-btn flat round dense icon="delete_outline" class="delete-btn"
-                          @click="removeDepartment(props.rowIndex)">
-                          <q-tooltip>Remove Department</q-tooltip>
-                        </q-btn>
-                      </div>
+                      <q-btn flat round dense icon="delete_outline" class="delete-btn"
+                        @click="removeDepartment(props.rowIndex)">
+                        <q-tooltip>Remove Department</q-tooltip>
+                      </q-btn>
                     </q-td>
                   </template>
 
@@ -777,40 +731,6 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-
-
-    <!-- =========================================================
-     DEPARTMENT EMPLOYEES VIEW DIALOG
-========================================================== -->
-    <q-dialog v-model="showDepartmentEmployeesDialog">
-      <q-card class="department-employees-dialog">
-        <EventDialogHeader :title="viewingDepartment?.name || 'Selected Employees'"
-          :subtitle="`${viewingDepartment?.employees?.length || 0} employee(s) selected`" />
-
-        <q-separator />
-
-        <q-card-section class="department-employees-body">
-          <div v-if="viewingDepartment?.employees?.length" class="employees-list">
-            <div v-for="emp in viewingDepartment.employees" :key="emp.control_no" class="employee-list-item">
-              <q-icon name="person" size="18px" color="grey-6" />
-              <div class="employee-list-info">
-                <div class="employee-list-name">{{ emp.name }}</div>
-                <div v-if="emp.position" class="employee-list-position">{{ emp.position }}</div>
-                <div v-if="emp.status" class="employee-list-position">{{ emp.status }}</div>
-              </div>
-            </div>
-          </div>
-
-          <div v-else class="record-empty">
-            No employees selected for this department.
-          </div>
-        </q-card-section>
-
-        <q-card-actions align="right" class="dialog-actions">
-          <q-btn flat no-caps label="Close" v-close-popup />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </q-page>
 </template>
 
@@ -834,9 +754,7 @@ import { useTypeStore } from "src/stores/library/event/typeStore";
 import { coreOptions, technicalOptions, leadershipOptions } from "src/constants/competency";
 import { sourceOptions } from "src/constants/source";
 
-import { buildCompetenciesPayload, buildFormsPayload } from "src/composables/event/useCreateEventPayload";
-
-import { formsOptions, evaluationOptions } from "src/constants/form";
+import { buildCompetenciesPayload } from "src/composables/event/useCreateEventPayload";
 
 export default defineComponent({
   name: "CreateEventPage",
@@ -884,40 +802,11 @@ export default defineComponent({
 
     const officeStore = useOfficeStore();
 
-    const eventForm = ref({
-      title_name: "",
-      category_name: null,
-      source_name: null,
-      intervention_name: "Formal Learning",
-      type_name: null,
-      venue_name: "",
-      mode_name: null,
-      competencies: [],
-      hours: null,
-      conducted_by: null,
-      speakers: [
-        {
-          id: Date.now(),
-          name: "",
-          agency: "",
-          position: "",
-        },
-      ],
-      // forms:[],
-    schedules: [],
-    departments: [],
-    employees: [], // ← idagdag ito
-    forms: formsOptions.map((o) => o.value),            // naka-check lahat by default
-    evaluations: evaluationOptions.map((o) => o.value), 
-    });
-
     // =========================================================
     // LOADING
     // =========================================================
     const saving = ref(false);
     const activeTab = ref("schedule");
-
-    //
 
 
     //suggested employee
@@ -1092,7 +981,26 @@ export default defineComponent({
 
     //   departments: [],
     // });
-
+    const eventForm = ref({
+      title_name: "",
+      category_name: null,
+      source_name: null,
+      intervention_name: "Formal Learning",
+      type_name: null,
+      venue_name: "",
+      mode_name: null,
+      competencies: [], 
+      hours:null,
+      speakers: [
+        {
+          id: Date.now(),
+          name: "",
+          agency: "",
+        },
+      ],
+      schedules: [],
+      departments: [],
+    });
 
     // =========================================================
     // OPTIONS
@@ -1113,8 +1021,8 @@ export default defineComponent({
     // =========================================================
     const interventionOptions = [
       { label: "Formal Learning", value: "Formal Learning" },
-      { label: "Experiential Learning", value: "Experiential Learning" },
-      { label: "Social Learning", value: "Social Learning" },
+      // { label: "Learning by Doing", value: "Learning by Doing" },
+      // { label: "Social Learning", value: "Social Learning" },
       // { label: "Self-Directed Learning", value: "Self-Directed Learning" },
     ];
 
@@ -1394,7 +1302,6 @@ export default defineComponent({
         id: Date.now() + Math.random(),
         name: "",
         agency: "",
-        position: "",
       });
     }
 
@@ -1432,17 +1339,17 @@ export default defineComponent({
       const oldSchedules = eventForm.value.schedules;
 
       eventForm.value.schedules = selectedDates.value.map((date) => {
-        const existing = oldSchedules.find((schedule) => schedule.rawDate === date);
+        const existing = oldSchedules.find(
+          (schedule) => schedule.rawDate === date
+        );
 
         return {
           id: existing?.id || Date.now() + Math.random(),
           rawDate: date,
           date: formatDate(date),
-          // Default to 08:00 - 17:00, same as EventCreatePage
-          morning_in: existing?.morning_in || "08:00",
-          morning_out: existing?.morning_out || "12:00",
-          afternoon_in: existing?.afternoon_in || "13:00",
-          afternoon_out: existing?.afternoon_out || "17:00",
+          // Default to 08:00 - 17:00 (24hr "HH:mm"), matches q-time's mask
+          time_start: existing?.time_start || "08:00",
+          time_end: existing?.time_end || "17:00",
         };
       });
 
@@ -1547,13 +1454,13 @@ export default defineComponent({
       return formatHours(computeScheduleMinutes(schedule));
     }
 
-    // const totalScheduleHours = computed(() => {
-    //   const totalMinutes = eventForm.value.schedules.reduce(
-    //     (sum, schedule) => sum + computeScheduleMinutes(schedule),
-    //     0
-    //   );
-    //   return formatHours(totalMinutes);
-    // });
+    const totalScheduleHours = computed(() => {
+      const totalMinutes = eventForm.value.schedules.reduce(
+        (sum, schedule) => sum + computeScheduleMinutes(schedule),
+        0
+      );
+      return formatHours(totalMinutes);
+    });
 
     // =========================================================
     // DEPARTMENT DIALOG
@@ -1613,11 +1520,11 @@ export default defineComponent({
       selectedOffices.value.forEach((office) => {
         office._attendees = isNaN(count) ? 0 : count;
       });
-      //  Notify.create({
-      //   type: "warning",
-      //   message: "Please enter an event title first.",
-      //   position: "top",
-      // });
+        //  Notify.create({
+        //   type: "warning",
+        //   message: "Please enter an event title first.",
+        //   position: "top",
+        // });
 
       Notify.create({
         type: "positive",
@@ -1628,64 +1535,20 @@ export default defineComponent({
       });
     }
 
-    // function addSelectedDepartments() {
-    //   eventForm.value.departments = selectedOffices.value.map((office) => ({
-    //     id: office.officeId,
-    //     name: office.office_name,
-    //     attendees: Number(office._attendees) || 0,
-    //   }));
-
-    //   // NEW: flatten per-office employee selections into eventForm
-    //   eventForm.value.employees = Object.entries(selectedEmployeesByOffice.value)
-    //     .flatMap(([officeName, employees]) =>
-    //       employees.map((emp) => ({
-    //         control_no: emp.ControlNo,
-    //         name: emp.name,
-    //         office: officeName,
-    //       }))
-    //     );
-
-    //   showDepartmentDialog.value = false;
-
-    //   if (selectedOffices.value.length > 0) {
-    //     Notify.create({
-    //       type: "positive",
-    //       message: `${selectedOffices.value.length} department(s) added successfully.`,
-    //       position: "top",
-    //       timeout: 2000,
-    //     });
-    //   }
-    // }
-
-    const showDepartmentEmployeesDialog = ref(false);
-    const viewingDepartment = ref(null);
-
-    function openDepartmentEmployeesDialog(department) {
-      viewingDepartment.value = department;
-      showDepartmentEmployeesDialog.value = true;
-    }
     function addSelectedDepartments() {
       eventForm.value.departments = selectedOffices.value.map((office) => ({
         id: office.officeId,
         name: office.office_name,
         attendees: Number(office._attendees) || 0,
-        employees: (selectedEmployeesByOffice.value[office.office_name] || []).map((emp) => ({
-          control_no: emp.ControlNo,
-          name: emp.name,
-          position: emp.position,
-          status: emp.status,
-        })),
       }));
 
-      // Flat list ng LAHAT ng napiling employees (across all offices) — ito ang gagamitin sa payload
+      // NEW: flatten per-office employee selections into eventForm
       eventForm.value.employees = Object.entries(selectedEmployeesByOffice.value)
         .flatMap(([officeName, employees]) =>
           employees.map((emp) => ({
             control_no: emp.ControlNo,
             name: emp.name,
-            position: emp.position,
-            office: emp.office,
-            status: emp.status,
+            office: officeName,
           }))
         );
 
@@ -1738,8 +1601,6 @@ export default defineComponent({
     function cancelCreate() {
       router.back();
     }
-
-
 
     // =========================================================
     // CREATE EVENT
@@ -1795,44 +1656,35 @@ export default defineComponent({
       }
 
       // Build payload according to API expectations
-      const payload = {
-        title_name: eventForm.value.title_name,
-        category_name: eventForm.value.category_name,
-        intervention_name: eventForm.value.intervention_name,
-        type_name: eventForm.value.type_name,
-        conducted_by: eventForm.value.conducted_by,
-        source_name: eventForm.value.source_name,
-        qualifications: eventForm.value.qualifications || null,
-        hours: eventForm.value.hours,
-        venue_name: eventForm.value.venue_name,
-        mode_name: eventForm.value.mode_name,
-        fee: eventForm.value.fee,
-
-        employee: eventForm.value.employees, // ← idagdag ito
-
-        office: eventForm.value.departments.map((department) => ({
-          office_name: department.name,
+    const payload = {
+      title_name: eventForm.value.title_name,
+      category_name: eventForm.value.category_name,
+      intervention_name: eventForm.value.intervention_name,
+      type_name: eventForm.value.type_name,
+      source_name: eventForm.value.source_name,
+      qualifications: eventForm.value.qualifications || null,
+      hours: eventForm.value.hours,
+      venue_name: eventForm.value.venue_name,
+      mode_name: eventForm.value.mode_name,
+      fee: eventForm.value.fee,
+      ...buildCompetenciesPayload(eventForm.value.competencies), // ← spread, hindi nested key
+      office: eventForm.value.departments.map((department) => ({
+        office_name: department.name,
+      })),
+      speaker: eventForm.value.speakers
+        .filter((speaker) => speaker.name.trim())
+        .map((speaker) => ({
+          speaker_name: speaker.name,
+          agency_name: speaker.agency,
         })),
-
-        speaker: eventForm.value.speakers
-          .filter((speaker) => speaker.name.trim())
-          .map((speaker) => ({
-            speaker_name: speaker.name,
-            agency: speaker.agency,
-            position: speaker.position,
-          })),
-        DateTime: eventForm.value.schedules.map((schedule) => ({
-          schedule_date: schedule.rawDate,
-          morning_in: formatTimeDisplay(schedule.morning_in),
-          morning_out: formatTimeDisplay(schedule.morning_out),
-          afternoon_in: formatTimeDisplay(schedule.afternoon_in),
-          afternoon_out: formatTimeDisplay(schedule.afternoon_out),
-        })),
-
-        ...buildFormsPayload(eventForm.value.forms, eventForm.value.evaluations),
-        ...buildCompetenciesPayload(eventForm.value.competencies), // ← spread, hindi nested key
-
-      };
+      DateTime: eventForm.value.schedules.map((schedule) => ({
+        schedule_date: schedule.rawDate,
+        morning_in: formatTimeDisplay(schedule.morning_in),
+        morning_out: formatTimeDisplay(schedule.morning_out),
+        afternoon_in: formatTimeDisplay(schedule.afternoon_in),
+        afternoon_out: formatTimeDisplay(schedule.afternoon_out),
+      })),
+    };
 
       eventStore.clearError();
       saving.value = true;
@@ -2007,7 +1859,7 @@ export default defineComponent({
       selectedDateRange,
       formatTimeDisplay,
       getScheduleHours,
-      // totalScheduleHours,
+      totalScheduleHours,
       showDepartmentDialog,
       openDepartmentDialog,
       updateAttendeeValue,
@@ -2072,16 +1924,8 @@ export default defineComponent({
       //competency
       coreOptions,
       technicalOptions,
-      leadershipOptions,
+      leadershipOptions
 
-      //show office with employee
-      showDepartmentEmployeesDialog,
-      viewingDepartment,
-      openDepartmentEmployeesDialog,
-
-      // forms
-      formsOptions,
-      evaluationOptions
     };
   },
 });
@@ -2262,7 +2106,6 @@ export default defineComponent({
   color: #333333;
   font-size: 12px;
   font-weight: 500;
-  margin-top: 13px;
 }
 
 .selected-date-range.empty {
@@ -2582,13 +2425,8 @@ export default defineComponent({
 }
 
 .cancel-btn {
-  min-height: 38px;
-  padding: 0 22px;
-  border-radius: 8px;
-  color: #ffffff;
-  background: red;
+  color: #777777;
   font-size: 11px;
-  font-weight: 600;
 }
 
 .create-btn {
@@ -3060,69 +2898,6 @@ export default defineComponent({
 .source-hint {
   /* margin-top: 4px; */
   color: #666666;
-  font-size: 11px;
-}
-
-.action-btn-group {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-}
-
-.department-employees-dialog {
-  width: 480px;
-  max-width: 92vw;
-  border-radius: 13px;
-}
-
-.department-employees-body {
-  padding: 18px;
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.employees-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.employee-list-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border: 1px solid #eeeeee;
-  border-radius: 8px;
-}
-
-.employee-list-name {
-  color: #222222;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.employee-list-position {
-  color: #888888;
-  font-size: 11px;
-}
-
-/* =========================================================
-   FORMS (left panel)
-========================================================= */
-.forms-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.forms-list :deep(.q-checkbox) {
-  min-height: 30px;
-}
-
-.forms-list :deep(.q-checkbox__label) {
-  color: #373737;
   font-size: 11px;
 }
 </style>

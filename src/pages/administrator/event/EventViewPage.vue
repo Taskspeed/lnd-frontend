@@ -57,8 +57,20 @@
           <div class="section-title forms-title">Forms</div>
           <div class="competency-group">
             <div class="forms-list">
-              <q-checkbox v-for="option in formsOptions" :key="option.value" :model-value="true" :val="option.value"
-                :label="option.label" color="green" keep-color dense disable class="competency-checkbox" />
+              <q-checkbox v-for="option in formsOptions" :key="option.value"
+                :model-value="isFormSelected(option)" :label="option.label"
+                color="green" keep-color dense disable class="competency-checkbox" />
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <div class="section-title forms-title">Evaluation</div>
+          <div class="competency-group">
+            <div class="forms-list">
+              <q-checkbox v-for="option in evaluationOptions" :key="option.value"
+                :model-value="isFormSelected(option)" :label="option.label"
+                color="green" keep-color dense disable class="competency-checkbox" />
             </div>
           </div>
         </template>
@@ -190,7 +202,7 @@ import EventTwoColumnLayout from "components/events/EventTwoColumnLayout.vue";
 import LabeledField from "components/events/LabeledField.vue";
 import ScheduleFormPanel from "components/events/ScheduleFormPanel.vue";
 
-import { formsOptions } from "src/constants/form";
+import { evaluationOptions, formsOptions } from "src/constants/form";
 
 import { useScheduleStore } from "src/stores/event/schedule/scheduleStore";
 import Swal from "sweetalert2";
@@ -530,6 +542,13 @@ export default defineComponent({
     function goBack() {
       router.back();
     }
+    const selectedFormNames = computed(() =>
+      (event.value?.form || []).map((f) => f.form_name?.trim().toLowerCase())
+    );
+
+    function isFormSelected(option) {
+      return selectedFormNames.value.includes(option.label.trim().toLowerCase());
+    }
 
     // =========================================================
     // RETURN
@@ -556,6 +575,9 @@ export default defineComponent({
       // Page nav
       viewSchedule,
       goBack,
+      evaluationOptions,
+      isFormSelected, // ← idagdag
+
     };
   },
 });

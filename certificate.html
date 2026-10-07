@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Certificate of Training Completion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,500&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --deep-green: #14532d;
+    --mid-green: #1f7a4d;
+    --accent-green: #2fa86b;
+    --mint: #eaf7ef;
+    --mint-line: #cfe9d9;
+    --ink: #1c2b22;
+    --muted: #5b6f62;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #d9e8de;
+    font-family: 'Work Sans', sans-serif;
+    color: var(--ink);
+  }
+
+  .page {
+    width: 1000px;
+    max-width: 100%;
+    margin: 32px auto;
+  }
+
+  /* =========================================================
+     CERTIFICATE FRAME
+  ========================================================= */
+
+  .certificate {
+    position: relative;
+    background: #ffffff;
+    aspect-ratio: 1000 / 760;
+    overflow: hidden;
+    box-shadow: 0 18px 45px rgba(20, 83, 45, 0.18);
+  }
+
+  /* corner notches, mirroring the cut-corner border of the reference */
+  .corner {
+    position: absolute;
+    width: 190px;
+    height: 190px;
+    background: var(--deep-green);
+  }
+
+  .corner::after {
+    content: "";
+    position: absolute;
+    width: 190px;
+    height: 190px;
+    background: #ffffff;
+  }
+
+  .corner-tl { top: -95px; left: -95px; transform: rotate(45deg); }
+  .corner-tl::after { top: 40px; left: 40px; }
+
+  .corner-br { bottom: -95px; right: -95px; transform: rotate(45deg); }
+  .corner-br::after { top: 40px; left: 40px; }
+
+  .corner-accent {
+    position: absolute;
+    width: 190px;
+    height: 190px;
+    background: var(--accent-green);
+    opacity: 0.55;
+  }
+
+  .corner-accent-tl { top: -125px; left: -65px; transform: rotate(45deg); }
+  .corner-accent-br { bottom: -125px; right: -65px; transform: rotate(45deg); }
+
+  .inner-border {
+    position: absolute;
+    inset: 26px;
+    border: 1.5px solid var(--mint-line);
+    pointer-events: none;
+  }
+
+  /* =========================================================
+     CONTENT
+  ========================================================= */
+
+  .content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 56px 90px 44px;
+    text-align: center;
+  }
+
+  .seal {
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, var(--accent-green), var(--deep-green));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    line-height: 1.35;
+    text-align: center;
+    box-shadow: 0 8px 18px rgba(20, 83, 45, 0.25);
+  }
+
+  .heading {
+    margin-top: 26px;
+    color: var(--deep-green);
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: 1px;
+  }
+
+  .script-line {
+    margin-top: 18px;
+    color: var(--accent-green);
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 40px;
+  }
+
+  .recipient {
+    margin-top: 20px;
+    color: var(--deep-green);
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 40px;
+  }
+
+  .rule {
+    margin-top: 22px;
+    width: 320px;
+    height: 1px;
+    background: var(--mint-line);
+  }
+
+  .body-text {
+    margin-top: 18px;
+    max-width: 560px;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+
+  .body-text .fill {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .footer {
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding-top: 36px;
+  }
+
+  .footer-block {
+    width: 240px;
+  }
+
+  .footer-name {
+    color: var(--deep-green);
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .footer-label {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 10.5px;
+    letter-spacing: 0.3px;
+  }
+
+  .footer-line {
+    width: 100%;
+    height: 1px;
+    background: var(--mint-line);
+    margin-bottom: 8px;
+  }
+
+  /* =========================================================
+     PRINT
+  ========================================================= */
+
+  @media print {
+    html, body { background: #ffffff; }
+    .page { margin: 0; width: 100%; }
+    .certificate { box-shadow: none; }
+    @page { size: landscape; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="page">
+    <div class="certificate">
+      <div class="corner-accent corner-accent-tl"></div>
+      <div class="corner-accent corner-accent-br"></div>
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-br"></div>
+      <div class="inner-border"></div>
+
+      <div class="content">
+        <div class="seal">YOUR<br>LOGO</div>
+
+        <div class="heading">CERTIFICATE OF TRAINING COMPLETION</div>
+
+        <div class="script-line">Congratulations!</div>
+
+        <!-- 🔧 PLACEHOLDER: employee full name -->
+        <div class="recipient">{{RECIPIENT_NAME}}</div>
+
+        <div class="rule"></div>
+
+        <div class="body-text">
+          This Training Completion Certificate is presented to
+          <span class="fill">{{RECIPIENT_NAME}}</span> for successfully completing
+          <span class="fill">{{TRAINING_TITLE}}</span>, demonstrating a strong
+          commitment to professional growth and development.
+        </div>
+
+        <div class="footer">
+          <div class="footer-block">
+            <div class="footer-line"></div>
+            <div class="footer-name">{{SIGNATORY_NAME}}</div>
+            <div class="footer-label">{{SIGNATORY_TITLE}}</div>
+          </div>
+
+          <div class="footer-block" style="text-align: right;">
+            <div class="footer-line"></div>
+            <div class="footer-name">{{DATE_ISSUED}}</div>
+            <div class="footer-label">Date</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
