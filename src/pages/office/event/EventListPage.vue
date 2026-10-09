@@ -81,8 +81,9 @@
 </template>
 
 <script>
-import { defineComponent, computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { defineComponent, computed, onMounted, ref, watch } from "vue";
+
+import { useRouter, useRoute } from "vue-router";
 
 import { useOfficeEventStore } from "src/stores/office/event/eventStore";
 
@@ -111,10 +112,20 @@ export default defineComponent({
   setup() {
     const officeEventStore = useOfficeEventStore();
     const router = useRouter();
+    const route = useRoute();
 
     const search = ref("");
     const selectedStatuses = ref([]);
-
+  const STATUS_OPTIONS = [
+      { label: "Up-coming", value: "up-coming" },
+      { label: "On-going", value: "ongoing" },
+      { label: "Complete", value: "complete" },
+    ];
+       const applyQueryStatus = () => {
+      const s = route.query.status;
+      const valid = STATUS_OPTIONS.map((o) => o.value);
+      selectedStatuses.value = valid.includes(s) ? [s] : [];
+    };
     const pagination = ref({
       sortBy: "title_name",
       descending: false,
@@ -202,6 +213,8 @@ export default defineComponent({
       router.push({ name: "office-event-view", params: { scheduleId } });
     }
 
+    applyQueryStatus(); // initial load, bago mag-render
+    watch(() => route.query.status, applyQueryStatus);
     onMounted(() => {
       officeEventStore.fetchOfficeEvents();
     });

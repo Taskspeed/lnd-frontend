@@ -144,7 +144,7 @@ import { useDashboardStore } from 'src/stores/office/dashboardStore'
 const store = useDashboardStore()
 
 // Lumalabas kapag may na-click na event (para magamit ng parent, hal. router.push)
-const emit = defineEmits(['event-click', 'view-event'])
+const emit = defineEmits(['event-click', 'view-event', 'month-change'])
 
 const calendar = ref(null)
 const selectedDate = ref(new Date().toLocaleDateString('en-CA')) // YYYY-MM-DD (local)
@@ -265,9 +265,11 @@ watch(
   () => {
     const [y, m] = selectedDate.value.split('-').map(Number)
     loadMonth(y, m)
+    emit('month-change', { year: y, month: m })
   },
   { immediate: true }
 )
+
 
 const visibleEvents = computed(() =>
   events.value.filter((e) => activeStatuses.value.includes(e.status))

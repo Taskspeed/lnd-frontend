@@ -28,9 +28,10 @@
     <!-- =====================================================
          STATISTICS
     ====================================================== -->
-    <section class="statistics-grid">
+   <section class="statistics-grid">
       <!-- Total Events -->
-      <q-card flat class="stat-card">
+      <q-card flat class="stat-card stat-card-link" tabindex="0" v-ripple @click="goToEvents()"
+        @keydown.enter="goToEvents()">
         <div class="stat-icon stat-icon-green">
           <q-icon name="event" size="26px" />
         </div>
@@ -38,11 +39,11 @@
         <div class="stat-content">
           <div class="stat-label">Total Events</div>
 
-          <div class="stat-value">24</div>
+          <div class="stat-value">{{ loading ? "..." : stats.total }}</div>
 
           <div class="stat-change stat-change-green">
-            <q-icon name="arrow_upward" size="13px" />
-            +3 this month
+            <q-icon name="calendar_month" size="13px" />
+            {{ monthLabel }} {{ year }}
           </div>
         </div>
 
@@ -52,15 +53,15 @@
       </q-card>
 
       <!-- Participants -->
-      <q-card flat class="stat-card">
+      <q-card flat class="stat-card stat-card-link" tabindex="0" v-ripple @click="goToEvents('complete')"
+        @keydown.enter="goToEvents('complete')">
         <div class="stat-icon stat-icon-blue">
           <q-icon name="groups" size="26px" />
         </div>
 
         <div class="stat-content">
           <div class="stat-label">Complete</div>
-
-          <div class="stat-value">856</div>
+          <div class="stat-value">{{ loading ? "..." : stats.completed }}</div>
 
           <!-- <div class="stat-change stat-change-blue">
             <q-icon name="arrow_upward" size="13px" />
@@ -74,15 +75,15 @@
       </q-card>
 
       <!-- Certificates -->
-      <q-card flat class="stat-card">
+      <q-card flat class="stat-card stat-card-link" tabindex="0" v-ripple @click="goToEvents('up-coming')"
+        @keydown.enter="goToEvents('up-coming')">
         <div class="stat-icon stat-icon-yellow">
           <q-icon name="workspace_premium" size="26px" />
         </div>
 
         <div class="stat-content">
           <div class="stat-label">Up-coming</div>
-
-          <div class="stat-value">642</div>
+          <div class="stat-value">{{ loading ? "..." : stats.upcoming }}</div>
 
           <!-- <div class="stat-change stat-change-yellow">
             <q-icon name="arrow_upward" size="13px" />
@@ -96,15 +97,15 @@
       </q-card>
 
       <!-- Assessments -->
-      <q-card flat class="stat-card">
+      <q-card flat class="stat-card stat-card-link" tabindex="0" v-ripple @click="goToEvents('ongoing')"
+        @keydown.enter="goToEvents('ongoing')">
         <div class="stat-icon stat-icon-purple">
           <q-icon name="assignment" size="26px" />
         </div>
 
         <div class="stat-content">
           <div class="stat-label">On-going</div>
-
-          <div class="stat-value">78</div>
+          <div class="stat-value">{{ loading ? "..." : stats.ongoing }}</div>
           <!-- 
           <div class="stat-change stat-change-purple">
             <q-icon name="arrow_upward" size="13px" />
@@ -117,6 +118,7 @@
         </div>
       </q-card>
     </section>
+
 
     <!-- =====================================================
          MAIN CONTENT
@@ -145,7 +147,7 @@
               <q-btn outline no-caps dense label="Today" class="today-btn" />
             </div>
           </div> -->
-          <EventCalendar @view-event="onViewEvent" />
+   <EventCalendar @view-event="onViewEvent" @month-change="onMonthChange" />
 
         </q-card>
 
@@ -155,39 +157,66 @@
   </q-page>
 </template>
 <script>
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import EventCalendar from "src/components/calendar/office/EventCalendar.vue";
+import { useDashboardStore } from "src/stores/office/dashboardStore";
 
 export default defineComponent({
   name: "DashboardPage",
-
-  components: {
-    EventCalendar,
-  },
-
-  props: {
-    officeView: {
-      type: Boolean,
-      default: false,
-    },
-  },
+  components: { EventCalendar },
+  props: { officeView: { type: Boolean, default: false } },
 
   setup() {
     const router = useRouter();
+    const dashboardStore = useDashboardStore();
     const userName = ref("Admin");
 
-    const onViewEvent = (seg) => {
-      router.push({
-        name: "office-event-view",
-        params: {
-          // eventId: seg.eventId,
-          scheduleId: seg.scheduleId,
-        },
-      });
+    const now = new Date();
+    const year = ref(now.getFullYear());
+    const month = ref(now.getMonth() + 1);
+    const monthLabel = computed(() =>
+      new Date(year.value, month.value - 1, 1).toLocaleString("en-PH", { month: "long" })
+    );
+
+    const stats = ref({ ongoing: 0, upcoming: 0, completed: 0, total: 0 });
+    const loading = ref(false);
+    let requestId = 0;
+
+    const loadEventStatus = async () => {
+      const current = ++requestId;
+      loading.value = true;
+      try {
+        const res = await dashboardStore.fetchEventNumberOfStatus(year.value, month.value);
+        if (current !== requestId) return;
+        if (res.success) {
+          stats.value = {
+            ongoing: res.data.ongoing,
+            upcoming: res.data.upcoming,
+            completed: res.data.completed,
+            total: res.data.total,
+          };
+        }
+      } finally {
+        if (current === requestId) loading.value = false;
+      }
     };
 
-    return { userName, onViewEvent };
+    const onMonthChange = ({ year: y, month: m }) => {
+      year.value = y;
+      month.value = m;
+    };
+
+    const onViewEvent = (seg) =>
+      router.push({ name: "office-event-view", params: { scheduleId: seg.scheduleId } });
+
+    const goToEvents = (status) =>
+      router.push({ name: "office-events", query: status ? { status } : {} });
+
+      onMounted(loadEventStatus);
+      watch([year, month], loadEventStatus);
+
+    return { userName, stats, loading, year, monthLabel, onViewEvent, onMonthChange, goToEvents };
   },
 });
 </script>
@@ -373,7 +402,7 @@ export default defineComponent({
 }
 
 .stat-icon-green {
-  background: linear-gradient(135deg, #0fc449, #18a94d);
+  background: linear-gradient(135deg, #11998E, #38EF7D);
 }
 
 .stat-icon-blue {
@@ -1306,5 +1335,11 @@ export default defineComponent({
   .learning-illustration {
     opacity: 0.35;
   }
+}.stat-card-link {
+  cursor: pointer;
+}
+.stat-card-link:focus-visible {
+  outline: 2px solid #16b84d;
+  outline-offset: 2px;
 }
 </style>
