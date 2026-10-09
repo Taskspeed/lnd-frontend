@@ -190,7 +190,7 @@ export default defineComponent({
         query: status ? { status } : {},
       });
     };
-    const loading = computed(() => dashboardStore.loading);
+  
 
     const monthLabel = computed(() =>
       new Date(year.value, month.value - 1).toLocaleString("en-US", {
