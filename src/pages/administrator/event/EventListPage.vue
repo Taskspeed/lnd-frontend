@@ -27,7 +27,10 @@
             <q-icon name="search" />
           </template>
         </q-input>
-
+        <div class="status-filters">
+          <q-checkbox v-for="option in STATUS_OPTIONS" :key="option.value" v-model="selectedStatuses"
+            :val="option.value" :label="option.label" dense class="status-checkbox" />
+        </div>
         <q-btn flat no-caps icon="filter_alt_off" label="Clear" class="clear-btn" @click="clearFilters" />
       </div>
 
@@ -161,8 +164,8 @@
 </template>
 
 <script>
-import { defineComponent, computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { defineComponent, computed, onMounted, ref, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { useQuasar, Notify } from "quasar";
 import { useEventStore } from "stores/eventStore";
 import Swal from "sweetalert2";
@@ -182,10 +185,19 @@ export default defineComponent({
     const $q = useQuasar();
     const router = useRouter();
     const eventStore = useEventStore();
-
+    const route = useRoute();
     const search = ref("");
-
-
+    const selectedStatuses = ref([]);
+    const STATUS_OPTIONS = [
+      { label: "Up-coming", value: "up-coming" },
+      { label: "On-going", value: "ongoing" },
+      { label: "Complete", value: "complete" },
+    ];
+    const applyQueryStatus = () => {
+      const s = route.query.status;
+      const valid = STATUS_OPTIONS.map((o) => o.value);
+      selectedStatuses.value = valid.includes(s) ? [s] : [];
+    };
 
     // ---------------------------------------------------------------
     // Table
@@ -231,23 +243,27 @@ export default defineComponent({
 
     const filteredRows = computed(() => {
       const keyword = search.value.toLowerCase().trim();
-      if (!keyword) return tableRows.value;
 
       return tableRows.value.filter((row) => {
-        return (
+        const matchesSearch =
+          !keyword ||
           row.title_name?.toLowerCase().includes(keyword) ||
           row.venue?.toLowerCase().includes(keyword) ||
-          row.computedStatus?.toLowerCase().includes(keyword)
-        );
+          row.computedStatus?.toLowerCase().includes(keyword);
+
+        const matchesStatus =
+          selectedStatuses.value.length === 0 ||
+          selectedStatuses.value.includes(row.computedStatus);
+
+        return matchesSearch && matchesStatus;
       });
     });
 
-
-
     function clearFilters() {
       search.value = "";
+      selectedStatuses.value = [];
+      router.replace({ query: {} });
     }
-
     function notify(type, message) {
       $q.notify({
         type: type === "success" ? "positive" : "negative",
@@ -434,6 +450,8 @@ export default defineComponent({
 
 
 
+    applyQueryStatus(); // initial load, bago mag-render
+    watch(() => route.query.status, applyQueryStatus);
     onMounted(() => {
       eventStore.fetchEvents();
     });
@@ -442,6 +460,8 @@ export default defineComponent({
       eventStore,
 
       search,
+      STATUS_OPTIONS,
+      selectedStatuses,
       columns,
       filteredRows,
 
@@ -463,6 +483,8 @@ export default defineComponent({
       showDeleteDialog,
       eventToDelete,
       confirmDeleteEvent,
+
+
 
     };
   },
@@ -819,5 +841,22 @@ export default defineComponent({
   .form-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.status-filters {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.status-checkbox :deep(.q-checkbox__label) {
+  color: #425b68;
+  font-size: 11px;
+}
+
+.clear-btn {
+  color: #6f8087;
+  font-size: 10px;
 }
 </style>

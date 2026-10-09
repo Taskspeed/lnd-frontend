@@ -30,7 +30,8 @@
     ====================================================== -->
     <section class="statistics-grid">
       <!-- Total Events -->
-      <q-card flat class="stat-card">
+      <q-card flat class="stat-card stat-card-link" tabindex="0" v-ripple @click="goToEvents()"
+        @keydown.enter="goToEvents()">
         <div class="stat-icon stat-icon-green">
           <q-icon name="event" size="26px" />
         </div>
@@ -52,7 +53,8 @@
       </q-card>
 
       <!-- Participants -->
-      <q-card flat class="stat-card">
+      <q-card flat class="stat-card stat-card-link" tabindex="0" v-ripple @click="goToEvents('complete')"
+        @keydown.enter="goToEvents('complete')">
         <div class="stat-icon stat-icon-blue">
           <q-icon name="groups" size="26px" />
         </div>
@@ -73,7 +75,8 @@
       </q-card>
 
       <!-- Certificates -->
-      <q-card flat class="stat-card">
+      <q-card flat class="stat-card stat-card-link" tabindex="0" v-ripple @click="goToEvents('up-coming')"
+        @keydown.enter="goToEvents('up-coming')">
         <div class="stat-icon stat-icon-yellow">
           <q-icon name="workspace_premium" size="26px" />
         </div>
@@ -94,7 +97,8 @@
       </q-card>
 
       <!-- Assessments -->
-      <q-card flat class="stat-card">
+      <q-card flat class="stat-card stat-card-link" tabindex="0" v-ripple @click="goToEvents('ongoing')"
+        @keydown.enter="goToEvents('ongoing')">
         <div class="stat-icon stat-icon-purple">
           <q-icon name="assignment" size="26px" />
         </div>
@@ -180,7 +184,12 @@ export default defineComponent({
       completed: 0,
       total: 0,
     });
-
+    const goToEvents = (status) => {
+      router.push({
+        name: "events", // palitan ng actual route name ng EventListPage mo
+        query: status ? { status } : {},
+      });
+    };
     const loading = computed(() => dashboardStore.loading);
 
     const monthLabel = computed(() =>
@@ -239,7 +248,8 @@ export default defineComponent({
       loading: statsLoading, // local na, hindi na shared sa store
       monthLabel,
       onViewEvent,
-      onMonthChange
+      onMonthChange,
+      goToEvents,
     };
   },
 });
@@ -1360,5 +1370,12 @@ export default defineComponent({
   .learning-illustration {
     opacity: 0.35;
   }
+}
+.stat-card-link {
+  cursor: pointer;
+}
+.stat-card-link:focus-visible {
+  outline: 2px solid #16b84d;
+  outline-offset: 2px;
 }
 </style>

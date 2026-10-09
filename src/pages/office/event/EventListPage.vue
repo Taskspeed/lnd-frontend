@@ -87,11 +87,11 @@ import { useRouter } from "vue-router";
 import { useOfficeEventStore } from "src/stores/office/event/eventStore";
 
 // Status filter options — value must match the computedStatus values
-// coming from the API (e.g. "up-coming", "ongoing", "completed").
+
 const STATUS_OPTIONS = [
   { label: "Up-coming", value: "up-coming" },
   { label: "On-going", value: "ongoing" },
-  { label: "Complete", value: "completed" },
+  { label: "Complete", value: "complete" },
 ];
 
 // Table column definitions
