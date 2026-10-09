@@ -38,11 +38,11 @@
         <div class="stat-content">
           <div class="stat-label">Total Events</div>
 
-          <div class="stat-value">24</div>
+          <div class="stat-value">{{ loading ? "..." : stats.total }}</div>
 
           <div class="stat-change stat-change-green">
-            <q-icon name="arrow_upward" size="13px" />
-            +3 this month
+            <q-icon name="calendar_month" size="13px" />
+            {{ monthLabel }} {{ year }}
           </div>
         </div>
 
@@ -59,8 +59,7 @@
 
         <div class="stat-content">
           <div class="stat-label">Complete</div>
-
-          <div class="stat-value">856</div>
+          <div class="stat-value">{{ loading ? "..." : stats.completed }}</div>
 
           <!-- <div class="stat-change stat-change-blue">
             <q-icon name="arrow_upward" size="13px" />
@@ -81,8 +80,7 @@
 
         <div class="stat-content">
           <div class="stat-label">Up-coming</div>
-
-          <div class="stat-value">642</div>
+          <div class="stat-value">{{ loading ? "..." : stats.upcoming }}</div>
 
           <!-- <div class="stat-change stat-change-yellow">
             <q-icon name="arrow_upward" size="13px" />
@@ -103,8 +101,7 @@
 
         <div class="stat-content">
           <div class="stat-label">On-going</div>
-
-          <div class="stat-value">78</div>
+          <div class="stat-value">{{ loading ? "..." : stats.ongoing }}</div>
           <!-- 
           <div class="stat-change stat-change-purple">
             <q-icon name="arrow_upward" size="13px" />
@@ -145,7 +142,7 @@
               <q-btn outline no-caps dense label="Today" class="today-btn" />
             </div>
           </div> -->
-          <EventCalendar @view-event="onViewEvent" />
+          <EventCalendar @view-event="onViewEvent" @month-change="onMonthChange" />
 
         </q-card>
 
@@ -155,38 +152,95 @@
   </q-page>
 </template>
 <script>
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import EventCalendar from "src/components/calendar/administrator/EventCalendar.vue";
+import { useDashboardStore } from "src/stores/administrator/dashboard/dashboardStore";
+
 export default defineComponent({
   name: "DashboardPage",
 
-  components: {
-    EventCalendar,
-  },
+  components: { EventCalendar },
 
   props: {
-    officeView: {
-      type: Boolean,
-      default: false,
-    },
+    officeView: { type: Boolean, default: false },
   },
 
   setup() {
     const router = useRouter();
+    const dashboardStore = useDashboardStore();
     const userName = ref("Admin");
+
+    const year = ref(new Date().getFullYear());
+    const month = ref(new Date().getMonth() + 1);
+
+    const stats = ref({
+      ongoing: 0,
+      upcoming: 0,
+      completed: 0,
+      total: 0,
+    });
+
+    const loading = computed(() => dashboardStore.loading);
+
+    const monthLabel = computed(() =>
+      new Date(year.value, month.value - 1).toLocaleString("en-US", {
+        month: "long",
+      })
+    );
+
+    const statsLoading = ref(false);
+    let requestId = 0; // para hindi ma-overwrite ng lumang response ang bago
+
+    const loadEventStatus = async () => {
+      const current = ++requestId;
+      statsLoading.value = true;
+
+      const res = await dashboardStore.fetchEventNumberOfStatus(
+        year.value,
+        month.value
+      );
+
+      if (current !== requestId) return; // may mas bagong request na, ignore ito
+
+      if (res.success) {
+        stats.value = {
+          ongoing: res.data.ongoing,
+          upcoming: res.data.upcoming,
+          completed: res.data.completed,
+          total: res.data.total,
+        };
+      }
+      statsLoading.value = false;
+    };
+
+    const onMonthChange = ({ year: y, month: m }) => {
+      year.value = y;
+      month.value = m;
+    };
+
+    onMounted(loadEventStatus);
+
+    // mag-refetch kapag nagbago ang year/month
+    watch([year, month], loadEventStatus);
 
     const onViewEvent = (seg) => {
       router.push({
         name: "event-nominated-employee",
-        params: {
-          eventId: seg.eventId,
-          scheduleId: seg.scheduleId,
-        },
+        params: { eventId: seg.eventId, scheduleId: seg.scheduleId },
       });
     };
 
-    return { userName, onViewEvent };
+    return {
+      userName,
+      year,
+      month,
+      stats,
+      loading: statsLoading, // local na, hindi na shared sa store
+      monthLabel,
+      onViewEvent,
+      onMonthChange
+    };
   },
 });
 </script>
@@ -372,7 +426,7 @@ export default defineComponent({
 }
 
 .stat-icon-green {
-  background: linear-gradient(135deg, #0fc449, #18a94d);
+  background: linear-gradient(135deg, #11998E, #38EF7D);
 }
 
 .stat-icon-blue {
@@ -384,9 +438,10 @@ export default defineComponent({
 }
 
 .stat-icon-purple {
-  background: linear-gradient(135deg, #8e52df, #7341c9);
+  background: linear-gradient(135deg, #12a34a, #12a34a);
 }
 
+/* color: #12a34a; */
 .stat-content {
   margin-left: 15px;
 }

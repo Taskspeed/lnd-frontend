@@ -10,3 +10,13 @@ export const dashboard_event_calendar = (year, month) => {
     },
   });
 };
+
+
+export const dashboard_event_number_of_status= (year, month) => {
+  return api.get(`hr/dashboard/event/status`, {
+    params: {
+      year: year,
+      month: month,
+    },
+  });
+};
