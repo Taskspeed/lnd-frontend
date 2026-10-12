@@ -90,12 +90,27 @@
 
           <div class="section-label">Schedule Dates</div>
           <div class="date-list">
-            <div v-for="d in scheduleDates" :key="d.id" class="date-item">
+            <div v-for="d in scheduleDates" :key="d.schedule_date_time_id" class="date-item">
               <strong>{{ d.schedule_date }}</strong>
-              <span>
-                {{ d.morning_in }}–{{ d.morning_out }} ·
-                {{ d.afternoon_in }}–{{ d.afternoon_out }}
-              </span>
+
+              <div class="date-right">
+                <span>
+                 Morning: {{ d.morning_in }} – {{ d.morning_out }} | Afternoon: 
+                  {{ d.afternoon_in }} – {{ d.afternoon_out }}
+                </span>
+
+              <q-btn
+              outline
+              dense
+              no-caps
+              icon="print"
+              label="Print Attendance"
+              class="print-btn"
+              :loading="printingDateId === d.schedule_date_time_id"
+              :disable="printingDateId !== null"
+              @click="printAttendance(d)"
+            />
+              </div>
             </div>
             <div v-if="!scheduleDates.length" class="table-empty">
               No schedule dates.
@@ -195,8 +210,8 @@
                     <q-tooltip>Approve</q-tooltip>
                   </q-btn>
 
-                  <q-btn flat dense round icon="cancel" color="negative" 
-                       :loading="isDisapproveLoading(props.row.nominated_employee_id)" :disable="isAnyDisapproveLoading()"
+                  <q-btn flat dense round icon="cancel" color="negative"
+                    :loading="isDisapproveLoading(props.row.nominated_employee_id)" :disable="isAnyDisapproveLoading()"
                     @click.stop="disapproveNomination(props.row)">
                     <q-tooltip>Disapprove</q-tooltip>
                   </q-btn>
@@ -284,6 +299,7 @@ import EmployeeInformationModal from "src/components/employee/EmployeeInformatio
 import { useEmployeeInformationStore } from "src/stores/administrator/employee/employeeInformationStore";
 
 import { useRowLoading } from "src/composables/useRowLoading";
+import { usePdfStore } from "src/stores/administrator/pdf/pdfStore";
 
 export default defineComponent({
   name: "EventNominatedEmployeePage",
@@ -315,6 +331,8 @@ export default defineComponent({
     const { isLoading: isApproveLoading, isAnyLoading: isAnyApproveLoading, run: runApprove } = useRowLoading();
     const { isLoading: isDisapproveLoading, isAnyLoading: isAnyDisapproveLoading, run: runDisapprove } = useRowLoading();
 
+    const pdfStore = usePdfStore();
+    const printingDateId = ref(null);
 
     async function viewEmployeeInformation(row) {
       loadingEmployeeInfo.value = true;
@@ -497,6 +515,47 @@ export default defineComponent({
 
     }
 
+    async function printAttendance(dateRow) {
+      if (printingDateId.value !== null) return;
+      printingDateId.value = dateRow.schedule_date_time_id;
+
+      // Buksan agad ang tab habang galing pa sa click, para hindi i-block ng popup blocker
+      const win = window.open("", "_blank");
+
+      try {
+        const result = await pdfStore.fetchAttendanceSheet(
+          eventId,
+          scheduleId,
+          dateRow.schedule_date_time_id
+        );
+
+        if (result?.success) {
+          const url = URL.createObjectURL(new Blob([result.blob], { type: "application/pdf" }));
+          if (win) win.location.href = url;
+          else window.open(url, "_blank");
+          setTimeout(() => URL.revokeObjectURL(url), 60000);
+        } else {
+          win?.close();
+          Swal.fire({
+            title: "Failed",
+            text: result?.message || "Unable to generate attendance sheet.",
+            icon: "error",
+            scrollbarPadding: false,
+          });
+        }
+      } catch (e) {
+        win?.close();
+        console.error(e);
+        Swal.fire({
+          title: "Error",
+          text: e?.message || "Unable to generate attendance sheet.",
+          icon: "error",
+          scrollbarPadding: false,
+        });
+      } finally {
+        printingDateId.value = null;
+      }
+    }
 
     return {
       loading,
@@ -528,7 +587,10 @@ export default defineComponent({
       isAnyApproveLoading,
 
       isDisapproveLoading,
-      isAnyDisapproveLoading
+      isAnyDisapproveLoading,
+
+      printAttendance,
+      printingDateId,
     };
   },
 });
@@ -975,6 +1037,30 @@ export default defineComponent({
   justify-content: center;
   gap: 2px;
   white-space: nowrap;
+}
+
+.date-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.print-btn {
+  padding: 4px 14px;
+  border: 1px solid #d5d5d5;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #207fc9;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.print-btn :deep(.q-icon) {
+  font-size: 16px;
+  margin-right: 6px;
+}
+
+.print-btn:hover {
+  background: #f5f7f6;
 }
 
 /* =========================================================
