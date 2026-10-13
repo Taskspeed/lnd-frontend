@@ -9,9 +9,10 @@
       <div class="qs-body">
         <!-- LEFT PROFILE PANEL -->
         <div class="qs-profile-panel">
-          <q-avatar square size="100px" class="qs-avatar">
-            <img :src="employee.photo_url || 'https://cdn.quasar.dev/img/avatar.png'" />
-          </q-avatar>
+              <q-avatar square size="100px" class="qs-avatar">
+              <q-spinner v-if="photoLoading" color="green" size="30px" />
+              <img v-else :src="photoSrc || 'https://cdn.quasar.dev/img/avatar.png'" />
+            </q-avatar>
 
           <div class="qs-name">{{ employee.name }}</div>
           <div class="qs-designation">{{ employee.position }}</div>
@@ -47,8 +48,8 @@
             </q-input>
           </div>
 
-          <q-table flat :rows="certificateStore.certificateList" :columns="columns" row-key="event_id"
-            v-model:pagination="pagination" :loading="certificateStore.loadingCertificates" @request="onRequest"
+          <q-table flat :rows="certificateStore.certificateList" :columns="columns" row-key="event_id" 
+            v-model:pagination="pagination" :loading="certificateStore.loadingCertificates" :rows-per-page-options="[5]" @request="onRequest"
             class="qs-table">
             <template #body-cell-certificate_issued="props">
               <q-td :props="props">
@@ -90,6 +91,7 @@
 import { ref, computed, watch } from 'vue'
 import { useCertificationStore } from 'src/stores/administrator/certification/certificateStore'
 import { useRowLoading } from 'src/composables/useRowLoading'
+import { useEmployeeImage } from 'src/composables/useEmployeeImage';
 
 const props = defineProps({
   modelValue: Boolean,
@@ -172,6 +174,10 @@ async function certificatePreview(row) {
   });
 
 }
+
+const { src: photoSrc, loading: photoLoading } = useEmployeeImage(
+  () => employee.value.photo_url
+)
 
 watch(
   () => props.modelValue,

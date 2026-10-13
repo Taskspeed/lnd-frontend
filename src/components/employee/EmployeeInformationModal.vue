@@ -1,5 +1,5 @@
 <template>
-  <q-dialog v-model="show" maximized-mobile>
+  <q-dialog v-model="show" maximized-mobile :allow-focus-outside="isReturnPromptOpen">
     <q-card class="qs-modal">
       <!-- HEADER -->
       <q-card-section class="qs-header">
@@ -64,12 +64,13 @@
           </template>
         </div>
 
-        <!-- RIGHT CONTENT — TABS: FORM SUBMISSIONS / ATTENDANCE -->
+        <!-- RIGHT CONTENT — TABS: FORM SUBMISSIONS / ATTENDANCE / DOCUMENTS -->
         <div class="qs-content">
           <q-tabs v-model="activeTab" dense class="qs-tabs" active-color="primary" indicator-color="primary"
             align="left">
-            <q-tab name="forms" label="Form Submissions" />
+            <q-tab name="forms" label="Form" />
             <q-tab name="attendance" label="Attendance" />
+            <q-tab name="documents" label="Documents" />
           </q-tabs>
 
           <q-separator class="q-mb-md" />
@@ -204,12 +205,12 @@
                     </div>
                   </q-td>
                 </template>
+
                 <template #body-cell-action="props">
                   <q-td :props="props">
-                <q-btn dense unelevated no-caps color="positive" label="Present" class="present-btn"
-                  :loading="isPresentLoading(props.row.schedule_date)"
-                  :disable="isAnyPresentLoading()"
-                  @click.stop="present(props.row)" />
+                    <q-btn dense unelevated no-caps color="positive" label="Present" class="present-btn"
+                      :loading="isPresentLoading(props.row.schedule_date)" :disable="isAnyPresentLoading()"
+                      @click.stop="present(props.row)" />
                   </q-td>
                 </template>
 
@@ -217,6 +218,86 @@
                   <div class="qs-empty">No attendance records found.</div>
                 </template>
               </q-table>
+            </q-tab-panel>
+
+            <!-- ================= DOCUMENTS TAB ================= -->
+            <q-tab-panel name="documents" class="q-pa-none">
+              <div class="qs-content-header">
+                <div>
+                  <div class="qs-section-title">Documents</div>
+                  <div class="qs-section-sub">Files uploaded by employee ({{ docTotal }})</div>
+                </div>
+
+                <q-btn-toggle v-model="docViewMode" dense unelevated no-caps toggle-color="primary" color="white"
+                  text-color="grey-8" :options="[
+                    { value: 'card', icon: 'grid_view' },
+                    { value: 'list', icon: 'view_list' },
+                  ]" />
+              </div>
+
+              <q-separator class="q-mb-md" />
+
+              <div v-if="loadingDocuments" class="qs-empty">
+                <q-spinner color="primary" size="32px" />
+              </div>
+
+              <template v-else-if="documents.length">
+                <!-- CARD VIEW -->
+                <div v-if="docViewMode === 'card'" class="qs-doc-grid">
+                  <q-card v-for="doc in documents" :key="doc.id" flat bordered class="qs-doc-card">
+                    <div class="qs-doc-thumb" @click="openDocument(doc)">
+                      <img v-if="isImage(doc) && docThumbs[doc.id]" :src="docThumbs[doc.id]" />
+                      <q-spinner v-else-if="isImage(doc)" color="grey-5" size="24px" />
+                      <q-icon v-else :name="docIcon(doc)" size="40px" color="grey-6" />
+                    </div>
+
+                    <q-card-section class="q-pa-sm">
+                      <div class="qs-doc-title ellipsis" :title="doc.title">{{ doc.title }}</div>
+                      <div class="qs-section-sub">{{ docTypeLabel(doc) }}</div>
+                    </q-card-section>
+
+                    <q-card-actions align="right" class="q-pt-none">
+                      <q-btn flat dense round icon="visibility" color="primary" :loading="docBusyId === doc.id"
+                        @click="openDocument(doc)">
+                        <q-tooltip>View</q-tooltip>
+                      </q-btn>
+                      <q-btn flat dense round icon="download" color="grey-8" :disable="docBusyId === doc.id"
+                        @click="downloadDocument(doc)">
+                        <q-tooltip>Download</q-tooltip>
+                      </q-btn>
+                    </q-card-actions>
+                  </q-card>
+                </div>
+
+                <!-- LIST VIEW -->
+                <q-list v-else class="qs-doc-list">
+                  <q-item v-for="doc in documents" :key="doc.id" class="qs-doc-item">
+                    <q-item-section avatar>
+                      <q-icon :name="docIcon(doc)" color="grey-7" />
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label class="qs-doc-title">{{ doc.title }}</q-item-label>
+                      <q-item-label caption>{{ docTypeLabel(doc) }}</q-item-label>
+                    </q-item-section>
+                    <q-item-section side>
+                      <div class="row no-wrap">
+                        <q-btn flat dense round icon="visibility" color="primary" :loading="docBusyId === doc.id"
+                          @click="openDocument(doc)" />
+                        <q-btn flat dense round icon="download" color="grey-8" :disable="docBusyId === doc.id"
+                          @click="downloadDocument(doc)" />
+                      </div>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+
+                <!-- PAGINATION (para sa card at list) -->
+                <div v-if="docLastPage > 1" class="qs-doc-pagination">
+                  <q-pagination :model-value="docPage" :max="docLastPage" :max-pages="6" direction-links
+                    boundary-links dense color="primary" @update:model-value="loadDocuments" />
+                </div>
+              </template>
+
+              <div v-else class="qs-empty">No documents uploaded.</div>
             </q-tab-panel>
           </q-tab-panels>
         </div>
@@ -227,16 +308,34 @@
     <component :is="activeFormComponent" v-if="activeFormComponent" v-model="showFormModal" :form-data="activeFormData"
       :submission="activeSubmission" readonly />
   </q-dialog>
+
+  <!-- DOCUMENT PREVIEW -->
+  <q-dialog v-model="showDocPreview" maximized @hide="clearPreview">
+    <q-card class="column no-wrap">
+      <q-bar class="bg-primary text-white">
+        <div class="ellipsis">{{ previewDoc?.title }}</div>
+        <q-space />
+        <q-btn dense flat icon="close" v-close-popup />
+      </q-bar>
+
+      <div class="col relative-position">
+        <q-inner-loading :showing="previewLoading" />
+        <iframe v-if="previewUrl && previewDoc && isPdf(previewDoc)" :src="previewUrl" class="fit" style="border: 0" />
+        <q-img v-else-if="previewUrl" :src="previewUrl" fit="contain" class="fit" />
+      </div>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onBeforeUnmount, nextTick } from 'vue'
 import { useEmployeeInformationStore } from 'src/stores/administrator/employee/employeeInformationStore'
 import { getFormModalComponent } from 'src/composables/useFormsModal'
 import Swal from 'sweetalert2'
 import { useEmployeeImage } from 'src/composables/useEmployeeImage'
 import { useAttendanceStore } from 'src/stores/administrator/attendance/attendanceStore'
 import { useRowLoading } from 'src/composables/useRowLoading'
+import { useEmployeeSubmissionStore } from 'src/stores/administrator/employee/employeeSubmissionStore'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -250,6 +349,7 @@ const props = defineProps({
   },
 })
 
+const employeeSubmissionStore = useEmployeeSubmissionStore()
 const emit = defineEmits(['update:modelValue', 'view-submission'])
 
 const employeeInformationStore = useEmployeeInformationStore()
@@ -259,6 +359,7 @@ const show = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val),
 })
+const isReturnPromptOpen = ref(false)
 
 const employee = computed(() => props.employeeData || {})
 
@@ -321,13 +422,6 @@ async function loadSubmissions() {
 }
 
 async function loadAttendance() {
-  // Palitan mo ang employee.value.id kung ibang field pala ang tamang
-  // nominated_employee_id sa employeeData mo (hal. employee.value.nominated_employee_id)
-  // if (!employee.value.id) {
-  //   attendance.value = []
-  //   return
-  // }
-
   loadingAttendance.value = true
 
   const result = await employeeInformationStore.fetchEmployeeAttendance(employee.value.nominated_employee_id)
@@ -346,7 +440,6 @@ async function openSubmission(row) {
   const component = getFormModalComponent(row.form_name)
 
   if (!component) {
-    // Walang naka-map na modal para dito — i-log lang, wag basta mag-open ng LAP
     console.warn(`No modal registered for form_name: "${row.form_name}"`)
     emit('view-submission', row)
     return
@@ -355,7 +448,7 @@ async function openSubmission(row) {
   activeRowId.value = row.employee_form_submission_id
   loadingFormData.value = true
 
-  // 2. Kunin ang aktwal na sagot ng employee para sa form na ito, sa pamamagitan ng store
+  // 2. Kunin ang aktwal na sagot ng employee para sa form na ito
   const result = await employeeInformationStore.fetchEmployeeViewFormSubmission(
     employee.value.control_no,
     row.form_name,
@@ -365,7 +458,7 @@ async function openSubmission(row) {
   if (result.success) {
     // 3. I-set ang component + data, saka pa lang buksan ang modal
     activeFormData.value = result.data?.form_data || null
-    activeSubmission.value = result.data?.submission || null   // 👈 idagdag
+    activeSubmission.value = result.data?.submission || null
     activeFormComponent.value = component
 
     showFormModal.value = true
@@ -374,7 +467,6 @@ async function openSubmission(row) {
   }
 
   loadingFormData.value = false
-
 }
 
 const { isLoading: isApproveLoading, isAnyLoading: isAnyApproveLoading, run: runApprove } = useRowLoading();
@@ -395,13 +487,12 @@ async function approved(row) {
       reverseButtons: true,
       scrollbarPadding: false,
       heightAuto: false,
-
     });
 
     if (!result.isConfirmed) return;
 
     const res = await employeeInformationStore.approvalEmployeeFormSubmission(
-      row.employee_form_submission_id, // ID ng specific form submission na ito, hindi ng buong nomination
+      row.employee_form_submission_id,
       { status: "Approved" }
     );
 
@@ -415,7 +506,6 @@ async function approved(row) {
         timer: 2000,
         timerProgressBar: true,
         scrollbarPadding: false,
-
       });
       await loadSubmissions();
     } else {
@@ -424,55 +514,61 @@ async function approved(row) {
         text: res.message || "Unable to approve this form submission.",
         icon: "error",
         scrollbarPadding: false,
-
       });
     }
   });
-
 }
 
 async function returned(row) {
   return runReturned(row.employee_form_submission_id, async () => {
-    const result = await Swal.fire({
-      title: "Return Form Submission",
-      text: `Return "${row.form_name}" submitted by ${employee.value.full_name}?`,
-      icon: "warning",
+    isReturnPromptOpen.value = true
+    await nextTick()
 
-      input: "textarea",
-      inputLabel: "Reason for return",
-      inputPlaceholder: "Ilagay ang dahilan ng pagbalik...",
-      inputAttributes: {
-        "aria-label": "Reason for return",
-        autocapitalize: "off",
-        autocorrect: "off",
-      },
+    let result
+    try {
+      result = await Swal.fire({
+        title: "Return Form Submission",
+        text: `Return "${row.form_name}" submitted by ${employee.value.full_name}?`,
+        icon: "warning",
 
-      showCancelButton: true,
-      confirmButtonText: "Return",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#d83d3d",
-      cancelButtonColor: "#9e9e9e",
-      reverseButtons: true,
+        input: "textarea",
+        inputLabel: "Reason for return",
+        inputPlaceholder: "Ilagay ang dahilan ng pagbalik...",
+        inputAttributes: {
+          "aria-label": "Reason for return",
+          autocapitalize: "off",
+          autocorrect: "off",
+        },
 
-      scrollbarPadding: false,
-      heightAuto: false,
+        showCancelButton: true,
+        confirmButtonText: "Return",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#d83d3d",
+        cancelButtonColor: "#9e9e9e",
+        reverseButtons: true,
 
-      didOpen: () => {
-        const textarea = Swal.getInput();
+        scrollbarPadding: false,
+        heightAuto: false,
 
-        if (textarea) {
-          textarea.focus();
-        }
-      },
+        didOpen: () => {
+          const textarea = Swal.getInput();
 
-      inputValidator: (value) => {
-        if (!value || !value.trim()) {
-          return "Kailangan ng remarks bago i-return.";
-        }
+          if (textarea) {
+            textarea.focus();
+          }
+        },
 
-        return undefined;
-      },
-    });
+        inputValidator: (value) => {
+          if (!value || !value.trim()) {
+            return "Kailangan ng remarks bago i-return.";
+          }
+
+          return undefined;
+        },
+      });
+    } finally {
+      isReturnPromptOpen.value = false
+    }
 
     if (!result.isConfirmed) return;
 
@@ -506,7 +602,6 @@ async function returned(row) {
       });
     }
   });
-
 }
 
 const { src: photoSrc, loading: photoLoading } = useEmployeeImage(
@@ -582,10 +677,9 @@ async function present(row) {
       })
     }
   });
-
 }
 
-// Kapag nagbukas ang modal (o nagbago ang employee), i-fetch ang parehong tabs' data
+// Kapag nagbukas ang modal, i-fetch ang data ng lahat ng tabs
 watch(
   () => props.modelValue,
   (val) => {
@@ -593,9 +687,145 @@ watch(
       activeTab.value = 'forms'
       loadSubmissions()
       loadAttendance()
+      loadDocuments(1)
     }
   }
 )
+
+// --- Documents state ---
+const DOC_PER_PAGE = 7              // ilan ang documents kada page (7 = isang buong row sa card view)
+const docPage = ref(1)
+const docLastPage = ref(1)
+const docTotal = ref(0)
+const documents = ref([])
+const loadingDocuments = ref(false)
+const docViewMode = ref('list')     // default: list
+const docThumbs = ref({})           // { [doc.id]: objectURL }
+const docBusyId = ref(null)
+const showDocPreview = ref(false)
+const previewDoc = ref(null)
+const previewUrl = ref(null)
+const previewLoading = ref(false)
+const isImage = (doc) => doc.file_type === 'img'
+const isPdf = (doc) => doc.file_type === 'pdf'
+
+function mimeOf(doc) {
+  if (isPdf(doc)) return 'application/pdf'
+  const ext = doc.file_path?.split('.').pop()?.toLowerCase()
+  if (!ext || ext === 'jpg') return 'image/jpeg'
+  return `image/${ext}`
+}
+
+function docIcon(doc) {
+  if (isImage(doc)) return 'image'
+  if (isPdf(doc)) return 'picture_as_pdf'
+  return 'description'
+}
+
+function docTypeLabel(doc) {
+  if (isImage(doc)) return 'Image'
+  if (isPdf(doc)) return 'PDF'
+  return (doc.file_type || 'File').toUpperCase()
+}
+
+function revokeThumbs() {
+  Object.values(docThumbs.value).forEach((url) => URL.revokeObjectURL(url))
+  docThumbs.value = {}
+}
+
+async function loadThumbnails() {
+  const images = documents.value.filter(isImage)
+  await Promise.all(
+    images.map(async (doc) => {
+      const blob = await employeeSubmissionStore.fetchFileBlob(doc.id)
+      if (blob) docThumbs.value[doc.id] = URL.createObjectURL(blob)
+    })
+  )
+}
+
+async function loadDocuments(page = 1) {
+  const { control_no, event_id, event_schedule_id } = employee.value
+  if (!control_no || !event_id || !event_schedule_id) {
+    documents.value = []
+    docPage.value = 1
+    docLastPage.value = 1
+    docTotal.value = 0
+    return
+  }
+
+  loadingDocuments.value = true
+  revokeThumbs()
+
+  const result = await employeeSubmissionStore.fetchDocument(
+    event_id,
+    event_schedule_id,
+    control_no,
+    page,
+    DOC_PER_PAGE
+  )
+
+  const paginated = result.success ? result.data?.documents : null
+
+  documents.value = paginated?.data || []
+  docPage.value = paginated?.current_page || 1
+  docLastPage.value = paginated?.last_page || 1
+  docTotal.value = paginated?.total || 0
+
+  loadingDocuments.value = false
+  loadThumbnails() // hindi na kailangan i-await
+}
+
+function clearPreview() {
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+  previewUrl.value = null
+  previewDoc.value = null
+}
+
+async function openDocument(doc) {
+  // hindi kayang i-preview sa browser → download na lang
+  if (!isImage(doc) && !isPdf(doc)) return downloadDocument(doc)
+
+  clearPreview()
+  previewDoc.value = doc
+  showDocPreview.value = true      // buksan agad, may spinner habang naglo-load
+  previewLoading.value = true
+
+  const blob = await employeeSubmissionStore.fetchFileBlob(doc.id)
+  previewLoading.value = false
+
+  // isinara ng user habang naglo-load
+  if (!showDocPreview.value) return
+
+  if (!blob) {
+    showDocPreview.value = false
+    return
+  }
+
+  previewUrl.value = URL.createObjectURL(new Blob([blob], { type: mimeOf(doc) }))
+}
+
+async function downloadDocument(doc) {
+  docBusyId.value = doc.id
+  const blob = await employeeSubmissionStore.fetchFileBlob(doc.id)
+  docBusyId.value = null
+
+  if (!blob) return
+
+  const ext = doc.file_path?.split('.').pop() || ''
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = ext ? `${doc.title}.${ext}` : doc.title
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
+onBeforeUnmount(() => {
+  revokeThumbs()
+  clearPreview()
+})
 </script>
 
 <style scoped>
@@ -871,5 +1101,87 @@ watch(
   padding: 4px 10px;
   min-height: 24px;
   border-radius: 4px;
+}
+
+/* =========================================================
+   DOCUMENTS
+========================================================= */
+
+/* title (card at list) */
+.qs-doc-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+/* CARD VIEW — 7 cards bawat row */
+.qs-doc-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.qs-doc-card {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.qs-doc-thumb {
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafcfb;
+  border-bottom: 1px solid #eef1ef;
+  cursor: pointer;
+}
+
+.qs-doc-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* LIST VIEW — may gap sa pagitan ng items */
+.qs-doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qs-doc-item {
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.qs-doc-item:hover {
+  background: #fafcfb;
+}
+
+/* PAGINATION */
+.qs-doc-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* para hindi sumikip ang card view sa mas maliit na screen */
+@media (max-width: 1500px) {
+  .qs-doc-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .qs-doc-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .qs-doc-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 </style>

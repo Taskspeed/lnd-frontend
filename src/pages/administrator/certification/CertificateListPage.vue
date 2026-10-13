@@ -72,7 +72,6 @@
 import { defineComponent, onMounted, ref } from "vue";
 import { useCertificationStore } from "src/stores/administrator/certification/certificateStore";
 import EmployeeCertificateModal from "src/components/employee/EmployeeCertificateModal.vue";
-import Swal from "sweetalert2";
 import { useRowLoading } from "src/composables/useRowLoading";
 
 export default defineComponent({
@@ -137,21 +136,10 @@ export default defineComponent({
         const showEmployeeModal = ref(false);
         const EmployeeInformation = ref({});
 
-        async function viewEmployeeListCertification(row) {
-            return run(row.ControlNo, async () => {
-                const result = await certificateStore.fetchEmployeeListCertificate(row.ControlNo);
-
-                if (result.success) {
-                    EmployeeInformation.value = row;
-                    showEmployeeModal.value = true;
-                } else {
-                    Swal.fire({
-                        title: "Failed",
-                        text: result.message || "Unable to fetch employee information.",
-                        icon: "error",
-                        scrollbarPadding: false,
-                    });
-                }
+        function viewEmployeeListCertification(row) {
+            return run(row.ControlNo, () => {
+                EmployeeInformation.value = row;
+                showEmployeeModal.value = true;
             });
         }
 

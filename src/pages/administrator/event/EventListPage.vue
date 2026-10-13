@@ -21,7 +21,7 @@
            FILTERS
       ==================================================== -->
       <div class="filter-section">
-        <q-input v-model="search" outlined dense clearable placeholder="Search by event name, venue, or status..."
+        <q-input v-model="search" outlined dense clearable placeholder="Search by event name"
           class="search-input">
           <template #prepend>
             <q-icon name="search" />

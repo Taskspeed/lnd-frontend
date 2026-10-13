@@ -41,3 +41,15 @@ export const employee_attendance= (nominatedEmployeeId) => {
 export const employee_form_submission = (params = {}) => {
   return api.get(`event/employee/submission/list`, { params });
 };
+
+
+export const employee_documents_submission = (eventId,scheduleId,controlNO, page = 1, perPage = 10) => {
+  return api.get(`event/employee/documents/event/${eventId}/schedule/${scheduleId}/${controlNO}`,{
+       params: { page, per_page: perPage },
+  });
+};
+
+
+export const employee_view_documents_submission = (documentId) => {
+  return api.get(`event/employee/documents/file/${documentId}`, { responseType: "blob" });
+};
