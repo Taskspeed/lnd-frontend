@@ -19,11 +19,10 @@
 
     <template v-else>
       <!-- ===================================================
-           1. SCHEDULE DETAILS
+           1. SCHEDULE DETAILS (2 columns: info | offices)
       ==================================================== -->
       <q-card flat bordered class="detail-card">
         <div class="section-head">
-          <!-- <span class="section-badge">1</span> -->
           <div class="section-head-text">
             <div class="section-title">Schedule Details</div>
             <div class="section-sub">Event and schedule information</div>
@@ -34,169 +33,197 @@
         </div>
 
         <div class="detail-body">
-          <h6 class="event-title-lg">{{ eventInfo.title_name }}</h6>
-          <!-- <div class="event-sub">Created {{ eventInfo.created_at }}</div> -->
+          <div class="schedule-layout">
+            <!-- ============ LEFT: EVENT INFORMATION ============ -->
+            <div class="info-col">
+              <h6 class="event-title-lg">{{ eventInfo.title_name }}</h6>
 
-          <div class="detail-grid">
-            <div class="detail-item">
-              <span class="detail-label">Venue</span>
-              <span class="detail-value">{{ schedule.venue_name }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Qualifications</span>
-              <span class="detail-value">{{ schedule.qualifications }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Hours</span>
-              <span class="detail-value">{{ schedule.hours }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Mode</span>
-              <span class="detail-value">{{ schedule.mode_name }}</span>
-            </div>
-
-            <div class="detail-item">
-              <span class="detail-label">Fee</span>
-              <span class="detail-value">{{ schedule.fee }}</span>
-            </div>
-            <!-- <div class="detail-item">
-              <span class="detail-label">Qualifications</span>
-              <span class="detail-value">{{ schedule.qualifications }}</span>
-            </div> -->
-            <div class="detail-item">
-              <span class="detail-label">Type</span>
-              <span class="detail-value">{{ schedule.type_name }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Category</span>
-              <span class="detail-value">{{ schedule.category_name }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Source</span>
-              <span class="detail-value">{{ schedule.source_name }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Conducted by</span>
-              <span class="detail-value">{{ schedule.conducted_by || "—" }}</span>
-            </div>
-            <!-- <div class="detail-item" v-if="offices.length">
-              <span class="detail-label">Office</span>
-              <span class="detail-value">{{ offices.join(", ") }}</span>
-            </div> -->
-
-
-          </div>
-
-
-          <div class="section-label">Schedule Dates</div>
-          <div class="date-list">
-            <div v-for="d in scheduleDates" :key="d.schedule_date_time_id" class="date-item">
-              <strong>{{ d.schedule_date }}</strong>
-
-              <div class="date-right">
-                <span>
-                 Morning: {{ d.morning_in }} – {{ d.morning_out }} | Afternoon: 
-                  {{ d.afternoon_in }} – {{ d.afternoon_out }}
-                </span>
-
-              <q-btn
-              outline
-              dense
-              no-caps
-              icon="print"
-              label="Print Attendance"
-              class="print-btn"
-              :loading="printingDateId === d.schedule_date_time_id"
-              :disable="printingDateId !== null"
-              @click="printAttendance(d)"
-            />
-              </div>
-            </div>
-            <div v-if="!scheduleDates.length" class="table-empty">
-              No schedule dates.
-            </div>
-          </div>
-
-          <template v-if="speakers.length">
-            <div class="section-label">Speakers</div>
-            <div class="speaker-list">
-              <div v-for="sp in speakers" :key="sp.speakerId" class="speaker-item">
-                <strong>{{ sp.speaker_name }}</strong> — {{ sp.position }}, {{ sp.agency }}
-              </div>
-            </div>
-          </template>
-
-          <template v-if="competencyGroups.length">
-            <div class="section-label">Competencies</div>
-            <div class="competency-groups">
-              <div v-for="group in competencyGroups" :key="group.key" class="competency-group-block"
-                :class="'competency-' + group.color">
-                <div class="competency-group-title">{{ group.label }}</div>
-                <div class="tag-row">
-                  <span v-for="(item, i) in group.items" :key="i" class="tag">
-                    {{ item }}
-                  </span>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Venue</span>
+                  <span class="detail-value">{{ schedule.venue_name }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Qualifications</span>
+                  <span class="detail-value">{{ schedule.qualifications }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Hours</span>
+                  <span class="detail-value">{{ schedule.hours }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Mode</span>
+                  <span class="detail-value">{{ schedule.mode_name }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Fee</span>
+                  <span class="detail-value">{{ schedule.fee }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Type</span>
+                  <span class="detail-value">{{ schedule.type_name }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Category</span>
+                  <span class="detail-value">{{ schedule.category_name }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Source</span>
+                  <span class="detail-value">{{ schedule.source_name }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Conducted by</span>
+                  <span class="detail-value">{{ schedule.conducted_by || "—" }}</span>
                 </div>
               </div>
+
+              <div class="section-label">Schedule Dates</div>
+              <div class="date-list">
+                <div v-for="d in scheduleDates" :key="d.schedule_date_time_id" class="date-item">
+                  <strong>{{ d.schedule_date }}</strong>
+
+                  <div class="date-right">
+                    <span>
+                      Morning: {{ d.morning_in }} – {{ d.morning_out }} | Afternoon:
+                      {{ d.afternoon_in }} – {{ d.afternoon_out }}
+                    </span>
+
+                    <q-btn outline dense no-caps icon="print" label="Print Attendance" class="print-btn"
+                      :loading="printingDateId === d.schedule_date_time_id" :disable="printingDateId !== null"
+                      @click="printAttendance(d)" />
+                  </div>
+                </div>
+                <div v-if="!scheduleDates.length" class="table-empty">
+                  No schedule dates.
+                </div>
+              </div>
+
+              <template v-if="speakers.length">
+                <div class="section-label">Speakers</div>
+                <div class="speaker-list">
+                  <div v-for="sp in speakers" :key="sp.speakerId" class="speaker-item">
+                    <strong>{{ sp.speaker_name }}</strong> — {{ sp.position }}, {{ sp.agency }}
+                  </div>
+                </div>
+              </template>
+
+              <template v-if="competencyGroups.length">
+                <div class="section-label">Competencies</div>
+                <div class="competency-groups">
+                  <div v-for="group in competencyGroups" :key="group.key" class="competency-group-block"
+                    :class="'competency-' + group.color">
+                    <div class="competency-group-title">{{ group.label }}</div>
+                    <div class="tag-row">
+                      <span v-for="(item, i) in group.items" :key="i" class="tag">
+                        {{ item }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </template>
             </div>
-          </template>
+
+            <!-- ============ RIGHT: OFFICES ============ -->
+            <aside class="office-col">
+              <div class="office-head">
+                <div class="office-head-title">Offices</div>
+                <span class="office-head-count">
+                  {{ officeList.length }} office{{ officeList.length === 1 ? "" : "s" }}
+                </span>
+              </div>
+
+              <div v-if="officeList.length" class="office-list">
+              <div
+                    v-for="o in officeList"
+                    :key="o.id"
+                    class="office-item"
+                    :class="{
+                      'has-nominees': o.nominees > 0,
+                      'is-full': o.isFull,
+                      'is-clickable': o.nominees > 0,
+                      'is-active': selectedOffice === o.name,
+                    }"
+                    @click="o.nominees > 0 && toggleOffice(o.name)"
+                  >
+                  <span class="office-dot"></span>
+                  <div class="office-main">
+                    <span class="office-name">{{ o.name }}</span>
+                    <div class="office-stats">
+                      <span class="office-pill pill-attendees">
+                        <span class="pill-label">No. of Attendees</span>
+                        <span class="pill-value">{{ o.attendees ?? "—" }}</span>
+                      </span>
+                      <span class="office-pill pill-nominees">
+                        <span class="pill-label">Nominees</span>
+                        <span class="pill-value">{{ o.nominees }}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="table-empty">No offices tagged.</div>
+            </aside>
+          </div>
         </div>
       </q-card>
-
-
     </template>
+
     <!-- ===================================================
-     3. NOMINATION
-==================================================== -->
+         2. NOMINATION
+    ==================================================== -->
     <q-card flat bordered class="detail-card">
       <div class="section-head">
-        <!-- <span class="section-badge">3</span> -->
         <div class="section-head-text">
           <div class="section-title">Nomination</div>
           <div class="section-sub">Select employees to nominate for this schedule</div>
         </div>
-
+         <q-select
+            :model-value="selectedOffice"
+            :options="officeFilterOptions"
+            label="Filter by office"
+            dense
+            outlined
+            clearable
+            class="office-filter"
+            @update:model-value="applyOfficeFilter"
+          />
       </div>
 
       <div class="detail-body" v-if="!nominatedEmployees.length">
         <div class="table-empty">No nominations yet for this schedule.</div>
       </div>
-      <q-table v-else flat :rows="nominatedEmployees" :columns="nominatedColumns" row-key="nominated_employee_id"
-        :rows-per-page-options="[0, 5, 10, 20, 50,]" class="app-table detail-table">
+        <q-table
+            flat
+            :rows="nominatedEmployees"
+            :columns="nominatedColumns"
+            row-key="nominated_employee_id"
+            v-model:pagination="pagination"
+            :loading="tableLoading"
+            :rows-per-page-options="[5, 10, 20, 50]"
+            no-data-label="No nominations found."
+            @request="onRequest"
+            class="app-table detail-table"
+          >
         <template #body="props">
           <q-tr :props="props">
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
               <template v-if="col.name === 'is_attended'">
                 <q-badge :color="props.row.is_attended ? 'green' : 'grey-6'">
-                  {{ props.row.is_attended ? 'Yes' : 'No' }}
+                  {{ props.row.is_attended ? "Yes" : "No" }}
                 </q-badge>
               </template>
-              <!-- <template v-else-if="col.name === 'nominate_status'">
-                <q-badge
-                  :color="props.row.nominate_status === 'Approved' ? 'green' : (props.row.nominate_status === 'Disapproved' ? 'red' : 'orange')">
-                  {{ props.row.nominate_status || 'Pending' }}
-                </q-badge>
-              </template> -->
+
               <template v-else-if="col.name === 'nominate_status'">
                 <q-badge class="status-badge" :class="{
                   'status-approved': props.row.nominate_status === 'Approved',
                   'status-disapproved': props.row.nominate_status === 'Disapproved',
-                  'status-pending': props.row.nominate_status === 'Pending'
+                  'status-pending': props.row.nominate_status === 'Pending',
                 }">
                   {{ props.row.nominate_status }}
                 </q-badge>
               </template>
-              <!-- ✅ NEW: truncated reason with tooltip -->
-              <!-- <template v-else-if="col.name === 'nominate_reason'">
-                <span class="reason-cell">
-                  {{ truncateText(props.row.nominate_reason, 24) }}
-                  <q-tooltip max-width="300px" class="reason-tooltip">
-                    {{ props.row.nominate_reason }}
-                  </q-tooltip>
-                </span>
-              </template> -->
-              <template v-else-if="col.name === 'action'">
 
+              <template v-else-if="col.name === 'action'">
                 <div class="row-actions">
                   <q-btn flat dense round icon="visibility" color="primary"
                     :loading="isViewLoading(props.row.nominated_employee_id)" :disable="isAnyViewLoading()"
@@ -217,6 +244,7 @@
                   </q-btn>
                 </div>
               </template>
+
               <template v-else>
                 {{ col.value }}
               </template>
@@ -226,8 +254,9 @@
       </q-table>
     </q-card>
 
+    <!-- NOMINATION DETAILS DIALOG -->
     <q-dialog v-model="showNominationDetailsDialog">
-      <q-card style="width: 500px; max-width: 90vw;">
+      <q-card style="width: 500px; max-width: 90vw">
         <q-card-section class="dialog-header">
           <div class="section-title">{{ viewedNomination?.full_name }}</div>
           <div class="section-sub">
@@ -247,7 +276,7 @@
               <span class="detail-label">Status</span>
               <span class="detail-value">{{ viewedNomination?.status }}</span>
             </div>
-            <div class="detail-item" style="grid-column: 1 / -1;">
+            <div class="detail-item" style="grid-column: 1 / -1">
               <span class="detail-label">Reason</span>
               <span class="detail-value">{{ viewedNomination?.nominate_reason || "—" }}</span>
             </div>
@@ -259,35 +288,13 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-dialog v-model="showEditReasonDialog">
-      <q-card style="width: 480px; max-width: 90vw;">
-        <q-card-section class="dialog-header">
-          <div class="section-title">Edit Nomination Reason</div>
-          <div class="section-sub">{{ editingReasonRow?.full_name }}</div>
-        </q-card-section>
 
-        <q-separator />
-
-        <q-card-section>
-          <div>Reason</div>
-          <q-input v-model="editReasonText" outlined type="textarea" autogrow dense
-            placeholder="Reason for nominating..." :rules="[val => !!val?.trim() || 'Reason is required']" />
-        </q-card-section>
-
-        <q-card-actions align="right" class="dialog-actions">
-          <q-btn flat no-caps label="Cancel" v-close-popup />
-          <q-btn unelevated no-caps label="Save" color="green" class="save-dialog-btn" :loading="employeeStore.loading"
-            @click="saveEditedReason" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
-    <!-- import -->
+    <!-- EMPLOYEE INFORMATION MODAL -->
     <EmployeeInformationModal v-model="showEmployeeModal" :employee-data="EmployeeInformation"
       :loading="loadingEmployeeInfo" @view-submission="handleViewSubmission" />
-
   </q-page>
 </template>
+
 <script>
 import { defineComponent, computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
@@ -307,9 +314,9 @@ export default defineComponent({
 
   setup() {
     const eventStore = useEventStore();
-    const employeeInformationStore = useEmployeeInformationStore(); // 👈 idagdag
+    const employeeInformationStore = useEmployeeInformationStore();
     const route = useRoute();
-    const eventId = route.params.eventId;       // confirm this param exists on the route
+    const eventId = route.params.eventId;
     const scheduleId = route.params.scheduleId;
 
     const loading = ref(true);
@@ -323,9 +330,28 @@ export default defineComponent({
     const speakers = computed(() => schedule.value.speaker || []);
     const nominatedEmployees = computed(() => schedule.value.nominated_employee?.data || []);
 
-    const showEmployeeModal = ref(false)
-    const EmployeeInformation = ref({})
-    const loadingEmployeeInfo = ref(false); // optional, para may loading state ang modal
+    // Offices for the right column (with nominee counts)
+    const officeList = computed(() =>
+      (schedule.value.office || [])
+        .map((o) => ({
+          id: o.departmentId,
+          name: o.office_name,
+          nominees: o.employee_nominated ?? 0,
+          // null/undefined = walang slot limit na naka-set
+          attendees: o.number_of_attendees ?? null,
+        }))
+        .map((o) => ({
+          ...o,
+          hasLimit: o.attendees !== null && o.attendees > 0,
+          isFull: o.attendees > 0 && o.nominees >= o.attendees,
+        }))
+        // may nominees muna sa taas, tapos alphabetical
+        .sort((a, b) => b.nominees - a.nominees || a.name.localeCompare(b.name))
+    );
+
+    const showEmployeeModal = ref(false);
+    const EmployeeInformation = ref({});
+    const loadingEmployeeInfo = ref(false);
 
     const { isLoading: isViewLoading, isAnyLoading: isAnyViewLoading, run: runView } = useRowLoading();
     const { isLoading: isApproveLoading, isAnyLoading: isAnyApproveLoading, run: runApprove } = useRowLoading();
@@ -343,9 +369,8 @@ export default defineComponent({
         loadingEmployeeInfo.value = false;
 
         if (result.success) {
-          EmployeeInformation.value = result.data; // 👈 galing na sa API response
+          EmployeeInformation.value = result.data;
           showEmployeeModal.value = true;
-
         } else {
           Swal.fire({
             title: "Failed",
@@ -355,7 +380,6 @@ export default defineComponent({
           });
         }
       });
-
     }
 
     function labelize(key) {
@@ -380,13 +404,11 @@ export default defineComponent({
     });
 
     const nominatedColumns = [
-      //   { name: "controlNo", label: "Control No.", field: "control_no", align: "left" },
       { name: "name", label: "Name", field: "full_name", align: "left" },
       { name: "designation", label: "Position", field: "designation", align: "left" },
       { name: "office", label: "Office", field: "office", align: "left" },
       { name: "status", label: "Status", field: "status", align: "left" },
       { name: "nominate_status", label: "Nominate status", field: "nominate_status", align: "center" },
-      //   { name: "nominate_reason", label: "Reason", field: "nominate_reason", align: "left", style: "max-width: 200px" },
       { name: "action", label: "Action", field: "action", align: "center" },
     ];
 
@@ -404,20 +426,58 @@ export default defineComponent({
       showNominationDetailsDialog.value = true;
     }
 
-    async function loadNominatedEmployees() {
-      loading.value = true;
+    // async function loadNominatedEmployees() {
+    //   loading.value = true;
+    //   errorMessage.value = "";
+    //   const result = await eventStore.fetchNominatedEmployee(eventId, scheduleId);
+    //   if (result.success) {
+    //     eventDetail.value = eventStore.nominated_employee;
+    //   } else {
+    //     errorMessage.value = result.message || "Failed to load schedule.";
+    //   }
+    //   loading.value = false;
+    // }
+
+    async function loadNominatedEmployees(
+      page = pagination.value.page,
+      { silent = false, perPage = pagination.value.rowsPerPage, office = selectedOffice.value } = {}
+    ) {
+      if (silent) tableLoading.value = true;
+      else loading.value = true;
       errorMessage.value = "";
-      const result = await eventStore.fetchNominatedEmployee(eventId, scheduleId);
+
+      const result = await eventStore.fetchNominatedEmployee(eventId, scheduleId, page, perPage, office);
+
+
       if (result.success) {
         eventDetail.value = eventStore.nominated_employee;
+
+        const paginator = eventDetail.value?.schedule?.[0]?.nominated_employee || {};
+        pagination.value = {
+          page: paginator.current_page ?? page,
+          rowsPerPage: paginator.per_page ?? perPage,
+          rowsNumber: paginator.total ?? 0,
+        };
+      } else if (silent) {
+        Swal.fire({
+          title: "Failed",
+          text: result.message || "Failed to load nominated employees.",
+          icon: "error",
+          scrollbarPadding: false,
+        });
       } else {
         errorMessage.value = result.message || "Failed to load schedule.";
       }
+
       loading.value = false;
+      tableLoading.value = false;
     }
 
-
-
+    function onRequest({ pagination: p }) {
+      // kapag nagpalit ng rows per page, bumalik sa page 1
+      const pageToLoad = p.rowsPerPage !== pagination.value.rowsPerPage ? 1 : p.page;
+      return loadNominatedEmployees(pageToLoad, { silent: true, perPage: p.rowsPerPage });
+    }
     onMounted(async () => {
       await loadNominatedEmployees();
     });
@@ -440,7 +500,6 @@ export default defineComponent({
 
         if (!result.isConfirmed) return;
 
-
         const res = await eventStore.approvalNominatedEmployee(row.nominated_employee_id, {
           nominate_status: "Approved",
         });
@@ -456,7 +515,7 @@ export default defineComponent({
             timerProgressBar: true,
             scrollbarPadding: false,
           });
-          await loadNominatedEmployees();
+          await loadNominatedEmployees(pagination.value.page, { silent: true });
         } else {
           Swal.fire({
             title: "Failed",
@@ -466,7 +525,6 @@ export default defineComponent({
           });
         }
       });
-
     }
 
     async function disapproveNomination(row) {
@@ -502,7 +560,7 @@ export default defineComponent({
             timerProgressBar: true,
             scrollbarPadding: false,
           });
-          await loadNominatedEmployees();
+          await loadNominatedEmployees(pagination.value.page, { silent: true });
         } else {
           Swal.fire({
             title: "Failed",
@@ -512,7 +570,6 @@ export default defineComponent({
           });
         }
       });
-
     }
 
     async function printAttendance(dateRow) {
@@ -556,7 +613,28 @@ export default defineComponent({
         printingDateId.value = null;
       }
     }
+    const tableLoading = ref(false);
+    const pagination = ref({
+      page: 1,
+      rowsPerPage: 10,
+      rowsNumber: 0,
+    });
 
+    const selectedOffice = ref(null);
+    const officeFilterOptions = computed(() =>
+      officeList.value.filter((o) => o.nominees > 0).map((o) => o.name)
+    );
+
+    function applyOfficeFilter(office) {
+      selectedOffice.value = office || null;
+      // laging bumalik sa page 1 kapag nagbago ang filter
+      return loadNominatedEmployees(1, { silent: true, office: selectedOffice.value });
+    }
+
+    // click sa office card: i-toggle (click ulit para tanggalin ang filter)
+    function toggleOffice(office) {
+      return applyOfficeFilter(selectedOffice.value === office ? null : office);
+    }
     return {
       loading,
       errorMessage,
@@ -564,6 +642,7 @@ export default defineComponent({
       schedule,
       scheduleDates,
       offices,
+      officeList,
       speakers,
       competencyGroups,
       nominatedEmployees,
@@ -591,6 +670,15 @@ export default defineComponent({
 
       printAttendance,
       printingDateId,
+
+      pagination,
+      tableLoading,
+      onRequest,
+
+      selectedOffice,
+      officeFilterOptions,
+      applyOfficeFilter,
+      toggleOffice,
     };
   },
 });
@@ -600,7 +688,6 @@ export default defineComponent({
 /* =========================================================
    PAGE
 ========================================================= */
-
 .event-page {
   min-height: 100%;
   padding: 20px;
@@ -613,7 +700,6 @@ export default defineComponent({
 /* =========================================================
    PAGE HEADER
 ========================================================= */
-
 .page-header {
   margin-bottom: 4px;
 }
@@ -642,7 +728,6 @@ export default defineComponent({
 /* =========================================================
    LOADING / ERROR
 ========================================================= */
-
 .loading-state,
 .table-empty {
   padding: 30px 0;
@@ -660,15 +745,13 @@ export default defineComponent({
 }
 
 /* =========================================================
-   DETAIL CARD (shared shell for all 3 sections)
+   DETAIL CARD (shared shell)
 ========================================================= */
-
 .detail-card {
   overflow: hidden;
   border-radius: 13px;
   background: #ffffff;
   box-shadow: 0 3px 12px rgba(30, 70, 42, 0.055);
-
 }
 
 .section-head {
@@ -678,19 +761,6 @@ export default defineComponent({
   padding: 16px 20px;
   border-bottom: 1px solid #edf1ef;
   background: #fcfdfc;
-}
-
-.section-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: #19354a;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 750;
 }
 
 .section-head-text {
@@ -710,11 +780,21 @@ export default defineComponent({
 }
 
 /* =========================================================
-   SECTION 1 — SCHEDULE DETAILS
+   SCHEDULE DETAILS — TWO COLUMN LAYOUT
 ========================================================= */
-
 .detail-body {
   padding: 20px 22px;
+}
+
+.schedule-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.info-col {
+  min-width: 0;
 }
 
 .event-title-lg {
@@ -725,16 +805,9 @@ export default defineComponent({
   line-height: 1.4;
 }
 
-.event-sub {
-  margin-top: 4px;
-  color: #94a3ab;
-  font-size: 10.5px;
-  font-style: italic;
-}
-
 .detail-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 16px 24px;
   margin-top: 20px;
   padding-bottom: 18px;
@@ -771,7 +844,155 @@ export default defineComponent({
 }
 
 /* =========================================================
-   COMPETENCY GROUPS — hiwalay na bawat category
+   OFFICES (right column)
+========================================================= */
+.office-col {
+  position: sticky;
+  top: 16px;
+  padding: 14px;
+  border: 1px solid #edf1ef;
+  border-radius: 12px;
+  background: #fcfdfc;
+}
+
+.office-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.office-head-title {
+  color: #19354a;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.office-head-count {
+  color: #94a3ab;
+  font-size: 10.5px;
+}
+
+.office-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 560px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.office-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e8eceb;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(30, 70, 42, 0.04);
+}
+
+.office-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cfd6d9;
+}
+
+.office-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.office-name {
+  color: #2c3e4a;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.office-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.office-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 3px 10px;
+  border-radius: 20px;
+  background: #eef1f2;
+  color: #94a3ab;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pill-value {
+  min-width: 20px;
+  padding: 1px 7px;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #5c6b73;
+  text-align: center;
+}
+
+/* attendees — neutral blue */
+.pill-attendees {
+  background: #e7f0fb;
+  color: #2b6cb0;
+}
+
+.pill-attendees .pill-value {
+  color: #2b6cb0;
+}
+
+/* office na may nominees */
+.office-item.has-nominees {
+  border-color: #cdeedb;
+}
+
+.office-item.has-nominees .office-dot {
+  background: #18b64d;
+}
+
+.office-item.has-nominees .pill-nominees {
+  background: #e1f7e7;
+  color: #087c42;
+}
+
+.office-item.has-nominees .pill-nominees .pill-value {
+  color: #087c42;
+}
+
+/* office na puno na ang slots */
+.office-item.is-full {
+  border-color: #f3dcb0;
+}
+
+.office-item.is-full .office-dot {
+  background: #d97706;
+}
+
+.office-item.is-full .pill-nominees {
+  background: #fdf3e0;
+  color: #b45f06;
+}
+
+.office-item.is-full .pill-nominees .pill-value {
+  color: #b45f06;
+}
+
+/* =========================================================
+   COMPETENCY GROUPS
 ========================================================= */
 .competency-groups {
   display: flex;
@@ -826,7 +1047,7 @@ export default defineComponent({
   color: #7c3aed;
 }
 
-/* LEADERSHIP — orange/amber */
+/* LEADERSHIP — amber */
 .competency-leadership {
   border-left-color: #d97706;
 }
@@ -840,6 +1061,9 @@ export default defineComponent({
   color: #d97706;
 }
 
+/* =========================================================
+   DATES / SPEAKERS / TAGS
+========================================================= */
 .date-list,
 .speaker-list {
   display: flex;
@@ -852,6 +1076,8 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
   padding: 10px 14px;
   border-radius: 8px;
   border: 1px solid #eef2f1;
@@ -888,162 +1114,13 @@ export default defineComponent({
   font-weight: 600;
 }
 
-/* =========================================================
-   STATUS BADGE
-========================================================= */
-/* 
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.status-created {
-  color: #2b6cb0;
-  background: #e7f0fb;
-}
-
-.status-up-coming {
-  color: #b8860b;
-  background: #fbf3df;
-}
-
-.status-ongoing {
-  color: #087c42;
-  background: #e1f7e7;
-}
-
-.status-completed {
-  color: #5c6b73;
-  background: #eef1f2;
-}
-
-.status-cancelled {
-  color: #c73f3f;
-  background: #fbe9e9;
-} */
-
-/* =========================================================
-   SECTIONS 2 & 3 — TABLES
-========================================================= */
-
-.detail-table {
-  box-shadow: none;
-  padding: 0 12px;
-}
-
-/* =========================================================
-   NOMINATION ACTIONS
-========================================================= */
-
-.nominate-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 13px 20px;
-  border-top: 1px solid #edf1ef;
-}
-
-.selected-count {
-  color: #87949a;
-  font-size: 11px;
-}
-
-.nominate-btn {
-  min-height: 36px;
-  padding: 0 20px;
-  border-radius: 8px;
-  color: #ffffff;
-  background: linear-gradient(135deg, #18b64d, #0ca344);
-  font-size: 11px;
-  font-weight: 650;
-}
-
-.nomination-dialog {
-  width: 100%;
-  max-width: 90vw;
-  border-radius: 13px;
-}
-
-.dialog-header {
-  padding: 16px 20px;
-}
-
-.nomination-stepper {
-  box-shadow: none;
-}
-
-.reason-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.reason-item {
-  padding: 10px 0;
-  border-bottom: 1px solid #edf1ef;
-}
-
-.reason-emp-name {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #19354a;
-  margin-bottom: 6px;
-}
-
-.reason-emp-office {
-  font-weight: 400;
-  color: #8a989e;
-}
-
-.trained-row {
-  background: #fbe9e9;
-}
-
-.trained-row:hover {
-  background: #f8dede;
-}
-
-.dialog-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 13px 20px;
-  border-top: 1px solid #edf1ef;
-}
-
-/* .save-dialog-btn{
-  color: #000;
-} */
-.reason-cell {
-  cursor: help;
-}
-
-.reason-tooltip {
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-.row-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  white-space: nowrap;
-}
-
 .date-right {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
 }
+
 .print-btn {
   padding: 4px 14px;
   border: 1px solid #d5d5d5;
@@ -1064,8 +1141,37 @@ export default defineComponent({
 }
 
 /* =========================================================
+   NOMINATION TABLE
+========================================================= */
+.detail-table {
+  box-shadow: none;
+  padding: 0 12px;
+}
+
+.dialog-header {
+  padding: 16px 20px;
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+/* =========================================================
    RESPONSIVE
 ========================================================= */
+@media (max-width: 900px) {
+  .schedule-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .office-col {
+    position: static;
+  }
+}
 
 @media (max-width: 650px) {
   .event-page {
@@ -1075,5 +1181,24 @@ export default defineComponent({
   .detail-grid {
     grid-template-columns: 1fr;
   }
+}
+.office-filter {
+  min-width: 260px;
+  max-width: 360px;
+}
+
+.office-item.is-clickable {
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.office-item.is-clickable:hover {
+  box-shadow: 0 2px 8px rgba(30, 70, 42, 0.12);
+}
+
+.office-item.is-active {
+  border-color: #2b6cb0;
+  background: #f3f8fd;
+  box-shadow: 0 0 0 1px #2b6cb0;
 }
 </style>

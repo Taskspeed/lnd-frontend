@@ -1,18 +1,25 @@
 import { api } from "src/boot/axios";
 
-export const suggested_employees = (office, titleName) => {
+export const suggested_employees = (office, titleName, sg = null) => {
+  const params = { title: titleName };
+  if (sg) params.sg = sg; // optional, hindi isasama kung null
+
   return api.get(
-    `hr/employee/list/suggested/training/${encodeURIComponent(office)}`,{
-        params: { title: titleName },
-    }
-    
+    `hr/employee/list/suggested/training/${encodeURIComponent(office)}`,
+    { params }
   );
 };
+
 // nominated employee
-export const nominated_employee = (eventId, scheduleId) => {
-  return api.get(
-    `event/nominated-employee/${eventId}/${scheduleId}`,
-  );
+export const nominated_employee = (eventId, scheduleId, page = 1, perPage = 10, office = null) => {
+  return api.get(`event/nominated-employee/${eventId}/${scheduleId}`, {
+    params: {
+      page,
+      per_page: perPage,
+      // kapag null/empty, hindi isasama ng axios sa URL
+      office: office,
+    },
+  });
 };
 
 // for approval 

@@ -132,8 +132,8 @@
         <div class="section-head">
           <!-- <span class="section-badge">2</span> -->
           <div class="section-head-text">
-            <div class="section-title">Qualified Employees for this Event</div>
-            <div class="section-sub"> Employees who are qualified and tagged by HRM for this event.</div>
+          <div class="section-title">Suggested Employees</div>
+            <div class="section-sub"> Employees tagged by HRM for this event.</div>
           </div>
         </div>
 
@@ -158,11 +158,9 @@
         </div>
         <q-btn no-caps unelevated icon="add" label="Nominate Employees" class="nominate-btn"
           @click="openNominationDialog" />
-    <q-btn no-caps unelevated icon="print" label="Nomination Form"
-      class="nominate-form-btn nominate-form-btn--light"
-      :loading="isNominationFormLoading(scheduleId)"
-      :disable="isAnyNominationFormLoading()"
-      @click.stop="inHouseNominationPreview" />
+        <q-btn no-caps unelevated icon="print" label="Nomination Form"
+          class="nominate-form-btn nominate-form-btn--light" :loading="isNominationFormLoading(scheduleId)"
+          :disable="isAnyNominationFormLoading()" @click.stop="inHouseNominationPreview" />
       </div>
 
       <div class="detail-body" v-if="!nominatedEmployees.length">
@@ -488,9 +486,11 @@ export default defineComponent({
       { name: "name", label: "Name", field: "name", align: "left" },
       // { name: "office", label: "Office", field: "office", align: "left" },
       { name: "position", label: "Position", field: "position", align: "left" },
-      { name: "isAlreadyTrained", label: "Trained", field: "isAlreadyTrained", align: "center" },
       { name: "status", label: "Status", field: "status", align: "center" },
-      { name: "action", label: "", field: "action", align: "center" },
+      { name: "sg", label: "SG", field: "sg", align: "center" },
+      { name: "isAlreadyTrained", label: "Trained", field: "isAlreadyTrained", align: "center" },
+
+      { name: "action", label: "Action", field: "action", align: "center" },
     ];
 
     const employeeTagColumns = [
@@ -807,7 +807,7 @@ export default defineComponent({
     //   showFormPreview.value = true;
     // }
     async function inHouseNominationPreview() {
-      return runNominationForm(scheduleId,async () => {
+      return runNominationForm(scheduleId, async () => {
         const result = await formStore.fetchInhouseNomination(eventInfo.value.event_id,
           scheduleId);
 
@@ -1392,6 +1392,9 @@ export default defineComponent({
   justify-content: center;
   gap: 2px;
   white-space: nowrap;
+}
+.office-search{
+  margin-bottom: 10px;
 }
 
 /* =========================================================

@@ -138,11 +138,11 @@ export const useEventStore = defineStore("event", {
     clearSelectedEvent() {
       this.selectedEvent = null;
     },
-    async fetchSuggested(office, titleName) {
+    async fetchSuggested(office, titleName,sg = null) {
       this.loading = true;
       this.error = null;
       try {
-        const response = await suggested_employees(office, titleName);
+        const response = await suggested_employees(office, titleName, sg);
         this.employees = response.data.data || response.data || [];
       } catch (err) {
         this.error = err.response?.data?.message || "Failed to load employees.";
@@ -152,11 +152,11 @@ export const useEventStore = defineStore("event", {
       }
     },
 
-    async fetchNominatedEmployee(eventId, scheduleId) {
+    async fetchNominatedEmployee(eventId, scheduleId, page = 1, perPage = 10, office = null) {
       this.loading = true;
       this.error = null;
       try {
-        const response = await nominated_employee(eventId, scheduleId);
+        const response = await nominated_employee(eventId, scheduleId, page, perPage, office);
         this.nominated_employee = response.data.data || response.data || null;
         return { success: true };
       } catch (err) {
@@ -167,7 +167,7 @@ export const useEventStore = defineStore("event", {
         this.loading = false;
       }
     },
-
+    
     async approvalNominatedEmployee(nominatedEmployeeId, payload) {
       this.loading = true;
       this.error = null;
