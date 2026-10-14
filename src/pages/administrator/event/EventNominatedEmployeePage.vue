@@ -89,8 +89,11 @@
                     </span>
 
                     <q-btn outline dense no-caps icon="print" label="Print Attendance" class="print-btn"
-                      :loading="printingDateId === d.schedule_date_time_id" :disable="printingDateId !== null"
+                      :loading="isAttendanceLoading(d.schedule_date_time_id)" :disable="isAnyAttendanceLoading()"
                       @click="printAttendance(d)" />
+
+
+
                   </div>
                 </div>
                 <div v-if="!scheduleDates.length" class="table-empty">
@@ -126,25 +129,25 @@
             <!-- ============ RIGHT: OFFICES ============ -->
             <aside class="office-col">
               <div class="office-head">
-                <div class="office-head-title">Offices</div>
-                <span class="office-head-count">
+                <div class="office-head-title">Offices
+                     <!-- <span class="office-head-count">
                   {{ officeList.length }} office{{ officeList.length === 1 ? "" : "s" }}
-                </span>
+                </span> -->
+                </div>
+
+                <q-btn outline dense no-caps icon="print" label="Print Nomination" class="print-btn"
+                  :loading="isNominationLoading('nomination')" :disable="isAnyNominationLoading()"
+                  @click="printNomination" />
+             
               </div>
 
               <div v-if="officeList.length" class="office-list">
-              <div
-                    v-for="o in officeList"
-                    :key="o.id"
-                    class="office-item"
-                    :class="{
-                      'has-nominees': o.nominees > 0,
-                      'is-full': o.isFull,
-                      'is-clickable': o.nominees > 0,
-                      'is-active': selectedOffice === o.name,
-                    }"
-                    @click="o.nominees > 0 && toggleOffice(o.name)"
-                  >
+                <div v-for="o in officeList" :key="o.id" class="office-item" :class="{
+                  'has-nominees': o.nominees > 0,
+                  'is-full': o.isFull,
+                  'is-clickable': o.nominees > 0,
+                  'is-active': selectedOffice === o.name,
+                }" @click="o.nominees > 0 && toggleOffice(o.name)">
                   <span class="office-dot"></span>
                   <div class="office-main">
                     <span class="office-name">{{ o.name }}</span>
@@ -177,33 +180,16 @@
           <div class="section-title">Nomination</div>
           <div class="section-sub">Select employees to nominate for this schedule</div>
         </div>
-         <q-select
-            :model-value="selectedOffice"
-            :options="officeFilterOptions"
-            label="Filter by office"
-            dense
-            outlined
-            clearable
-            class="office-filter"
-            @update:model-value="applyOfficeFilter"
-          />
+        <q-select :model-value="selectedOffice" :options="officeFilterOptions" label="Filter by office" dense outlined
+          clearable class="office-filter" @update:model-value="applyOfficeFilter" />
       </div>
 
-      <div class="detail-body" v-if="!nominatedEmployees.length">
+      <!-- <div class="detail-body" v-if="!nominatedEmployees.length">
         <div class="table-empty">No nominations yet for this schedule.</div>
-      </div>
-        <q-table
-            flat
-            :rows="nominatedEmployees"
-            :columns="nominatedColumns"
-            row-key="nominated_employee_id"
-            v-model:pagination="pagination"
-            :loading="tableLoading"
-            :rows-per-page-options="[5, 10, 20, 50]"
-            no-data-label="No nominations found."
-            @request="onRequest"
-            class="app-table detail-table"
-          >
+      </div> -->
+      <q-table flat :rows="nominatedEmployees" :columns="nominatedColumns" row-key="nominated_employee_id"
+        v-model:pagination="pagination" :loading="tableLoading" :rows-per-page-options="[5, 10, 20, 50]"
+        no-data-label="No nominations found." @request="onRequest" class="app-table detail-table">
         <template #body="props">
           <q-tr :props="props">
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
@@ -356,6 +342,9 @@ export default defineComponent({
     const { isLoading: isViewLoading, isAnyLoading: isAnyViewLoading, run: runView } = useRowLoading();
     const { isLoading: isApproveLoading, isAnyLoading: isAnyApproveLoading, run: runApprove } = useRowLoading();
     const { isLoading: isDisapproveLoading, isAnyLoading: isAnyDisapproveLoading, run: runDisapprove } = useRowLoading();
+    const { isLoading: isNominationLoading, isAnyLoading: isAnyNominationLoading, run: runNomination } = useRowLoading();
+    const { isLoading: isAttendanceLoading, isAnyLoading: isAnyAttendanceLoading, run: runAttendance } = useRowLoading();
+
 
     const pdfStore = usePdfStore();
     const printingDateId = ref(null);
@@ -573,46 +562,54 @@ export default defineComponent({
     }
 
     async function printAttendance(dateRow) {
-      if (printingDateId.value !== null) return;
-      printingDateId.value = dateRow.schedule_date_time_id;
-
-      // Buksan agad ang tab habang galing pa sa click, para hindi i-block ng popup blocker
-      const win = window.open("", "_blank");
-
-      try {
+      return runAttendance(dateRow.schedule_date_time_id, async () => {
+        //   const win = window.open("", "_blank");
         const result = await pdfStore.fetchAttendanceSheet(
           eventId,
           scheduleId,
           dateRow.schedule_date_time_id
         );
 
-        if (result?.success) {
-          const url = URL.createObjectURL(new Blob([result.blob], { type: "application/pdf" }));
-          if (win) win.location.href = url;
-          else window.open(url, "_blank");
-          setTimeout(() => URL.revokeObjectURL(url), 60000);
+        if (result.success) {
+          const url = window.URL.createObjectURL(
+            new Blob([result.blob], { type: "application/pdf" })
+          );
+          window.open(url, "_blank");
         } else {
-          win?.close();
           Swal.fire({
             title: "Failed",
-            text: result?.message || "Unable to generate attendance sheet.",
+            text: result.message || "Unable to preview certificate.",
             icon: "error",
             scrollbarPadding: false,
           });
         }
-      } catch (e) {
-        win?.close();
-        console.error(e);
-        Swal.fire({
-          title: "Error",
-          text: e?.message || "Unable to generate attendance sheet.",
-          icon: "error",
-          scrollbarPadding: false,
-        });
-      } finally {
-        printingDateId.value = null;
-      }
+      });
+
     }
+
+    const printingNomination = ref(false);
+
+    async function printNomination() {
+      return runNomination("nomination", async () => {
+        const result = await pdfStore.fetchNomination(eventId, scheduleId);
+
+        if (result.success) {
+          const url = window.URL.createObjectURL(
+            new Blob([result.blob], { type: "application/pdf" })
+          );
+          window.open(url, "_blank");
+        } else {
+          Swal.fire({
+            title: "Failed",
+            text: result.message || "Unable to preview certificate.",
+            icon: "error",
+            scrollbarPadding: false,
+          });
+        }
+      });
+
+    }
+
     const tableLoading = ref(false);
     const pagination = ref({
       page: 1,
@@ -668,6 +665,13 @@ export default defineComponent({
       isDisapproveLoading,
       isAnyDisapproveLoading,
 
+      isNominationLoading,
+      isAnyNominationLoading,
+
+
+      isAttendanceLoading,
+      isAnyAttendanceLoading,
+
       printAttendance,
       printingDateId,
 
@@ -679,6 +683,9 @@ export default defineComponent({
       officeFilterOptions,
       applyOfficeFilter,
       toggleOffice,
+
+      printNomination,
+      printingNomination,
     };
   },
 });
@@ -871,6 +878,7 @@ export default defineComponent({
 .office-head-count {
   color: #94a3ab;
   font-size: 10.5px;
+  margin-left: 10px;
 }
 
 .office-list {
@@ -1182,6 +1190,7 @@ export default defineComponent({
     grid-template-columns: 1fr;
   }
 }
+
 .office-filter {
   min-width: 260px;
   max-width: 360px;
