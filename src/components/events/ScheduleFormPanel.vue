@@ -748,6 +748,7 @@
                 />
               </div>
             </div>
+       
 
             <!-- Offices Table -->
             <div class="offices-table-container">
@@ -803,12 +804,12 @@
                 </template>
 
                 <!-- No Data State -->
-                <template #no-data>
-                  <div class="no-data-state">
-                    <q-icon name="business" size="40px" color="grey-4" />
-                    <div>No departments available</div>
-                  </div>
-                </template>
+          <template #no-data>
+            <div class="full-width row flex-center no-data-state">
+              <q-icon name="person" size="40px" color="grey-4" />
+              <div>No employees found for this office.</div>
+            </div>
+          </template>
               </q-table>
             </div>
           </q-tab-panel>
@@ -849,6 +850,24 @@
                 </template>
               </q-input>
 
+            <div class="filter-row">
+              <q-input
+                v-model="sgFilter"
+                outlined
+                dense
+                clearable
+                debounce="500"
+                hide-bottom-space
+                label="Salary Grade"
+                placeholder="e.g. 16 or 16-25"
+                :rules="[sgRule]"
+                class="sg-filter-input"
+              >
+                <template #prepend>
+                  <q-icon name="filter_alt" size="18px" />
+                </template>
+              </q-input>
+            </div>
               <div class="quick-actions-row">
                 <div class="selection-actions">
                   <q-btn
@@ -936,7 +955,7 @@
                   <template #no-data>
                     <div class="no-data-state">
                       <q-icon name="person" size="40px" color="grey-4" />
-                      <div>No suggested employees found for this office.</div>
+                      <div>No employees found for this office.</div>
                     </div>
                   </template>
                 </q-table>
@@ -1155,7 +1174,7 @@ export default defineComponent({
     // =========================================================
     const eventForm = ref({
       venue_name:
-        props.schedule?.venue_name === "—" ? "" : props.schedule?.venue_name || "",
+      props.schedule?.venue_name === "—" ? "" : props.schedule?.venue_name || "",
       category_name: props.schedule?.category_name || null,
       type_name: props.schedule?.type_name || null,
       mode_name: props.schedule?.mode_name || null,
@@ -1598,9 +1617,17 @@ export default defineComponent({
         sortable: true,
         style: "min-width: 100px;",
       },
+           {
+        name: "sg",
+        label: "SG",
+        field: "sg",
+        align: "center",
+        sortable: true,
+        style: "min-width: 90px;",
+      },
       {
         name: "trainingCount",
-        label: "trainingsAttended",
+        label: "Trainings Attended",
         field: "trainingCount",
         align: "center",
         sortable: true,
@@ -1608,7 +1635,7 @@ export default defineComponent({
       },
       {
         name: "isAlreadyTrained",
-        label: "Trained?",
+        label: "Trained",
         field: "isAlreadyTrained",
         align: "center",
         sortable: true,
@@ -1669,8 +1696,17 @@ export default defineComponent({
       );
     });
 
+    // function selectAllEmployeesForOffice() {
+    //   currentOfficeSelectedEmployees.value = [...filteredSuggestedEmployees.value];
+    // }
     function selectAllEmployeesForOffice() {
-      currentOfficeSelectedEmployees.value = [...filteredSuggestedEmployees.value];
+      const current = currentOfficeSelectedEmployees.value;
+      const existing = new Set(current.map((e) => e.ControlNo));
+
+      currentOfficeSelectedEmployees.value = [
+        ...current,
+        ...filteredSuggestedEmployees.value.filter((e) => !existing.has(e.ControlNo)),
+      ];
     }
 
     function clearAllEmployeesForOffice() {
@@ -1933,6 +1969,37 @@ export default defineComponent({
       }
     });
 
+    // =========================================================
+// SG FILTER (exact "16" or range "16-25")
+// =========================================================
+const sgFilter = ref("");
+const SG_PATTERN = /^\d+(\s*-\s*\d+)?$/;
+
+const isSgValid = computed(() => {
+  const value = (sgFilter.value || "").trim();
+  return !value || SG_PATTERN.test(value);
+});
+
+const sgRule = () => isSgValid.value || "Use 16 or 16-25";
+
+// Malinis na value para sa API, null kung walang filter o invalid
+function getSgParam() {
+  const value = (sgFilter.value || "").trim();
+  if (!value || !SG_PATTERN.test(value)) return null;
+  return value.replace(/\s+/g, ""); // "16 - 25" -> "16-25"
+}
+
+async function loadSuggestedEmployees(officeName = activeEmployeeOffice.value) {
+  if (!officeName) return;
+  await eventStore.fetchSuggested(officeName, props.eventTitle, getSgParam());
+}
+
+// Refetch kapag nagbago ang SG (skip kung invalid pa ang tina-type)
+watch(sgFilter, () => {
+  if (!isSgValid.value) return;
+  loadSuggestedEmployees();
+});
+
     return {
       officeStore,
       isEditing,
@@ -2032,7 +2099,9 @@ export default defineComponent({
 
       // Save
       save,
-      interventionOptions
+      interventionOptions,
+      sgFilter,
+      sgRule,
     };
   },
 });
@@ -2837,6 +2906,12 @@ export default defineComponent({
 }
 
 .no-data-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 200px;
   padding: 40px;
   text-align: center;
   color: #b0b0b0;
@@ -2984,5 +3059,24 @@ export default defineComponent({
     padding: 0 12px;
     min-height: 32px;
   }
+}
+.filter-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.sg-filter-input {
+  width: 220px;
+}
+
+.sg-filter-input :deep(.q-field__control) {
+  border-radius: 8px;
+}
+
+.sg-filter-input :deep(.q-field__native),
+.sg-filter-input :deep(.q-field__label) {
+  font-size: 12px;
 }
 </style>
