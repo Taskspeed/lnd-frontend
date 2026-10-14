@@ -179,7 +179,7 @@
                   <q-icon name="workspace_premium" />
                 </q-item-section>
 
-                <q-item-section> Certification </q-item-section>
+                <q-item-section> Certificate </q-item-section>
               </q-item>
 
             <div class="nav-section">Forms</div>
