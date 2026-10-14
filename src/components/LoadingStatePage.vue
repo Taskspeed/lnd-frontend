@@ -1,6 +1,9 @@
 <template>
   <div class="loading-state" :class="{ 'loading-fullpage': fullPage }">
-    <q-spinner-dots :size="size" color="primary" />
+      <q-spinner
+          :size="size"
+          color="primary"
+        />
     <div class="loading-text">{{ message }}</div>
   </div>
 </template>
