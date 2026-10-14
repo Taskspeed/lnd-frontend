@@ -1110,6 +1110,10 @@ export default defineComponent({
       required: true,
     },
     // null = Add mode. Pass the schedule row object = Edit mode.
+     eventTitle: {
+      type: String,
+      default: "",
+    },
     schedule: {
       type: Object,
       default: null,
@@ -1640,7 +1644,7 @@ export default defineComponent({
       if (!selectedEmployeesByOffice.value[officeName]) {
         selectedEmployeesByOffice.value[officeName] = [];
       }
-      await eventStore.fetchSuggested(officeName, eventForm.value.venue_name);
+      await eventStore.fetchSuggested(officeName, props.eventTitle);
     }
 
     const currentOfficeSelectedEmployees = computed({

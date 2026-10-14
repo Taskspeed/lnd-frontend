@@ -182,7 +182,7 @@
           <!-- ============================================
                SCHEDULE FORM VIEW (Add / Edit)
           ============================================= -->
-          <ScheduleFormPanel v-else :event-id="eventId" :schedule="editingScheduleData" @saved="onScheduleSaved"
+          <ScheduleFormPanel v-else :event-id="eventId" :event-title="event.title_name" :schedule="editingScheduleData" @saved="onScheduleSaved"
             @cancel="backToScheduleList" />
         </template>
       </EventTwoColumnLayout>
