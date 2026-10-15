@@ -1,6 +1,6 @@
 <template>
   <div class="loading-state" :class="{ 'loading-fullpage': fullPage }">
-      <q-spinner
+    <q-spinner
           :size="size"
           color="primary"
         />

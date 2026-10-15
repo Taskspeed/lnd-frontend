@@ -4,8 +4,11 @@
          LOADING
     ========================================================== -->
     <div v-if="eventStore.loading && !event" class="state-message">
-      <q-spinner-dots size="32px" />
-      <span>Loading event...</span>
+         <q-spinner
+          size="40px"
+          color="primary"
+        />
+      <span>Loading schedule event...</span>
     </div>
 
     <!-- =========================================================
