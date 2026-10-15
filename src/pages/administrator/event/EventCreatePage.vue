@@ -850,9 +850,6 @@ export default defineComponent({
 
   setup() {
 
-
-    // event  component start
-
     // title
     const titleStore = useTitleStore();
     const titleOptions = ref([])
@@ -916,8 +913,6 @@ export default defineComponent({
     // =========================================================
     const saving = ref(false);
     const activeTab = ref("schedule");
-
-    //
 
 
     //suggested employee
@@ -1050,54 +1045,10 @@ export default defineComponent({
       await eventStore.fetchSuggested(officeName, eventForm.value.title_name);
     }
 
-    // =========================================================
-    // EVENT FORM
-    // NOTE: schedule.time_start / time_end are stored as 24-hour
-    // "HH:mm" strings (q-time's native format). This guarantees
-    // the value is always parseable — no more free-typed "8am"
-    // style strings that can silently break the hour calculation.
-    // =========================================================
-    // const eventForm = ref({
-    //   title_name: "",
-    //   category_name: null,
-    //   source_name: null, // "In-house" or "External"
-    //   intervention_name: "Formal Learning", // ← dati null, ginawang default
-    //   type_name: null,
-    //   // interventionForm: {
-    //   //   // Learning by Doing
-    //   //   example: "",
-    //   //   output: "",
-    //   //   supervisor: "",
-    //   //   // Social Learning
-    //   //   learning_partner: "",
-    //   //   topic: "",
-    //   //   frequency: null,
-    //   //   // Self-Directed Learning
-    //   //   resource: "",
-    //   //   proof: "",
-    //   //   objective: "",
-    //   // },
-    //   venue_name: "",
-    //   mode_name: null,
-
-    //   speakers: [
-    //     {
-    //       id: Date.now(),
-    //       name: "",
-    //       agency: "",
-    //     },
-    //   ],
-
-    //   schedules: [],
-
-    //   departments: [],
-    // });
-
 
     // =========================================================
     // OPTIONS
     // =========================================================
-
 
 
     const frequencyOptions = [
@@ -1152,23 +1103,23 @@ export default defineComponent({
 
     // Fields that belong to each intervention's own form, used both
     // to reset state on category change and to build the payload.
-    const interventionFormFieldsMap = {
-      "Learning by Doing": [
-        { key: "example", label: "Example" },
-        { key: "output", label: "Output / Deliverable" },
-        { key: "supervisor", label: "Assigned Supervisor / Mentor" },
-      ],
-      "Social Learning": [
-        { key: "learning_partner", label: "Learning Partner / Mentor" },
-        { key: "topic", label: "Topic Covered" },
-        { key: "frequency", label: "Frequency" },
-      ],
-      "Self-Directed Learning": [
-        { key: "resource", label: "Learning Resource / Material" },
-        { key: "proof", label: "Proof of Completion" },
-        { key: "objective", label: "Learning Objective" },
-      ],
-    };
+    // const interventionFormFieldsMap = {
+    //   "Learning by Doing": [
+    //     { key: "example", label: "Example" },
+    //     { key: "output", label: "Output / Deliverable" },
+    //     { key: "supervisor", label: "Assigned Supervisor / Mentor" },
+    //   ],
+    //   "Social Learning": [
+    //     { key: "learning_partner", label: "Learning Partner / Mentor" },
+    //     { key: "topic", label: "Topic Covered" },
+    //     { key: "frequency", label: "Frequency" },
+    //   ],
+    //   "Self-Directed Learning": [
+    //     { key: "resource", label: "Learning Resource / Material" },
+    //     { key: "proof", label: "Proof of Completion" },
+    //     { key: "objective", label: "Learning Objective" },
+    //   ],
+    // };
 
     // Type options depend on the selected Intervention category.
     // const typeOptions = computed(() => {
@@ -1208,18 +1159,18 @@ export default defineComponent({
 
     // Builds only the payload entries relevant to the currently
     // selected Intervention category, skipping empty fields.
-    function buildInterventionFormPayload() {
-      const category = eventForm.value.intervention_name;
-      const data = eventForm.value.interventionForm;
-      const fields = interventionFormFieldsMap[category] || [];
+    // function buildInterventionFormPayload() {
+    //   const category = eventForm.value.intervention_name;
+    //   const data = eventForm.value.interventionForm;
+    //   const fields = interventionFormFieldsMap[category] || [];
 
-      return fields
-        .filter((field) => data[field.key])
-        .map((field) => ({
-          form_name: field.label,
-          form_value: data[field.key],
-        }));
-    }
+    //   return fields
+    //     .filter((field) => data[field.key])
+    //     .map((field) => ({
+    //       form_name: field.label,
+    //       form_value: data[field.key],
+    //     }));
+    // }
 
     // =========================================================
     // DEPARTMENT TABLE (MAIN)
@@ -1489,19 +1440,6 @@ export default defineComponent({
       return hours * 60 + minutes;
     }
 
-    // function formatTimeDisplay(timeStr) {
-    //   const totalMinutes = parseTimeToMinutes(timeStr);
-    //   if (totalMinutes === null) return "";
-
-    //   let hours = Math.floor(totalMinutes / 60);
-    //   const minutes = totalMinutes % 60;
-    //   const period = hours >= 12 ? "PM" : "AM";
-
-    //   hours = hours % 12;
-    //   if (hours === 0) hours = 12;
-
-    //   return `${hours}:${String(minutes).padStart(2, "0")} ${period}`;
-    // }
 
     function formatTimeDisplay(timeStr) {
       const totalMinutes = parseTimeToMinutes(timeStr);
@@ -1628,34 +1566,6 @@ export default defineComponent({
       });
     }
 
-    // function addSelectedDepartments() {
-    //   eventForm.value.departments = selectedOffices.value.map((office) => ({
-    //     id: office.officeId,
-    //     name: office.office_name,
-    //     attendees: Number(office._attendees) || 0,
-    //   }));
-
-    //   // NEW: flatten per-office employee selections into eventForm
-    //   eventForm.value.employees = Object.entries(selectedEmployeesByOffice.value)
-    //     .flatMap(([officeName, employees]) =>
-    //       employees.map((emp) => ({
-    //         control_no: emp.ControlNo,
-    //         name: emp.name,
-    //         office: officeName,
-    //       }))
-    //     );
-
-    //   showDepartmentDialog.value = false;
-
-    //   if (selectedOffices.value.length > 0) {
-    //     Notify.create({
-    //       type: "positive",
-    //       message: `${selectedOffices.value.length} department(s) added successfully.`,
-    //       position: "top",
-    //       timeout: 2000,
-    //     });
-    //   }
-    // }
 
     const showDepartmentEmployeesDialog = ref(false);
     const viewingDepartment = ref(null);
@@ -1812,6 +1722,7 @@ export default defineComponent({
 
         office: eventForm.value.departments.map((department) => ({
           office_name: department.name,
+          number_of_attendees: department.attendees,
         })),
 
         speaker: eventForm.value.speakers

@@ -1901,7 +1901,7 @@ export default defineComponent({
 
         office: eventForm.value.departments.map((department) => ({
           office_name: department.name,
-          attendees: Number(department.attendees) || 0,
+          attendees: department.attendees,
         })),
 
         employee: eventForm.value.employees,
