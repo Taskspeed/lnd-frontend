@@ -52,8 +52,8 @@
               <div class="app-table-cell-title"> {{ props.row.hours }}</div>
 
             </q-td>
-            <q-td key="category_name" :props="props">
-              <div class="app-table-cell-title"> {{ props.row.category_name }}</div>
+            <q-td key="type_name" :props="props">
+              <div class="app-table-cell-title"> {{ props.row.type_name }}</div>
 
             </q-td>
 
@@ -101,7 +101,7 @@ const COLUMNS = [
 
   { name: "dateRange", label: "Date", field: "dateRange", align: "left" },
   { name: "hours", label: "Hours", field: "hours", align: "left", sortable: true },
-  { name: "category_name", label: "Type of Training", field: "category_name", align: "left", sortable: true },
+  { name: "type_name", label: "Type of Training", field: "type_name", align: "left", sortable: true },
   { name: "computedStatus", label: "Status", field: "computedStatus", align: "left", sortable: true },
   { name: "action", label: "Action", field: "action", align: "left" },
 ];
