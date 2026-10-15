@@ -219,7 +219,7 @@ const TECHNICAL_KEYS = {
   records_management: 'Records Management',
   partnering_networking: 'Partnering and Networking',
   process_management: 'Process Management',
-  attention_to_detail: 'Attention to Detail',
+  attention_details: 'Attention to Detail',
 }
 const LEADERSHIP_KEYS = {
   thinking_strategically_creatively: 'Thinking Strategically and Creativity',

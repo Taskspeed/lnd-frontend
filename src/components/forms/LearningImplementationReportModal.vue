@@ -209,10 +209,14 @@ const leadershipKeyMap = {
   managing_performance_coaching_results: 'Managing Performance and Coaching for Results',
 }
 
+function isChecked(value) {
+  return value === true || value === 1 || value === '1'
+}
+
 function checkedLabelsFrom(obj, keyMap) {
   if (!obj) return []
   return Object.entries(keyMap)
-    .filter(([apiKey]) => obj[apiKey] === '1' || obj[apiKey] === 1)
+    .filter(([apiKey]) => isChecked(obj[apiKey]))
     .map(([, label]) => label)
 }
 

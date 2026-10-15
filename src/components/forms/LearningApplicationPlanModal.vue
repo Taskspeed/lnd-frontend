@@ -305,6 +305,7 @@ const BENEFICIARIES_KEYS = {
   office_department: 'The Office/Department',
   city_government_organization: 'The City Government/Organization',
   clients_stakeholders_general_public: 'Clients, Stakeholders & the General Public',
+  supervisors_managers: 'Supervisors and Managers',
 }
 const TARGET_KEYS = {
   within_2_weeks_after_training: 'within2weeks',
@@ -358,10 +359,10 @@ function populateFromFormData(data) {
 
   // Detalyadong per-item checkboxes — galing sa mga RELATIONS (may "s" sa pangalan
   // para di magkasagupa sa boolean columns sa ibaba)
-  foundation.value = toCheckedList(data.foundations, FOUNDATION_KEYS)
+  foundation.value = toCheckedList(data.foundation, FOUNDATION_KEYS)
   technical.value = toCheckedList(data.technical, TECHNICAL_KEYS)
-  supervisory.value = toCheckedList(data.supervisorys, SUPERVISORY_KEYS)
-  managerial.value = toCheckedList(data.managerials, MANAGERIAL_KEYS)
+  supervisory.value = toCheckedList(data.supervisory, SUPERVISORY_KEYS)
+  managerial.value = toCheckedList(data.managerial, MANAGERIAL_KEYS)
 
   // "Competency Category" checkboxes sa itaas ng form — galing direkta sa boolean
   // columns ng parent table (foundation/techinal/supervisory/managerial)
