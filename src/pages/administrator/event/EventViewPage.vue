@@ -376,6 +376,7 @@ export default defineComponent({
         hours: data.hours,
         qualifications: data.qualifications,
         fee: data.fee,
+        learning_intervention: data.learning_intervention || null,
 
         speakers: (data.speaker || []).map((s) => ({
           name: s.speaker_name,
@@ -386,9 +387,7 @@ export default defineComponent({
         departments: (data.office || []).map((o) => ({
           id: o.departmentId,
           name: o.office_name,
-          attendees: (data.employee_tag || []).filter(
-            (e) => e.office === o.office_name
-          ).length,
+          attendees: Number(o.number_of_attendees ?? 0),
           employees: (data.employee_tag || [])
             .filter((e) => e.office === o.office_name)
             .map((e) => ({

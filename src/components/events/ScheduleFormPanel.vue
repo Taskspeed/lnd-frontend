@@ -78,6 +78,7 @@
           }}
         </div>
       </LabeledField>
+
       <LabeledField label="Compentecy">
         <q-select
           v-model="eventForm.category_name"
@@ -1190,7 +1191,7 @@ export default defineComponent({
       qualifications: props.schedule?.qualifications || "",
       fee: props.schedule?.fee || "",
       competencies: props.schedule?.competencies || [],
-
+      intervention_name: props.schedule?.learning_intervention || "",
       speakers: props.schedule?.speakers?.length
         ? props.schedule.speakers.map((s, i) => ({
             id: Date.now() + i,
@@ -1749,26 +1750,6 @@ export default defineComponent({
       showDepartmentEmployeesDialog.value = true;
     }
 
-    // function openDepartmentDialog() {
-    //   officeSearch.value = "";
-    //   bulkAttendeeCount.value = null;
-
-    //   const existingOfficeIds = eventForm.value.departments.map((d) => d.id);
-    //   const preselectedOffices = officeStore.offices
-    //     .filter((office) => existingOfficeIds.includes(office.officeId))
-    //     .map((office) => {
-    //       const existingDept = eventForm.value.departments.find(
-    //         (d) => d.id === office.office_name
-    //       );
-    //       return {
-    //         ...office,
-    //         _attendees: existingDept?.attendees || 0,
-    //       };
-    //     });
-
-    //   selectedOffices.value = initializeSelectedOffices(preselectedOffices);
-    //   showDepartmentDialog.value = true;
-    // }
   function openDepartmentDialog() {
   officeSearch.value = "";
   bulkAttendeeCount.value = null;
@@ -1896,7 +1877,7 @@ export default defineComponent({
         hours: eventForm.value.hours,
         qualifications: eventForm.value.qualifications || null,
         fee: eventForm.value.fee,
-        learning: eventForm.value.intervention_name,
+        learning_intervention: eventForm.value.intervention_name,
 
         speaker: eventForm.value.speakers
           .filter((speaker) => speaker.name.trim())
