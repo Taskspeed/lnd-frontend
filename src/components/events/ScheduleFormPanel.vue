@@ -172,7 +172,7 @@
         />
       </LabeledField>
 
-
+<!-- 
       <LabeledField label="Qualifications">
         <q-input
           v-model="eventForm.qualifications"
@@ -182,7 +182,13 @@
           placeholder="Enter qualifications"
           class="custom-input"
         />
-      </LabeledField>
+      </LabeledField> -->
+           <div class="qualifications-field">
+            <LabeledField label="Qualifications">
+              <q-input v-model="eventForm.qualifications" outlined type="textarea" rows="4"
+                placeholder="Enter qualifications" class="qualifications-input" />
+            </LabeledField>
+          </div>
 
  
     </div>
@@ -1890,6 +1896,7 @@ export default defineComponent({
         hours: eventForm.value.hours,
         qualifications: eventForm.value.qualifications || null,
         fee: eventForm.value.fee,
+        learning: eventForm.value.intervention_name,
 
         speaker: eventForm.value.speakers
           .filter((speaker) => speaker.name.trim())
@@ -3078,5 +3085,21 @@ watch(sgFilter, () => {
 .sg-filter-input :deep(.q-field__native),
 .sg-filter-input :deep(.q-field__label) {
   font-size: 12px;
+}
+/* Qualifications: full width + malaking textarea */
+.qualifications-field {
+  grid-column: 1 / -1; /* tumatawid sa dalawang column */
+}
+
+.qualifications-input :deep(.q-field__control) {
+  height: auto;
+  min-height: 110px;
+  border-radius: 7px;
+}
+
+.qualifications-input :deep(.q-field__native) {
+  min-height: 90px;
+  font-size: 12px;
+  resize: vertical; /* pwedeng i-drag para palakihin pa */
 }
 </style>

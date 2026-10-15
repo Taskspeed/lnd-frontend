@@ -66,7 +66,8 @@
         <div class="competency-group">
           <div class="forms-list">
             <q-checkbox v-for="option in evaluationOptions" :key="option.value" v-model="eventForm.evaluations"
-              :val="option.value" :label="option.label" color="green" keep-color disable dense class="competency-checkbox" />
+              :val="option.value" :label="option.label" color="green" keep-color disable dense
+              class="competency-checkbox" />
           </div>
         </div>
 
@@ -82,51 +83,10 @@
              The other 3 Intervention categories show only their own
              form — no venue, speakers, or schedule/department tabs.
         ====================================================== -->
-        <template v-if="
-          eventForm.intervention_name &&
-          eventForm.intervention_name !== 'Formal Learning'
-        ">
-          <div class="section-title">
-            {{ eventForm.intervention_name }} Details
-          </div>
-
-          <!-- LEARNING BY DOING FORM -->
-          <template v-if="eventForm.intervention_name === 'Learning by Doing'">
-            <q-input v-model="eventForm.interventionForm.example" outlined dense
-              placeholder="Example (e.g. specific project or task)" class="custom-input assessment-input" />
-            <q-input v-model="eventForm.interventionForm.output" outlined dense placeholder="Output / Deliverable"
-              class="custom-input assessment-input" />
-            <q-input v-model="eventForm.interventionForm.supervisor" outlined dense
-              placeholder="Assigned Supervisor / Mentor" class="custom-input" />
-          </template>
-
-          <!-- SOCIAL LEARNING FORM -->
-          <template v-else-if="eventForm.intervention_name === 'Social Learning'">
-            <q-input v-model="eventForm.interventionForm.learning_partner" outlined dense
-              placeholder="Learning Partner / Mentor" class="custom-input assessment-input" />
-            <q-input v-model="eventForm.interventionForm.topic" outlined dense placeholder="Topic Covered"
-              class="custom-input assessment-input" />
-            <q-select v-model="eventForm.interventionForm.frequency" outlined dense emit-value map-options
-              :options="frequencyOptions" placeholder="Frequency" class="custom-input" :display-value="eventForm.interventionForm.frequency
-                ? undefined
-                : 'Select Frequency'
-                " />
-          </template>
-
-          <!-- SELF-DIRECTED LEARNING FORM -->
-          <template v-else-if="eventForm.intervention_name === 'Self-Directed Learning'">
-            <q-input v-model="eventForm.interventionForm.resource" outlined dense
-              placeholder="Learning Resource / Material" class="custom-input assessment-input" />
-            <q-input v-model="eventForm.interventionForm.proof" outlined dense placeholder="Proof of Completion"
-              class="custom-input assessment-input" />
-            <q-input v-model="eventForm.interventionForm.objective" outlined dense placeholder="Learning Objective"
-              class="custom-input" />
-          </template>
-        </template>
 
         <!-- SCHEDULE DETAILS — Formal Learning only (also shown as
              the default panel before an Intervention is chosen) -->
-        <template v-else>
+        
           <div class="section-title">Schedule Details</div>
           <LabeledField label="Venue">
             <q-select v-model="eventForm.venue_name" outlined dense use-input hide-selected fill-input
@@ -137,7 +97,7 @@
           </LabeledField>
           <!-- type and category -->
           <div class="two-column-fields">
-            <LabeledField label="Learning Type">
+            <LabeledField label="Learning type">
               <q-select v-model="eventForm.intervention_name" outlined dense emit-value map-options
                 :options="interventionOptions" placeholder="Select Intervention" class="custom-input" :display-value="eventForm.intervention_name ? undefined : 'Select Intervention'
                   " />
@@ -184,17 +144,23 @@
             </LabeledField>
 
 
-            <LabeledField label="fee">
-              <q-input v-model="eventForm.fee" outlined dense placeholder="fee" class="custom-input" />
+            <LabeledField label="Fee">
+              <q-input v-model="eventForm.fee" outlined dense placeholder="e.g Php 4000" class="custom-input" />
             </LabeledField>
 
 
-
+<!-- 
             <LabeledField label="Qualifications">
-
               <q-input v-model="eventForm.qualifications" outlined dense type="text" rows="2"
                 placeholder="Enter qualifications" class="custom-input" />
+            </LabeledField> -->
+            <!-- Full width, nasa labas ng two-column grid cell -->
+          <div class="qualifications-field">
+            <LabeledField label="Qualifications">
+              <q-input v-model="eventForm.qualifications" outlined type="textarea" rows="4"
+                placeholder="Enter qualifications" class="qualifications-input" />
             </LabeledField>
+          </div>
 
 
 
@@ -469,7 +435,6 @@
             </q-tab-panel>
           </q-tab-panels>
         </template>
-      </template>
     </EventTwoColumnLayout>
 
     <!-- =========================================================
@@ -901,11 +866,11 @@ export default defineComponent({
         },
       ],
       // forms:[],
-    schedules: [],
-    departments: [],
-    employees: [], // ← idagdag ito
-    forms: formsOptions.map((o) => o.value),            // naka-check lahat by default
-    evaluations: evaluationOptions.map((o) => o.value), 
+      schedules: [],
+      departments: [],
+      employees: [], // ← idagdag ito
+      forms: formsOptions.map((o) => o.value),            // naka-check lahat by default
+      evaluations: evaluationOptions.map((o) => o.value),
     });
 
     // =========================================================
@@ -1708,7 +1673,7 @@ export default defineComponent({
       const payload = {
         title_name: eventForm.value.title_name,
         category_name: eventForm.value.category_name,
-        intervention_name: eventForm.value.intervention_name,
+        learning_intervention: eventForm.value.intervention_name,
         type_name: eventForm.value.type_name,
         conducted_by: eventForm.value.conducted_by,
         source_name: eventForm.value.source_name,
@@ -3035,5 +3000,21 @@ export default defineComponent({
 .forms-list :deep(.q-checkbox__label) {
   color: #373737;
   font-size: 11px;
+}
+/* Qualifications: full width + malaking textarea */
+.qualifications-field {
+  grid-column: 1 / -1; /* tumatawid sa dalawang column */
+}
+
+.qualifications-input :deep(.q-field__control) {
+  height: auto;
+  min-height: 110px;
+  border-radius: 7px;
+}
+
+.qualifications-input :deep(.q-field__native) {
+  min-height: 90px;
+  font-size: 12px;
+  resize: vertical; /* pwedeng i-drag para palakihin pa */
 }
 </style>
