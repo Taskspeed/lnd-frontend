@@ -4,10 +4,24 @@
          PAGE HEADER
     ====================================================== -->
     <section class="page-header">
-      <div>
-        <q-btn flat dense no-caps icon="arrow_back" label="Back to Events" class="back-btn" @click="$router.back()" />
-        <h5>Event Schedule Details</h5>
-        <p>Full details of this training schedule, tagged employees, and nomination.</p>
+      <div class="page-heading">
+        <div class="page-heading-copy">
+          <div class="page-eyebrow">
+            <q-icon name="event_note" />
+            Training schedule
+          </div>
+          <h5>Event Schedule Details</h5>
+          <p>Review schedule information, participating offices, and employee nominations.</p>
+        </div>
+        <q-btn
+          flat
+          dense
+          no-caps
+          icon="arrow_back"
+          label="Back to Events"
+          class="back-btn"
+          @click="$router.back()"
+        />
       </div>
     </section>
 
@@ -24,7 +38,10 @@
       <q-card flat bordered class="detail-card">
         <div class="section-head">
           <div class="section-head-text">
-            <div class="section-title">Schedule Details</div>
+            <div class="section-heading">
+              <q-icon name="event" class="section-icon" />
+              <div class="section-title">Schedule Details</div>
+            </div>
             <div class="section-sub">Event and schedule information</div>
           </div>
           <span class="status-badge" :class="'status-' + schedule.computedStatus">
@@ -36,6 +53,7 @@
           <div class="schedule-layout">
             <!-- ============ LEFT: EVENT INFORMATION ============ -->
             <div class="info-col">
+              <span class="detail-label">Event</span>
               <h6 class="event-title-lg">{{ eventInfo.title_name }}</h6>
 
               <div class="detail-grid">
@@ -43,10 +61,7 @@
                   <span class="detail-label">Venue</span>
                   <span class="detail-value">{{ schedule.venue_name }}</span>
                 </div>
-                <div class="detail-item">
-                  <span class="detail-label">Qualifications</span>
-                  <span class="detail-value">{{ schedule.qualifications }}</span>
-                </div>
+               
                 <div class="detail-item">
                   <span class="detail-label">Hours</span>
                   <span class="detail-value">{{ schedule.hours }}</span>
@@ -71,9 +86,18 @@
                   <span class="detail-label">Source</span>
                   <span class="detail-value">{{ schedule.source_name }}</span>
                 </div>
+                 <div class="detail-item">
+                  <span class="detail-label">learning type</span>
+                  <span class="detail-value">{{ schedule.learning_intervention }}</span>
+                </div>
+             
                 <div class="detail-item">
                   <span class="detail-label">Conducted by</span>
                   <span class="detail-value">{{ schedule.conducted_by || "—" }}</span>
+                </div>
+                <div class="detail-item detail-item-wide">
+                  <span class="detail-label">Qualifications</span>
+                  <span class="detail-value">{{ schedule.qualifications }}</span>
                 </div>
               </div>
 
@@ -129,10 +153,14 @@
             <!-- ============ RIGHT: OFFICES ============ -->
             <aside class="office-col">
               <div class="office-head">
-                <div class="office-head-title">Offices
-                     <!-- <span class="office-head-count">
-                  {{ officeList.length }} office{{ officeList.length === 1 ? "" : "s" }}
-                </span> -->
+                <div class="office-heading">
+                  <q-icon name="domain" class="section-icon" />
+                  <div>
+                    <div class="office-head-title">Offices</div>
+                    <div class="office-head-count">
+                      {{ officeList.length }} office{{ officeList.length === 1 ? "" : "s" }}
+                    </div>
+                  </div>
                 </div>
 
                 <q-btn outline dense no-caps icon="print" label="Print Nomination" class="print-btn"
@@ -177,7 +205,10 @@
     <q-card flat bordered class="detail-card">
       <div class="section-head">
         <div class="section-head-text">
-          <div class="section-title">Nomination</div>
+          <div class="section-heading">
+            <q-icon name="groups" class="section-icon" />
+            <div class="section-title">Nominations</div>
+          </div>
           <div class="section-sub">Select employees to nominate for this schedule</div>
         </div>
         <q-select :model-value="selectedOffice" :options="officeFilterOptions" label="Filter by office" dense outlined
@@ -1209,5 +1240,357 @@ export default defineComponent({
   border-color: #2b6cb0;
   background: #f3f8fd;
   box-shadow: 0 0 0 1px #2b6cb0;
+}
+
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 26px;
+  border: 1px solid #e3eaf0;
+  border-radius: 16px;
+  background: linear-gradient(115deg, #ffffff 0%, #f5f9fc 100%);
+  box-shadow: 0 5px 18px rgba(25, 53, 74, 0.045);
+}
+
+.page-heading-copy {
+  min-width: 0;
+}
+
+.page-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #2b6cb0;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.page-eyebrow .q-icon {
+  font-size: 15px;
+}
+
+.page-header h5 {
+  margin: 6px 0 5px;
+  font-size: 23px;
+  line-height: 1.25;
+}
+
+.page-header p {
+  max-width: 620px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.back-btn {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 12px;
+  margin: 0;
+  border: 1px solid #dfe7ed;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #31546b;
+  font-weight: 650;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.back-btn:hover {
+  border-color: #bfd2e1;
+  background: #f4f8fb;
+}
+
+.detail-card {
+  border-color: #e3eaf0;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px rgba(25, 53, 74, 0.05);
+}
+
+.section-head {
+  padding: 18px 22px;
+  background: linear-gradient(110deg, #fbfdff 0%, #f6f9fb 100%);
+}
+
+.section-heading,
+.office-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.section-icon {
+  flex: 0 0 auto;
+  color: #2b6cb0;
+  font-size: 19px;
+}
+
+.section-title {
+  font-size: 15px;
+}
+
+.section-sub {
+  margin-left: 28px;
+  font-size: 11px;
+}
+
+.detail-body {
+  padding: 22px;
+}
+
+.schedule-layout {
+  grid-template-columns: minmax(0, 1.65fr) minmax(290px, 1fr);
+  gap: 24px;
+}
+
+.event-title-lg {
+  margin-top: 4px;
+  font-size: 20px;
+  letter-spacing: -0.2px;
+}
+
+.detail-grid {
+  gap: 10px;
+  margin-top: 18px;
+  padding-bottom: 20px;
+}
+
+.detail-item {
+  min-width: 0;
+  gap: 5px;
+  padding: 11px 13px;
+  border: 1px solid #e9eef2;
+  border-radius: 10px;
+  background: #fbfcfd;
+}
+
+.detail-item-wide {
+  grid-column: 1 / -1;
+}
+
+.detail-label {
+  color: #8193a0;
+  font-size: 9px;
+  letter-spacing: 0.65px;
+}
+
+.detail-value {
+  overflow-wrap: anywhere;
+  color: #263d4c;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.section-label {
+  margin-top: 24px;
+  color: #607987;
+}
+
+.office-col {
+  top: 20px;
+  padding: 16px;
+  border-color: #e3eaf0;
+  border-radius: 14px;
+  background: #f9fbfc;
+}
+
+.office-heading {
+  gap: 8px;
+}
+
+.office-head-title {
+  font-size: 14px;
+}
+
+.office-head-count {
+  display: block;
+  margin: 2px 0 0;
+  font-size: 10px;
+}
+
+.office-list {
+  max-height: 620px;
+  gap: 9px;
+}
+
+.office-item {
+  padding: 12px;
+  border-color: #e4ebef;
+  border-radius: 11px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.office-item.is-clickable:hover {
+  transform: translateY(-1px);
+}
+
+.office-item.is-active {
+  border-color: #8db8dc;
+  background: #f1f7fc;
+  box-shadow: 0 0 0 2px rgba(43, 108, 176, 0.12);
+}
+
+.office-name {
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.office-pill {
+  padding: 4px 5px 4px 9px;
+}
+
+.date-list,
+.speaker-list {
+  margin-top: 10px;
+}
+
+.date-item,
+.speaker-item {
+  padding: 12px 14px;
+  border-color: #e5ebef;
+  border-radius: 10px;
+  background: #fbfcfd;
+}
+
+.date-right {
+  justify-content: flex-end;
+}
+
+.print-btn {
+  min-height: 34px;
+  border-color: #d5e1e9;
+  color: #24699b;
+}
+
+.print-btn:hover {
+  border-color: #b7d0e2;
+  background: #f2f8fc;
+}
+
+.office-filter {
+  min-width: 240px;
+}
+
+.detail-table {
+  padding: 0 18px 12px;
+}
+
+.detail-table :deep(.q-table__middle) {
+  overflow-x: auto;
+}
+
+.detail-table :deep(thead tr) {
+  background: #f6f9fb;
+}
+
+.detail-table :deep(thead th) {
+  color: #587080;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+}
+
+.detail-table :deep(tbody td) {
+  height: 54px;
+  color: #344b5a;
+  font-size: 12px;
+}
+
+.detail-table :deep(tbody tr:hover) {
+  background: #f8fbfd;
+}
+
+.section-head > .status-badge {
+  flex: 0 0 auto;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: #e8f5ed;
+  color: #197044;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.3px;
+  text-transform: capitalize;
+}
+
+@media (max-width: 900px) {
+  .schedule-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .office-col {
+    top: auto;
+  }
+}
+
+@media (max-width: 650px) {
+  .event-page {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .page-heading {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .page-header h5 {
+    font-size: 20px;
+  }
+
+  .back-btn {
+    min-height: 34px;
+  }
+
+  .section-head {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 16px;
+  }
+
+  .section-sub {
+    margin-left: 28px;
+  }
+
+  .detail-body {
+    padding: 16px;
+  }
+
+  .detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .detail-item {
+    padding: 10px;
+  }
+
+  .office-head {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .office-filter {
+    width: 100%;
+    max-width: none;
+  }
+
+  .detail-table {
+    padding: 0 8px 8px;
+  }
+}
+
+@media (max-width: 420px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-item-wide {
+    grid-column: auto;
+  }
 }
 </style>

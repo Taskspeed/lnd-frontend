@@ -4,10 +4,24 @@
          PAGE HEADER
     ====================================================== -->
     <section class="page-header">
-      <div>
-        <q-btn flat dense no-caps icon="arrow_back" label="Back to Events" class="back-btn" @click="$router.back()" />
-        <h5>Event Schedule Details</h5>
-        <p>Full details of this training schedule, tagged employees, and nomination.</p>
+      <div class="page-heading">
+        <div class="page-heading-copy">
+          <div class="page-eyebrow">
+            <q-icon name="event_note" />
+            Training schedule
+          </div>
+          <h5>Event Schedule Details</h5>
+          <p>Review event information, tagged employees, and nominations for this schedule.</p>
+        </div>
+        <q-btn
+          flat
+          dense
+          no-caps
+          icon="arrow_back"
+          label="Back to Events"
+          class="back-btn"
+          @click="$router.back()"
+        />
       </div>
     </section>
 
@@ -25,7 +39,10 @@
         <div class="section-head">
           <!-- <span class="section-badge">1</span> -->
           <div class="section-head-text">
-            <div class="section-title">Schedule Details</div>
+            <div class="section-heading">
+              <q-icon name="event" class="section-icon" />
+              <div class="section-title">Schedule Details</div>
+            </div>
             <div class="section-sub">Event and schedule information</div>
           </div>
           <span class="status-badge" :class="'status-' + schedule.computedStatus">
@@ -34,6 +51,7 @@
         </div>
 
         <div class="detail-body">
+          <span class="detail-label">Event</span>
           <h6 class="event-title-lg">{{ eventInfo.title_name }}</h6>
           <!-- <div class="event-sub">Created {{ eventInfo.created_at }}</div> -->
 
@@ -132,13 +150,16 @@
         <div class="section-head">
           <!-- <span class="section-badge">2</span> -->
           <div class="section-head-text">
-          <div class="section-title">Suggested Employees</div>
-            <div class="section-sub"> Employees tagged by HRM for this event.</div>
+            <div class="section-heading">
+              <q-icon name="groups" class="section-icon" />
+              <div class="section-title">Suggested Employees</div>
+            </div>
+            <div class="section-sub">Employees tagged by HRM for this event.</div>
           </div>
         </div>
 
         <q-table flat :rows="employeeTags" :columns="employeeTagColumns" row-key="id"
-          :rows-per-page-options="[0, 5, 10, 20, 50, 100]" class="app-table detail-table">
+          :rows-per-page-options="[0, 5, 10, 20, 50, 100]"   class="app-table offices-table nominee-table">
           <template #no-data>
             <div class="table-empty">No tagged employees.</div>
           </template>
@@ -153,7 +174,10 @@
       <div class="section-head">
         <!-- <span class="section-badge">3</span> -->
         <div class="section-head-text">
-          <div class="section-title">Nomination</div>
+          <div class="section-heading">
+            <q-icon name="how_to_reg" class="section-icon" />
+            <div class="section-title">Nominations</div>
+          </div>
           <div class="section-sub">Select employees to nominate for this schedule</div>
         </div>
         <q-btn no-caps unelevated icon="add" label="Nominate Employees" class="nominate-btn"
@@ -1320,11 +1344,6 @@ export default defineComponent({
   box-shadow: 0 6px 14px rgba(10, 63, 214, 0.16);
 }
 
-.nomination-dialog {
-  width: 100%;
-  max-width: 90vw;
-  border-radius: 13px;
-}
 
 .dialog-header {
   padding: 16px 20px;
@@ -1409,5 +1428,354 @@ export default defineComponent({
   .detail-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 26px;
+  border: 1px solid #e3eaf0;
+  border-radius: 16px;
+  background: linear-gradient(115deg, #ffffff 0%, #f5f9fc 100%);
+  box-shadow: 0 5px 18px rgba(25, 53, 74, 0.045);
+}
+
+.page-heading-copy {
+  min-width: 0;
+}
+
+.page-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #2b6cb0;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.page-eyebrow .q-icon {
+  font-size: 15px;
+}
+
+.page-header h5 {
+  margin: 6px 0 5px;
+  font-size: 23px;
+  line-height: 1.25;
+}
+
+.page-header p {
+  max-width: 620px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.back-btn {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 12px;
+  margin: 0;
+  border: 1px solid #dfe7ed;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #31546b;
+  font-size: 12px;
+  font-weight: 650;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.back-btn:hover {
+  border-color: #bfd2e1;
+  background: #f4f8fb;
+}
+
+.detail-card {
+  border: 1px solid #e3eaf0;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px rgba(25, 53, 74, 0.05);
+}
+
+.section-head {
+  flex-wrap: wrap;
+  padding: 18px 22px;
+  background: linear-gradient(110deg, #fbfdff 0%, #f6f9fb 100%);
+}
+
+.section-head-text {
+  min-width: 180px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.section-icon {
+  flex: 0 0 auto;
+  color: #2b6cb0;
+  font-size: 19px;
+}
+
+.section-title {
+  font-size: 15px;
+}
+
+.section-sub {
+  margin-top: 3px;
+  margin-left: 28px;
+  font-size: 11px;
+}
+
+.detail-body {
+  padding: 22px;
+}
+
+.event-title-lg {
+  font-size: 20px;
+  letter-spacing: -0.2px;
+}
+
+.detail-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+  padding-bottom: 20px;
+}
+
+.detail-item {
+  min-width: 0;
+  gap: 5px;
+  padding: 11px 13px;
+  border: 1px solid #e9eef2;
+  border-radius: 10px;
+  background: #fbfcfd;
+}
+
+.detail-label {
+  color: #8193a0;
+  font-size: 9px;
+  letter-spacing: 0.65px;
+}
+
+.detail-value {
+  overflow-wrap: anywhere;
+  color: #263d4c;
+  line-height: 1.45;
+}
+
+.section-label {
+  margin-top: 24px;
+  color: #607987;
+}
+
+.date-list,
+.speaker-list {
+  gap: 9px;
+  margin-top: 10px;
+}
+
+.date-item,
+.speaker-item {
+  min-width: 0;
+  gap: 8px 16px;
+  padding: 12px 14px;
+  border-color: #e5ebef;
+  border-radius: 10px;
+  background: #fbfcfd;
+}
+
+.date-item span {
+  color: #607987;
+  text-align: right;
+}
+
+.detail-table {
+  padding: 0 18px 12px;
+}
+
+.detail-table :deep(.q-table__middle) {
+  overflow-x: auto;
+}
+
+.detail-table :deep(thead tr) {
+  background: #f6f9fb;
+}
+
+.detail-table :deep(thead th) {
+  color: #587080;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+}
+
+.detail-table :deep(tbody td) {
+  height: 54px;
+  color: #344b5a;
+  font-size: 12px;
+}
+
+.detail-table :deep(tbody tr:hover) {
+  background: #f8fbfd;
+}
+
+.section-head > .status-badge {
+  flex: 0 0 auto;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: #e8f5ed;
+  color: #197044;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.3px;
+  text-transform: capitalize;
+}
+
+.nominate-btn,
+.nominate-form-btn {
+  min-height: 38px;
+  border-radius: 9px;
+  font-size: 11px;
+}
+
+.nominate-btn {
+  box-shadow: 0 3px 8px rgba(12, 163, 68, 0.16);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.nominate-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(12, 163, 68, 0.22);
+}
+
+.nominate-form-btn {
+  padding: 0 16px;
+}
+
+.nomination-dialog {
+  width: 100%;
+  max-width: 90vw;
+  border-radius: 13px;
+  overflow-y: auto;
+  border: 1px solid #e3eaf0;
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(25, 53, 74, 0.18);
+}
+
+.dialog-header {
+  padding: 18px 22px;
+  background: linear-gradient(110deg, #fbfdff 0%, #f3f8fb 100%);
+}
+
+.dialog-header .section-title {
+  font-size: 16px;
+}
+
+.dialog-header .section-sub {
+  margin-left: 0;
+}
+
+.nomination-stepper :deep(.q-stepper__header) {
+  border-bottom: 1px solid #edf1f4;
+}
+
+.office-search {
+  margin-bottom: 14px;
+}
+
+.row-actions .q-btn {
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.row-actions .q-btn:hover {
+  transform: translateY(-1px);
+  background: #f0f5f8;
+}
+
+@media (max-width: 900px) {
+  .detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .event-page {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .page-heading {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .page-header h5 {
+    font-size: 20px;
+  }
+
+  .back-btn {
+    min-height: 34px;
+  }
+
+  .section-head {
+    align-items: flex-start;
+    gap: 10px;
+    padding: 16px;
+  }
+
+  .section-head-text {
+    flex: 1 1 100%;
+  }
+
+  .section-sub {
+    margin-left: 28px;
+  }
+
+  .detail-body {
+    padding: 16px;
+  }
+
+  .detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .detail-item {
+    padding: 10px;
+  }
+
+  .date-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .date-item span {
+    text-align: left;
+  }
+
+  .detail-table {
+    padding: 0 8px 8px;
+  }
+}
+
+@media (max-width: 420px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.nominee-table {
+  max-height: 55vh;
+}
+.nominee-table :deep(thead tr th) {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f6f9fb;
 }
 </style>
