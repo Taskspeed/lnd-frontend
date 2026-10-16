@@ -6,7 +6,7 @@
         <h5>Report Management</h5>
       </div>
 
-      <q-btn unelevated no-caps icon="add" label="Add Report" class="add-report-btn" @click="openAddReport" />
+ 
     </section>
 
     <!-- REPORTS CARD -->

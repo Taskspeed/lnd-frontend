@@ -835,6 +835,17 @@ export default defineComponent({
   border-radius: 10px;
 }
 
+.nav-expansion :deep(.nav-expansion-header) {
+  color: #282828;
+  font-size: 12px;
+  transition: all 0.18s ease;
+}
+
+.nav-expansion :deep(.nav-expansion-header:hover) {
+  background: #f0f8f2;
+  color: #087a3f;
+}
+
 .nav-expansion :deep(.q-item__section--avatar) {
   min-width: 40px;
   color: #668087;
