@@ -111,7 +111,7 @@ const routes = [
       {
         path: "reports",
         name: "reports",
-        component: () => import("pages/ReportsPage.vue"),
+        component: () => import("pages/administrator/ReportsPage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
       {
