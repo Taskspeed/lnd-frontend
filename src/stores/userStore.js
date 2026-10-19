@@ -9,17 +9,29 @@ export const useUserStore = defineStore("user", () => {
   const users = ref([]);
   const isLoading = ref(false);
   const error = ref(null);
+  const total = ref(0);
 
   // ---------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------
-  async function fetchUsers() {
+
+  async function fetchUsers({ page = 1, perPage = 10, search = "" } = {}) {
     isLoading.value = true;
     error.value = null;
 
     try {
-      const { data } = await api.get("/user/index");
-      users.value = data.success ? data.data : [];
+      const { data } = await api.get("/user/index", {
+        params: { page, per_page: perPage, search },
+      });
+
+      if (data.success) {
+        users.value = data.data.data; // array ng users
+        total.value = data.data.total;
+      } else {
+        users.value = [];
+        total.value = 0;
+      }
+
       return { success: data.success, message: data.message };
     } catch (err) {
       error.value = err.response?.data?.message || "Unable to load users.";
@@ -102,6 +114,7 @@ export const useUserStore = defineStore("user", () => {
   return {
     // state
     users,
+    total,
     isLoading,
     error,
     // actions

@@ -35,8 +35,19 @@
            TABLE
       ==================================================== -->
       <div class="table-wrapper">
-        <q-table flat :rows="filteredUsers" :columns="columns" row-key="id" hide-pagination :rows-per-page-options="[0]"
-          :loading="userStore.isLoading" class="app-table users-table">
+        <!-- <q-table flat :rows="filteredUsers" :columns="columns" row-key="id" hide-pagination
+          :rows-per-page-options="[0, 10, 20, 50]" :loading="userStore.isLoading" class="app-table users-table"> -->
+          <q-table
+            flat
+            :rows="userStore.users"
+            :columns="columns"
+            row-key="userId"
+            v-model:pagination="pagination"
+            :rows-per-page-options="[ 20, 25, 50]"
+            :loading="userStore.isLoading"
+            class="app-table users-table"
+            @request="onRequest"
+          >
           <!-- USER -->
           <template #body-cell-user="props">
             <q-td :props="props">
@@ -51,7 +62,13 @@
               </div>
             </q-td>
           </template>
-
+          <!-- STATUS -->
+          <template #body-cell-isActive="props">
+            <q-td :props="props">
+              <q-badge :class="isActive(props.row.isActive) ? 'status-active' : 'status-inactive'"
+                :label="isActive(props.row.isActive) ? 'Active' : 'Inactive'" />
+            </q-td>
+          </template>
           <!-- ACTIONS -->
           <template #body-cell-actions="props">
             <q-td :props="props">
@@ -80,9 +97,9 @@
       <div class="table-footer">
         <span>
           Showing
-          <strong>{{ filteredUsers.length }}</strong>
-          of
           <strong>{{ userStore.users.length }}</strong>
+          of
+          <strong>{{ userStore.total }}</strong>
           users
         </span>
       </div>
@@ -128,7 +145,7 @@
               </q-input>
 
               <q-table flat :rows="filteredEmployees" :columns="employeeColumns" row-key="ControlNo" hide-pagination
-                wrap-cells :rows-per-page-options="[0]" :loading="officeStore.loading" class="app-table employee-table">
+                wrap-cells :rows-per-page-options="[10, 25, 50]" :loading="officeStore.loading" class="app-table employee-table">
                 <template #body="props">
                   <q-tr :props="props" class="employee-row" :class="{
                     'employee-row--active':
@@ -238,7 +255,24 @@
             <q-select v-model="form.role" outlined dense emit-value map-options label="Role"
               :options="rolePermissionStore.roles" option-label="name" option-value="name"
               :loading="rolePermissionStore.rolesLoading" />
+            <q-select v-model="form.isActive" outlined dense emit-value map-options label="Status"
+              :options="statusOptions">
+              <template #selected-item="scope">
+                <span :class="scope.opt.value ? 'text-active' : 'text-inactive'">
+                  {{ scope.opt.label }}
+                </span>
+              </template>
 
+              <template #option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section>
+                    <q-item-label :class="scope.opt.value ? 'text-active' : 'text-inactive'">
+                      {{ scope.opt.label }}
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
             <q-select v-model="form.permissions" outlined dense multiple use-chips emit-value map-options
               label="Permissions" :options="rolePermissionStore.permissions" option-label="name" option-value="name"
               :loading="rolePermissionStore.permissionsLoading" class="col-span-2" />
@@ -279,7 +313,7 @@
 </template>
 
 <script>
-import { defineComponent, computed, onMounted, ref } from "vue";
+import { defineComponent, computed, onMounted, ref, watch } from "vue";
 import { useQuasar } from "quasar";
 import { useUserStore } from "stores/userStore";
 import { useOfficeStore } from "stores/officeStore";
@@ -302,21 +336,33 @@ export default defineComponent({
     const columns = [
       {
         name: "user",
-        label: "USER",
+        label: "User",
         field: "name",
         align: "left",
         sortable: true,
       },
       {
         name: "control_no",
-        label: "CONTROL NO",
+        label: "Control no",
         field: "control_no",
         align: "left",
       },
       {
         name: "office",
-        label: "OFFICE",
-        field: "office",
+        label: "Office",
+        field: "office_abbr",
+        align: "left",
+      },
+      {
+        name: "isActive",
+        label: "Status",
+        field: "isActive",
+        align: "left",
+      },
+      {
+        name: "role",
+        label: "Role",
+        field: "role",
         align: "left",
       },
       {
@@ -403,9 +449,15 @@ export default defineComponent({
       office: "",
       role: "",
       permissions: [],
+      isActive: false,
     });
 
     const form = ref(emptyForm());
+    const isActive = (value) =>
+      value === true ||
+      value === 1 ||
+      value === "1" ||
+      (typeof value === "string" && value.toLowerCase() === "true");
 
     const addStepSubtitle = computed(() => {
       if (addStep.value === 1)
@@ -543,6 +595,7 @@ export default defineComponent({
         office: user.office,
         role: user.role || "",
         permissions: user.permissions || [],
+        isActive: isActive(user.isActive),
       };
       userStore.clearError();
       showEditDialog.value = true;
@@ -564,6 +617,7 @@ export default defineComponent({
         control_no: form.value.control_no,
         role: form.value.role,
         permissions: form.value.permissions,
+        isActive: isActive(form.value.isActive),
       };
 
       // Only send a password if the admin actually typed a new one
@@ -571,7 +625,7 @@ export default defineComponent({
         payload.password = form.value.password;
       }
 
-      const result = await userStore.updateUser(editingUser.value.id, payload);
+      const result = await userStore.updateUser(editingUser.value.userId, payload);
 
       if (result.success) {
         showEditDialog.value = false;
@@ -593,7 +647,7 @@ export default defineComponent({
     async function deleteUser() {
       if (!userToDelete.value) return;
 
-      const result = await userStore.deleteUser(userToDelete.value.id);
+      const result = await userStore.deleteUser(userToDelete.value.userId);
 
       if (result.success) {
         showDeleteDialog.value = false;
@@ -603,12 +657,53 @@ export default defineComponent({
       }
     }
 
+    const statusOptions = [
+      { label: "Active", value: true },
+      { label: "Inactive", value: false },
+    ];
+
+
+    const pagination = ref({ page: 1, rowsPerPage: 20, rowsNumber: 0 });
+
+    async function loadUsers() {
+      await userStore.fetchUsers({
+        page: pagination.value.page,
+        perPage: pagination.value.rowsPerPage || 10,
+        search: (search.value || "").trim(),
+      });
+      pagination.value.rowsNumber = userStore.total;
+    }
+
+async function onRequest({ pagination: p }) {
+  const perPageChanged = p.rowsPerPage !== pagination.value.rowsPerPage;
+
+  pagination.value = {
+    ...pagination.value,
+    page: perPageChanged ? 1 : p.page,
+    rowsPerPage: p.rowsPerPage,
+  };
+
+  await loadUsers();
+}
+
+    let searchTimer;
+
+    watch(search, () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        pagination.value.page = 1;
+        loadUsers();
+      }, 400);
+    });
+
+    function clearFilters() {
+      search.value = "";
+    }
     onMounted(() => {
-      userStore.fetchUsers();
+        loadUsers();
       rolePermissionStore.fetchRoles();
       rolePermissionStore.fetchPermissions();
     });
-
     return {
       userStore,
       officeStore,
@@ -653,6 +748,11 @@ export default defineComponent({
 
       getInitials,
       clearFilters,
+      isActive,
+      statusOptions,
+
+      onRequest,
+      pagination
     };
   },
 });
@@ -1173,5 +1273,31 @@ export default defineComponent({
   .readonly-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.status-active {
+  color: #087c42;
+  background: #e1f7e7;
+  font-weight: 650;
+  padding: 4px 10px;
+  font-size: 10px;
+}
+
+.status-inactive {
+  color: #c73f3f;
+  background: #fdeaea;
+  font-weight: 650;
+  padding: 4px 10px;
+  font-size: 10px;
+}
+
+.text-active {
+  color: #087c42;
+  font-weight: 550;
+}
+
+.text-inactive {
+  color: #c73f3f;
+  font-weight: 550;
 }
 </style>

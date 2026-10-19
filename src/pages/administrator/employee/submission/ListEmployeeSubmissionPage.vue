@@ -39,7 +39,7 @@
       ==================================================== -->
             <div class="table-wrapper">
                 <q-table flat :rows="submissionStore.list" :columns="columns" row-key="control_no"
-                    v-model:pagination="pagination" :loading="submissionStore.loading"
+                    v-model:pagination="pagination" :loading="submissionStore.loading" :rows-per-page-options="[20,40,60,80,100]"
                     class="app-table submission-table" @request="onRequest">
                     <!-- FULL NAME -->
                     <template #body-cell-full_name="props">
@@ -171,7 +171,7 @@ export default defineComponent({
         ];
         const pagination = ref({
             page: 1,
-            rowsPerPage: 10,
+            rowsPerPage: 20,
             rowsNumber: 0,   // kailangan ito para malaman ng q-table ang total count mula sa server
         });
 

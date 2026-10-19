@@ -20,26 +20,44 @@
       <!-- ===================================================
            FILTERS
       ==================================================== -->
+      <!-- <div class="filter-section">
+        <q-input v-model="search" outlined dense clearable placeholder="Search by event name" class="search-input">
+          <template #prepend>
+            <q-icon name="search" />
+          </template>
+</q-input>
+<div class="status-filters">
+  <q-checkbox v-for="option in STATUS_OPTIONS" :key="option.value" v-model="selectedStatuses" :val="option.value"
+    :label="option.label" dense class="status-checkbox" />
+</div>
+<q-btn flat no-caps icon="filter_alt_off" label="Clear" class="clear-btn" @click="clearFilters" />
+</div> -->
+
+
       <div class="filter-section">
-        <q-input v-model="search" outlined dense clearable placeholder="Search by event name"
-          class="search-input">
+        <q-input v-model="search" outlined dense clearable placeholder="Search by event name" class="search-input">
           <template #prepend>
             <q-icon name="search" />
           </template>
         </q-input>
+
+
         <div class="status-filters">
           <q-checkbox v-for="option in STATUS_OPTIONS" :key="option.value" v-model="selectedStatuses"
             :val="option.value" :label="option.label" dense class="status-checkbox" />
         </div>
+
         <q-btn flat no-caps icon="filter_alt_off" label="Clear" class="clear-btn" @click="clearFilters" />
       </div>
-
       <!-- ===================================================
            TABLE
       ==================================================== -->
       <div class="table-wrapper">
-        <q-table flat :rows="filteredRows" :columns="columns" row-key="event_id"
-          :rows-per-page-options="[0, 2, 10, 40, 100]" :loading="eventStore.loading" class="app-table">
+        <!-- <q-table flat :rows="filteredRows" :columns="columns" row-key="event_id"
+          :rows-per-page-options="[0, 2, 10, 40, 100]" :loading="eventStore.loading" class="app-table"> -->
+        <q-table flat :rows="tableRows" :columns="columns" row-key="event_id" v-model:pagination="pagination"
+          :rows-per-page-options="[50,75,90,100]" :loading="eventStore.loading" @request="onRequest"
+          class="app-table">
           <!-- EVENT NAME -->
           <template #body-cell-event="props">
             <q-td :props="props">
@@ -77,9 +95,9 @@
                   <q-tooltip>Edit Event</q-tooltip>
                 </q-btn>
 
-                <q-btn flat round dense icon="delete" class="action-delete" @click="confirmDeleteEvent(props.row.raw)">
+                <!-- <q-btn flat round dense icon="delete" class="action-delete" @click="confirmDeleteEvent(props.row.raw)">
                   <q-tooltip>Delete Event</q-tooltip>
-                </q-btn>
+                </q-btn> -->
               </div>
             </q-td>
           </template>
@@ -166,7 +184,7 @@
 <script>
 import { defineComponent, computed, onMounted, ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { useQuasar, Notify } from "quasar";
+import { useQuasar, } from "quasar";
 import { useEventStore } from "stores/eventStore";
 import Swal from "sweetalert2";
 
@@ -174,25 +192,26 @@ import Swal from "sweetalert2";
 export default defineComponent({
   name: "EventPage",
 
-  // props: {
-  //   officeView: {
-  //     type: Boolean,
-  //     default: false,
-  //   },
-  // },
 
   setup() {
     const $q = useQuasar();
     const router = useRouter();
     const eventStore = useEventStore();
     const route = useRoute();
-    const search = ref("");
+
     const selectedStatuses = ref([]);
+    const search = ref("");
+    const status = ref(null);
+    const pagination = ref({ page: 1, rowsPerPage: 50, rowsNumber: 0 });
+
+
     const STATUS_OPTIONS = [
       { label: "Up-coming", value: "up-coming" },
       { label: "On-going", value: "ongoing" },
       { label: "Complete", value: "complete" },
     ];
+
+
     const applyQueryStatus = () => {
       const s = route.query.status;
       const valid = STATUS_OPTIONS.map((o) => o.value);
@@ -315,15 +334,6 @@ export default defineComponent({
       editingEvent.value = event;
       form.value = {
         title_name: event.title_name || "",
-        // source_name: event.source_name || "",
-        // type_name: event.type_name || "",
-        // hours: event.hours || "",
-        // fee: event.fee || "",
-        // qualifications: event.qualifications || "",
-        // venue_name: primarySchedule.venue_name || "",
-        // mode_name: primarySchedule.mode_name || "",
-        // latest_schedule: primarySchedule.latest_schedule || "",
-        // status: primarySchedule.status || "Created",
       };
       eventStore.clearError();
       showFormDialog.value = true;
@@ -334,20 +344,6 @@ export default defineComponent({
 
       return {
         title_name: form.value.title_name,
-        // source_name: form.value.source_name,
-        // type_name: form.value.type_name,
-        // hours: form.value.hours,
-        // fee: form.value.fee,
-        // qualifications: form.value.qualifications,
-        // schedule: [
-        //   {
-        //     scheduleId: primarySchedule?.scheduleId,
-        //     venue_name: form.value.venue_name,
-        //     mode_name: form.value.mode_name,
-        //     latest_schedule: form.value.latest_schedule,
-        //     // status: form.value.status,
-        //   },
-        // ],
       };
     }
 
@@ -377,25 +373,6 @@ export default defineComponent({
     // ---------------------------------------------------------------
     const showDeleteDialog = ref(false);
     const eventToDelete = ref(null);
-
-    // function confirmDeleteEvent(event) {
-    //   eventToDelete.value = event;
-    //   showDeleteDialog.value = true;
-    // }
-
-    // async function deleteEvent() {
-    //   if (!eventToDelete.value) return;
-
-    //   const result = await eventStore.deleteEvent(eventToDelete.value.event_id);
-
-    //   if (result.success) {
-    //     showDeleteDialog.value = false;
-    //     notify("success", result.message || "Event deleted successfully.");
-    //   } else {
-    //     notify("error", result.message);
-    //   }
-    // }
-
 
     function confirmDeleteEvent(row) {
       Swal.fire({
@@ -427,7 +404,9 @@ export default defineComponent({
               timerProgressBar: true,
               scrollbarPadding: false,
             });
-            await eventStore.fetchEvents(); // palitan ng tamang refetch function mo
+            const isLastOnPage = eventStore.events.length === 1 && pagination.value.page > 1;
+            await fetchData(isLastOnPage ? pagination.value.page - 1 : pagination.value.page);
+
           } else {
             Swal.fire({
               title: "Failed",
@@ -450,39 +429,52 @@ export default defineComponent({
 
 
 
-    applyQueryStatus(); // initial load, bago mag-render
+    async function fetchData(
+      page = pagination.value.page,
+      rowsPerPage = pagination.value.rowsPerPage
+    ) {
+      await eventStore.fetchEvents({
+        page,
+        per_page: rowsPerPage,
+        search: search.value?.trim() || undefined,
+        status: selectedStatuses.value.length ? selectedStatuses.value : undefined,
+      });
+      pagination.value = { ...pagination.value, ...eventStore.pagination };
+    }
+    function onRequest({ pagination: p }) {
+      fetchData(p.page, p.rowsPerPage);
+    }
+
+    function clearFilters() {
+      search.value = "";
+      selectedStatuses.value = [];
+      router.replace({ query: {} });
+    }
+
+    // optional filters: balik sa page 1 kapag nagbago
+    let searchTimer;
+
+    watch(search, () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => fetchData(1), 400);
+    });
+
+    applyQueryStatus(); // initialize URL filter before installing its watcher
+
+    watch(selectedStatuses, () => fetchData(1), { deep: true });
+
     watch(() => route.query.status, applyQueryStatus);
+
     onMounted(() => {
-      eventStore.fetchEvents();
+      fetchData(1);
     });
 
     return {
-      eventStore,
-
-      search,
-      STATUS_OPTIONS,
-      selectedStatuses,
-      columns,
-      filteredRows,
-
-      clearFilters,
-
-      // View
-      goToEvent,
-
-      // Add / Edit
-      showFormDialog,
-      isEditMode,
-      form,
-
-      openAddEvent,
-      editEvent,
-      saveEvent,
-
-      // Delete
-      showDeleteDialog,
-      eventToDelete,
-      confirmDeleteEvent,
+      eventStore, search, STATUS_OPTIONS, selectedStatuses,
+      pagination, columns, tableRows, onRequest, clearFilters,
+      goToEvent, showFormDialog, isEditMode, form,
+      openAddEvent, editEvent, saveEvent,
+      showDeleteDialog, eventToDelete, confirmDeleteEvent,
 
 
 

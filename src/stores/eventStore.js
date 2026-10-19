@@ -5,7 +5,6 @@ import {
   suggested_employees,
   nomination_approval,
 } from "src/service/administrator/event/eventService";
-import { employee_update_form_submission } from "src/service/administrator/event/employeeService";
 
 export const useEventStore = defineStore("event", {
   state: () => ({
@@ -15,28 +14,37 @@ export const useEventStore = defineStore("event", {
     error: null,
     employees: [],
     nominated_employee: [],
+    pagination: { page: 1, rowsPerPage: 10, rowsNumber: 0 },
+
   }),
 
   actions: {
-    async fetchEvents() {
-      this.loading = true;
-      this.error = null;
+   async fetchEvents(params = {}) {
+    this.loading = true;
+    this.error = null;
 
-      try {
-        const response = await api.get("/event/index");
+    try {
+      const response = await api.get("/event/index", { params });
 
-        if (response.data.success) {
-          this.events = response.data.data;
-        } else {
-          this.error = response.data.message;
-        }
-      } catch (err) {
-        this.error = "Failed to fetch events";
-        console.error("Error fetching events:", err);
-      } finally {
-        this.loading = false;
+      if (response.data.success) {
+        const paginator = response.data.data;
+
+        this.events = paginator.data;
+        this.pagination = {
+          page: paginator.current_page,
+          rowsPerPage: paginator.per_page,
+          rowsNumber: paginator.total,
+        };
+      } else {
+        this.error = response.data.message;
       }
-    },
+    } catch (err) {
+      this.error = "Failed to fetch events";
+      console.error("Error fetching events:", err);
+    } finally {
+      this.loading = false;
+    }
+  },
 
     async createEvent(eventData) {
       this.loading = true;
@@ -109,15 +117,22 @@ export const useEventStore = defineStore("event", {
       }
     },
 
-    async fetchEventById(eventId) {
+    async fetchEventById(eventId,params = {}) {
       this.loading = true;
       this.error = null;
 
       try {
-        const response = await api.get(`/event/view/${eventId}`);
+        const response = await api.get(`/event/view/${eventId}`,{ params });
         if (response.data.success) {
           this.selectedEvent = response.data.data;
+          const s = this.selectedEvent.schedule;
+          this.pagination = {
+            page: s.current_page,
+            rowsPerPage: s.per_page,
+            rowsNumber: s.total,
+          };
           return { success: true, data: response.data.data };
+          
         } else {
           this.error = response.data.message;
           return { success: false, message: response.data.message };

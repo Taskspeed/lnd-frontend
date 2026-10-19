@@ -4,10 +4,7 @@
          LOADING
     ========================================================== -->
     <div v-if="eventStore.loading && !event" class="state-message">
-         <q-spinner
-          size="40px"
-          color="primary"
-        />
+      <q-spinner size="40px" color="primary" />
       <span>Loading schedule event...</span>
     </div>
 
@@ -60,9 +57,8 @@
           <div class="section-title forms-title">Forms</div>
           <div class="competency-group">
             <div class="forms-list">
-              <q-checkbox v-for="option in formsOptions" :key="option.value"
-                :model-value="isFormSelected(option)" :label="option.label"
-                color="green" keep-color dense disable class="competency-checkbox" />
+              <q-checkbox v-for="option in formsOptions" :key="option.value" :model-value="isFormSelected(option)"
+                :label="option.label" color="green" keep-color dense disable class="competency-checkbox" />
             </div>
           </div>
 
@@ -71,9 +67,8 @@
           <div class="section-title forms-title">Evaluation</div>
           <div class="competency-group">
             <div class="forms-list">
-              <q-checkbox v-for="option in evaluationOptions" :key="option.value"
-                :model-value="isFormSelected(option)" :label="option.label"
-                color="green" keep-color dense disable class="competency-checkbox" />
+              <q-checkbox v-for="option in evaluationOptions" :key="option.value" :model-value="isFormSelected(option)"
+                :label="option.label" color="green" keep-color dense disable class="competency-checkbox" />
             </div>
           </div>
         </template>
@@ -94,9 +89,12 @@
 
             <!-- Schedule Table using q-table -->
             <div class="schedule-table-container">
-              <q-table :rows="event.schedule || []" :columns="scheduleColumns" row-key="scheduleId"
-                :rows-per-page-options="[5, 10, 25]" v-model:pagination="schedulePagination"
-                class="app-table schedule-table" flat bordered>
+              <!-- <q-table :rows="event.schedule || []" :columns="scheduleColumns" row-key="scheduleId"
+                :rows-per-page-options="[5, 10, 25]" v-model:pagination="pagination"
+                class="app-table schedule-table" flat bordered> -->
+              <q-table :rows="scheduleRows" :columns="scheduleColumns" row-key="scheduleId"
+                v-model:pagination="pagination" :rows-per-page-options="[10, 25,50]" :loading="eventStore.loading"
+                @request="onScheduleRequest" class="app-table schedule-table" flat bordered>
 
                 <!-- venue -->
                 <template #body-cell-venue_name="props">
@@ -135,11 +133,7 @@
                     </div>
                   </q-td>
 
-                  <!-- <q-td key="computedStatus" :props="props">
-              <span class="status-badge" :class="'status-' + props.row.computedStatus">
-                {{ props.row.computedStatus }}
-              </span>
-            </q-td> -->
+
                 </template>
 
                 <!-- Action Column -->
@@ -185,8 +179,8 @@
           <!-- ============================================
                SCHEDULE FORM VIEW (Add / Edit)
           ============================================= -->
-          <ScheduleFormPanel v-else :event-id="eventId" :event-title="event.title_name" :schedule="editingScheduleData" @saved="onScheduleSaved"
-            @cancel="backToScheduleList" />
+          <ScheduleFormPanel v-else :event-id="eventId" :event-title="event.title_name" :schedule="editingScheduleData"
+            @saved="onScheduleSaved" @cancel="backToScheduleList" />
         </template>
       </EventTwoColumnLayout>
     </template>
@@ -256,12 +250,12 @@ export default defineComponent({
     // =========================================================
     // SCHEDULE TABLE (List View)
     // =========================================================
-    const schedulePagination = ref({
-      sortBy: "schedule_date_range",
-      descending: false,
-      rowsPerPage: 5,
-      page: 1,
-    });
+    // const pagination = ref({
+    //   sortBy: "schedule_date_range",
+    //   descending: false,
+    //   rowsPerPage: 5,
+    //   page: 1,
+    // });
 
     const scheduleView = ref("list");
     // null = Add mode. Row object = Edit mode.
@@ -499,7 +493,8 @@ export default defineComponent({
               timerProgressBar: true,
               scrollbarPadding: false, // 👈 idagdag din dito para consistent
             });
-            await eventStore.fetchEventById(eventId.value);
+            const isLastOnPage = scheduleRows.value.length === 1 && pagination.value.page > 1;
+            await loadEvent(isLastOnPage ? pagination.value.page - 1 : pagination.value.page);
           } else {
             Swal.fire({
               title: "Failed",
@@ -530,13 +525,7 @@ export default defineComponent({
     ];
 
 
-    // =========================================================
-    // LOAD EVENT
-    // =========================================================
-    onMounted(async () => {
-      if (!eventId.value) return;
-      await eventStore.fetchEventById(eventId.value);
-    });
+
 
     // =========================================================
     // GO BACK
@@ -555,6 +544,39 @@ export default defineComponent({
     // =========================================================
     // RETURN
     // =========================================================
+    const pagination = ref({
+      page: 1,
+      rowsPerPage: 10,
+      rowsNumber: 0,
+    });
+
+    const scheduleRows = computed(() => event.value?.schedule?.data || []);
+    async function loadEvent(
+      page = pagination.value.page,
+      rowsPerPage = pagination.value.rowsPerPage
+    ) {
+      await eventStore.fetchEventById(eventId.value, {
+        page,
+        per_page: rowsPerPage,
+      });
+      pagination.value = {
+        ...pagination.value,
+        ...eventStore.pagination,
+      };
+    }
+
+    function onScheduleRequest({ pagination: p }) {
+      loadEvent(p.page, p.rowsPerPage);
+    }
+    onMounted(async () => {
+      if (!eventId.value) return;
+      await loadEvent(1);
+    });
+
+    async function onScheduleSaved() {
+      await loadEvent(); // same page
+      backToScheduleList();
+    }
     return {
       eventStore,
       officeStore,
@@ -562,7 +584,7 @@ export default defineComponent({
       eventId,
       // Schedule list view
       scheduleView,
-      schedulePagination,
+      pagination,
       scheduleColumns,
       editingScheduleData,
       openAddSchedule,
@@ -579,6 +601,8 @@ export default defineComponent({
       goBack,
       evaluationOptions,
       isFormSelected, // ← idagdag
+      scheduleRows,
+      onScheduleRequest,
 
     };
   },
