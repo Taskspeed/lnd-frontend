@@ -68,7 +68,7 @@
 
           <template #body-cell-schedule="props">
             <q-td :props="props">
-              <span class="app-table-cell-title">{{ props.row.latest_schedule }}</span>
+              <span class="app-table-cell-title">{{ props.row.schedule_date_range }}</span>
             </q-td>
           </template>
 
@@ -234,7 +234,7 @@ export default defineComponent({
       {
         name: "schedule",
         label: "LATEST SCHEDULE",
-        field: "latest_schedule",
+        field: "schedule_date_range",
         align: "left",
       },
       { name: "status", label: "STATUS", field: "computedStatus", align: "left" },
@@ -253,7 +253,7 @@ export default defineComponent({
           title_name: event.title_name,
           type_name: event.type_name,
           venue: primarySchedule.venue_name || "—",
-          latest_schedule: primarySchedule.latest_schedule || "—",
+          schedule_date_range: primarySchedule.schedule_date_range || "—",
           computedStatus: primarySchedule.computedStatus || "—",
           raw: event,
         };
@@ -317,7 +317,7 @@ export default defineComponent({
       qualifications: "",
       venue_name: "",
       mode_name: "",
-      latest_schedule: "",
+      schedule_date_range: "",
       computedStatus: "",
     });
 
