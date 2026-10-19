@@ -446,17 +446,7 @@ export default defineComponent({
       showNominationDetailsDialog.value = true;
     }
 
-    // async function loadNominatedEmployees() {
-    //   loading.value = true;
-    //   errorMessage.value = "";
-    //   const result = await eventStore.fetchNominatedEmployee(eventId, scheduleId);
-    //   if (result.success) {
-    //     eventDetail.value = eventStore.nominated_employee;
-    //   } else {
-    //     errorMessage.value = result.message || "Failed to load schedule.";
-    //   }
-    //   loading.value = false;
-    // }
+ 
 
     async function loadNominatedEmployees(
       page = pagination.value.page,
@@ -1503,17 +1493,6 @@ export default defineComponent({
   background: #f8fbfd;
 }
 
-.section-head > .status-badge {
-  flex: 0 0 auto;
-  padding: 6px 11px;
-  border-radius: 999px;
-  background: #e8f5ed;
-  color: #197044;
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 0.3px;
-  text-transform: capitalize;
-}
 
 @media (max-width: 900px) {
   .schedule-layout {
