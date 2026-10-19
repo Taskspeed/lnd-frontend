@@ -1758,17 +1758,6 @@ export default defineComponent({
   background: #f8fbfd;
 }
 
-.section-head>.status-badge {
-  flex: 0 0 auto;
-  padding: 6px 11px;
-  border-radius: 999px;
-  background: #e8f5ed;
-  color: #197044;
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 0.3px;
-  text-transform: capitalize;
-}
 
 .nominate-btn,
 .nominate-form-btn {
