@@ -13,15 +13,7 @@
           <h5>Event Schedule Details</h5>
           <p>Review event information, tagged employees, and nominations for this schedule.</p>
         </div>
-        <q-btn
-          flat
-          dense
-          no-caps
-          icon="arrow_back"
-          label="Back to Events"
-          class="back-btn"
-          @click="$router.back()"
-        />
+        <q-btn flat dense no-caps icon="arrow_back" label="Back to Events" class="back-btn" @click="$router.back()" />
       </div>
     </section>
 
@@ -154,17 +146,83 @@
               <q-icon name="groups" class="section-icon" />
               <div class="section-title">Suggested Employees</div>
             </div>
-            <div class="section-sub">Employees tagged by HRM for this event.</div>
+            <!-- <div class="section-sub">Employees tagged by HRM for this event.</div> -->
+            <div class="section-sub">
+              Employees recommended by HRM for this event.
+            </div>
           </div>
         </div>
 
         <q-table flat :rows="employeeTags" :columns="employeeTagColumns" row-key="id"
-          :rows-per-page-options="[0, 5, 10, 20, 50, 100]"   class="app-table offices-table nominee-table">
+          :rows-per-page-options="[20, 40, 60, 80, 100]" class="app-table offices-table nominee-table">
+
+
+          <template #body-cell-action="props">
+            <q-td :props="props">
+              <div class="row-actions">
+                <q-btn flat dense round icon="person_add" color="green" :disable="isAlreadyNominated(props.row)"
+                  @click.stop="openSuggestedDialog(props.row)">
+                  <q-tooltip>{{ isAlreadyNominated(props.row) ? 'Already nominated' : 'Nominate' }}</q-tooltip>
+                </q-btn>
+              </div>
+            </q-td>
+          </template>
           <template #no-data>
             <div class="table-empty">No tagged employees.</div>
           </template>
         </q-table>
       </q-card>
+      <!-- SUGGESTED EMPLOYEE — NOMINATE DIALOG -->
+      <q-dialog v-model="showSuggestedDialog" persistent>
+        <q-card style="width: 520px; max-width: 90vw;">
+          <q-card-section class="dialog-header">
+            <div class="section-title">Nominate Employee</div>
+            <div class="section-sub">{{ eventInfo.title_name }}</div>
+          </q-card-section>
+
+          <q-separator />
+
+          <q-card-section>
+            <div class="detail-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0;">
+              <div class="detail-item">
+                <span class="detail-label">Control No.</span>
+                <span class="detail-value">{{ suggestedEmployee?.control_no }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Status</span>
+                <span class="detail-value">{{ suggestedEmployee?.status || "—" }}</span>
+              </div>
+              <div class="detail-item" style="grid-column: 1 / -1;">
+                <span class="detail-label">Name</span>
+                <span class="detail-value">{{ suggestedEmployee?.name }}</span>
+              </div>
+              <div class="detail-item" style="grid-column: 1 / -1;">
+                <span class="detail-label">Position</span>
+                <span class="detail-value">{{ suggestedEmployee?.position || "—" }}</span>
+              </div>
+            </div>
+
+        <div class="section-label">Reason for Nomination</div>
+
+        <q-input
+          ref="suggestedReasonRef"
+          v-model="suggestedReason"
+          outlined
+          type="textarea"
+          rows="5"
+          placeholder="Enter reason for nomination"
+          class="suggest-reason"
+          :rules="[val => !!val?.trim() || 'Reason is required']"
+        />
+          </q-card-section>
+
+          <q-card-actions align="right" class="dialog-actions">
+            <q-btn flat no-caps label="Cancel" color="red" @click="closeSuggestedDialog" />
+            <q-btn unelevated no-caps label="Confirm" color="green" class="save-dialog-btn"
+              :loading="employeeStore.loading" @click="confirmSuggestedNomination" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
 
     </template>
     <!-- ===================================================
@@ -191,7 +249,7 @@
         <div class="table-empty">No nominations yet for this schedule.</div>
       </div>
       <q-table v-else flat :rows="nominatedEmployees" :columns="nominatedColumns" row-key="nominated_employee_id"
-        :rows-per-page-options="[0, 10, 20, 50, 100]" class="app-table detail-table">
+        :rows-per-page-options="[20, 40, 60, 80, 100]" class="app-table detail-table">
         <template #body="props">
           <q-tr :props="props">
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
@@ -315,13 +373,13 @@
             </div>
 
             <q-table v-else flat bordered :rows="selectedNominees" :columns="reasonColumns" row-key="ControlNo"
-              :rows-per-page-options="[0, 5, 10, 20, 50, 100]" class="app-table offices-table">
+              :rows-per-page-options="[20, 40, 60, 80, 100]" class="app-table offices-table">
               <template #body="props">
                 <q-tr :props="props">
                   <q-td v-for="col in props.cols" :key="col.name" :props="props">
                     <template v-if="col.name === 'nominate_reason'">
                       <q-input v-model="nominationReasons[props.row.ControlNo]" dense outlined type="textarea" autogrow
-                        placeholder="Reason for nominating..." />
+                        placeholder="Reason for nominating..."      class="suggest-reason"/>
                     </template>
                     <template v-else>
                       {{ col.value }}
@@ -335,7 +393,7 @@
           <!-- STEP 3: CONFIRMATION -->
           <q-step :name="3" title="Confirmation" icon="fact_check">
             <q-table flat bordered :rows="confirmationRows" :columns="confirmationColumns" row-key="control_no"
-              :rows-per-page-options="[0, 5, 10, 20, 50, 100]" class="app-table offices-table" />
+              :rows-per-page-options="[20, 40, 60, 80, 100]" class="app-table offices-table" />
           </q-step>
 
           <template #navigation>
@@ -469,9 +527,9 @@ import { Notify } from "quasar";
 import { useOfficeEventStore } from "src/stores/office/event/eventStore";
 import { useEmployeeStore } from "src/stores/office/event/employeeStore";
 import LoadingState from "src/components/LoadingStatePage.vue";
-import Swal from "sweetalert2";
 import { useFormStore } from "src/stores/office/form/formStore";
 import { useRowLoading } from "src/composables/useRowLoading";
+import Swal from "sweetalert2";
 
 export default defineComponent({
   name: "EventViewPage",
@@ -524,7 +582,7 @@ export default defineComponent({
       { name: "position", label: "Position", field: "position", align: "left" },
       // { name: "isAlreadyTrained", label: "Status", field: "isAlreadyTrained", align: "center" },
       { name: "status", label: "Status", field: "status", align: "center" },
-      { name: "action", label: "", field: "action", align: "center" },
+      { name: "action", label: "Action", field: "action", align: "center" },
     ];
     const trainingColumns = [
       { name: "training", label: "Training", field: "training", align: "left" },
@@ -851,6 +909,77 @@ export default defineComponent({
       });
 
     }
+    // =====================================================
+    // SUGGESTED EMPLOYEE — single nominate flow
+    // =====================================================
+    const showSuggestedDialog = ref(false);
+    const suggestedEmployee = ref(null);
+    const suggestedReason = ref("");
+    const suggestedReasonRef = ref(null);
+
+
+    function isAlreadyNominated(row) {
+      return nominatedEmployees.value.some(
+        (n) => String(n.control_no) === String(row.control_no)
+      );
+    }
+
+    function openSuggestedDialog(row) {
+      suggestedEmployee.value = row;
+      suggestedReason.value = "";
+      showSuggestedDialog.value = true;
+    }
+
+    function closeSuggestedDialog() {
+      showSuggestedDialog.value = false;
+      suggestedEmployee.value = null;
+      suggestedReason.value = "";
+    }
+
+    async function confirmSuggestedNomination() {
+      // validate reason
+      const valid = await suggestedReasonRef.value?.validate();
+      if (!valid) return;
+
+      const emp = suggestedEmployee.value;
+
+      const confirm = await Swal.fire({
+        title: "Confirm Nomination",
+        text: `Are you sure you want to nominate ${emp.name}?`,
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Yes, nominate",
+        cancelButtonText: "No",
+        confirmButtonColor: "#0ca344",
+        cancelButtonColor: "#9e9e9e",
+        reverseButtons: true,
+        scrollbarPadding: false,
+        heightAuto: false,
+      });
+
+      if (!confirm.isConfirmed) return;
+
+      const payload = {
+        employee: [
+          {
+            event_id: eventInfo.value.event_id,
+            event_schedule_id: scheduleId,
+            control_no: emp.control_no,
+            nominate_reason: suggestedReason.value.trim(),
+          },
+        ],
+      };
+
+      const result = await employeeStore.storeNominateEmployee(payload);
+
+      if (result.success) {
+        Notify.create({ type: "positive", message: result.message, position: "top" });
+        closeSuggestedDialog();
+        await loadNominatedEmployees();
+      } else {
+        Notify.create({ type: "negative", message: result.message, position: "top" });
+      }
+    }
 
     onMounted(async () => {
       await loadSchedule();
@@ -919,7 +1048,16 @@ export default defineComponent({
       inHouseNominationPreview,
       isAnyNominationFormLoading,
       isNominationFormLoading,
-      scheduleId
+      scheduleId,
+
+      showSuggestedDialog,
+      suggestedEmployee,
+      suggestedReason,
+      suggestedReasonRef,
+      isAlreadyNominated,
+      openSuggestedDialog,
+      closeSuggestedDialog,
+      confirmSuggestedNomination,
 
     };
   },
@@ -1032,11 +1170,6 @@ export default defineComponent({
   font-weight: 750;
 }
 
-.section-sub {
-  margin-top: 2px;
-  color: #8a989e;
-  font-size: 10.5px;
-}
 
 /* =========================================================
    SECTION 1 — SCHEDULE DETAILS
@@ -1412,7 +1545,8 @@ export default defineComponent({
   gap: 2px;
   white-space: nowrap;
 }
-.office-search{
+
+.office-search {
   margin-bottom: 10px;
 }
 
@@ -1521,13 +1655,15 @@ export default defineComponent({
 }
 
 .section-title {
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .section-sub {
   margin-top: 3px;
   margin-left: 28px;
-  font-size: 11px;
+  font-size: 14px;
+  color: #585c5e;
+
 }
 
 .detail-body {
@@ -1606,7 +1742,7 @@ export default defineComponent({
 }
 
 .detail-table :deep(thead th) {
-  color: #587080;
+
   font-size: 10px;
   font-weight: 750;
   letter-spacing: 0.45px;
@@ -1615,7 +1751,6 @@ export default defineComponent({
 
 .detail-table :deep(tbody td) {
   height: 54px;
-  color: #344b5a;
   font-size: 12px;
 }
 
@@ -1623,7 +1758,7 @@ export default defineComponent({
   background: #f8fbfd;
 }
 
-.section-head > .status-badge {
+.section-head>.status-badge {
   flex: 0 0 auto;
   padding: 6px 11px;
   border-radius: 999px;
@@ -1769,13 +1904,37 @@ export default defineComponent({
     grid-template-columns: 1fr;
   }
 }
+
 .nominee-table {
   max-height: 55vh;
 }
+
 .nominee-table :deep(thead tr th) {
   position: sticky;
   top: 0;
   z-index: 1;
   background: #f6f9fb;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+}
+
+.suggest-reason :deep(.q-field__control) {
+  height: auto;
+  border-radius: 10px;
+  padding: 0 4px;
+}
+
+.suggest-reason :deep(textarea.q-field__native) {
+  min-height: 90px;
+  padding: 12px 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical; /* yung // handle sa kanang-ibaba */
+}
+
+.suggest-reason :deep(textarea.q-field__native::placeholder) {
+  color: #8a989e;
 }
 </style>
