@@ -12,18 +12,28 @@ export const useOfficeEventStore = defineStore("officeEvent", {
     officeEvents: [],
     loading: false,
     error: null,
+    pagination: { page: 1, rowsPerPage: 10, rowsNumber: 0 },
   }),
 
   actions: {
-    async fetchOfficeEvents() {
+      async fetchOfficeEvents({ search, status } = {}) {
       this.loading = true;
       this.error = null;
 
       try {
-        const response = await office_event_list();
+        const response = await office_event_list({
+          page: this.pagination.page,
+          per_page: this.pagination.rowsPerPage,
+          search: search || undefined,
+          status: status?.length ? status : undefined,
+        });
 
         if (response.data.success) {
-          this.officeEvents = response.data.data;
+          const paginator = response.data.data;
+          this.officeEvents = paginator.data;
+          this.pagination.page = paginator.current_page;
+          this.pagination.rowsPerPage = paginator.per_page;
+          this.pagination.rowsNumber = paginator.total;
         } else {
           this.error = response.data.message;
         }
