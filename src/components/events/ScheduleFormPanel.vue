@@ -1887,10 +1887,11 @@ export default defineComponent({
             position: speaker.position,
           })),
 
-        office: eventForm.value.departments.map((department) => ({
+      office: eventForm.value.departments.map((department) => ({
           office_name: department.name,
-          attendees: department.attendees,
+          number_of_attendees: department.attendees,
         })),
+
 
         employee: eventForm.value.employees,
 
