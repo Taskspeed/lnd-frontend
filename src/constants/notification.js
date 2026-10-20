@@ -9,7 +9,7 @@ export const notificationRoutes = {
       scheduleId: data.event_schedule_id,
     },
   }),
-   employees_nominated: (data) => ({
+  employees_nominated: (data) => ({
     name: "event-nominated-employee",
     params: {
       eventId: data.event_id,
@@ -17,4 +17,8 @@ export const notificationRoutes = {
     },
   }),
 
+  form_submitted: (data) => ({
+    name: "list_of_submission", // <-- palitan ng tamang route name ng Submission page mo
+    query: { nominated_employee_id: data.nominated_employee_id },
+  }),
 };

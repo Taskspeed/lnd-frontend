@@ -39,8 +39,8 @@
       ==================================================== -->
             <div class="table-wrapper">
                 <q-table flat :rows="submissionStore.list" :columns="columns" row-key="control_no"
-                    v-model:pagination="pagination" :loading="submissionStore.loading" :rows-per-page-options="[20,40,60,80,100]"
-                    class="app-table submission-table" @request="onRequest">
+                    v-model:pagination="pagination" :loading="submissionStore.loading"
+                    :rows-per-page-options="[20, 40, 60, 80, 100]" class="app-table submission-table" @request="onRequest">
                     <!-- FULL NAME -->
                     <template #body-cell-full_name="props">
                         <q-td :props="props">
@@ -138,7 +138,8 @@
 </template>
 
 <script>
-import { defineComponent, onMounted, ref } from "vue";
+import { defineComponent, onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import Swal from "sweetalert2";
 import { useEmployeeSubmissionStore } from "src/stores/administrator/employee/employeeSubmissionStore";
 import { useEmployeeInformationStore } from "src/stores/administrator/employee/employeeInformationStore";
@@ -157,6 +158,8 @@ export default defineComponent({
         const { isLoading: isViewLoading, isAnyLoading: isAnyViewLoading, run: runView } = useRowLoading();
         const { isLoading: isPreviewLoading, isAnyLoading: isAnyPreviewLoading, run: runPreview } = useRowLoading();
         const search = ref("");
+        const route = useRoute();
+        const router = useRouter();
 
         // ---------------------------------------------------------------
         // Table
@@ -361,13 +364,31 @@ export default defineComponent({
             previewingRow.value = null;
         }
 
+        async function openFromNotification() {
+            const id = route.query.nominated_employee_id;
+            if (!id) return;
+
+            router.replace({ query: {} }); // linisin ang URL para hindi mag-reopen
+
+            const nominatedId = Number(id);
+
+            // hanapin ang row sa listahan para pareho ang id type sa button
+            const row = submissionStore.list.find(
+                (r) => Number(r.nominated_employee_id) === nominatedId
+            );
+
+            await viewEmployeeInformation(row ?? { nominated_employee_id: nominatedId });
+        }
+
         // ---------------------------------------------------------------
         // FETCH ON MOUNT
         // ---------------------------------------------------------------
         onMounted(() => {
             loadSubmissions();
+            openFromNotification();
         });
 
+        watch(() => route.query.nominated_employee_id, openFromNotification);
 
         return {
             submissionStore,

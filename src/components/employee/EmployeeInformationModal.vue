@@ -4,7 +4,7 @@
       <!-- HEADER -->
       <q-card-section class="qs-header">
         <div>
-          <div class="qs-title">Employee Information</div>
+          <div class="qs-title">Employee</div>
         </div>
         <q-btn flat round dense icon="close" v-close-popup />
       </q-card-section>
