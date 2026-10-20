@@ -91,6 +91,7 @@ export default defineComponent({
             { name: "name", label: "Employee", field: "name", align: "left", sortable: true },
             { name: "position", label: "Position", field: "position", align: "left" },
             { name: "status", label: "Status", field: "status", align: "center" },
+            { name: "certificate_date_release", label: "Latest Certificate Release ", field: "certificate_date_release", align: "center" },
             { name: "actions", label: "Action", field: "action", align: "center" },
         ];
 

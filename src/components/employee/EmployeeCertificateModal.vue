@@ -112,14 +112,15 @@ const employee = computed(() => props.employeeData || {})
 const search = ref('')
 const pagination = ref({
   page: 1,
-  rowsPerPage: 10,
+  rowsPerPage: 5,
   rowsNumber: 0,
 })
 
 const columns = [
   { name: 'title_name', label: 'Training Title', field: 'title_name', align: 'left' },
-  { name: 'learning_intervention', label: 'Learning Intervention', field: 'learning_intervention', align: 'left' },
+  // { name: 'learning_intervention', label: 'Learning Intervention', field: 'learning_intervention', align: 'left' },
   { name: 'type_name', label: 'Type', field: 'type_name', align: 'center' },
+    { name: 'certificate_date_release', label: 'Date Release', field: 'certificate_date_release', align: 'center' },
   // { name: 'certificate_issued', label: 'Certificate', field: 'certificate_issued', align: 'center' },
   { name: 'actions', label: 'Actions', field: 'action', align: 'center' },
 ]
@@ -194,7 +195,7 @@ watch(
 
 <style scoped>
 .qs-modal {
-  width: 70%;
+  width: 90%;
   max-width: 95vw;
   border-radius: 10px;
   overflow: hidden;
