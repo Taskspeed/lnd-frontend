@@ -86,75 +86,75 @@
 
         <!-- SCHEDULE DETAILS — Formal Learning only (also shown as
              the default panel before an Intervention is chosen) -->
-        
-          <div class="section-title">Schedule Details</div>
-          <LabeledField label="Venue">
-            <q-select v-model="eventForm.venue_name" outlined dense use-input hide-selected fill-input
-              input-debounce="400" new-value-mode="add-unique" :options="venueOptions" :loading="venueLoading"
-              @filter="filterVenues" @input-value="onVenuesInput" placeholder="Enter event venue"
-              popup-content-class="title-dropdown-scroll" class="custom-input" />
 
+        <div class="section-title">Schedule Details</div>
+        <LabeledField label="Venue">
+          <q-select v-model="eventForm.venue_name" outlined dense use-input hide-selected fill-input
+            input-debounce="400" new-value-mode="add-unique" :options="venueOptions" :loading="venueLoading"
+            @filter="filterVenues" @input-value="onVenuesInput" placeholder="Enter event venue"
+            popup-content-class="title-dropdown-scroll" class="custom-input" />
+
+        </LabeledField>
+        <!-- type and category -->
+        <div class="two-column-fields">
+          <LabeledField label="Learning type">
+            <q-select v-model="eventForm.intervention_name" outlined dense emit-value map-options
+              :options="interventionOptions" placeholder="Select Intervention" class="custom-input" :display-value="eventForm.intervention_name ? undefined : 'Select Intervention'
+                " />
           </LabeledField>
-          <!-- type and category -->
-          <div class="two-column-fields">
-            <LabeledField label="Learning type">
-              <q-select v-model="eventForm.intervention_name" outlined dense emit-value map-options
-                :options="interventionOptions" placeholder="Select Intervention" class="custom-input" :display-value="eventForm.intervention_name ? undefined : 'Select Intervention'
-                  " />
-            </LabeledField>
-            <!-- SOURCE (DROPDOWN) -->
+          <!-- SOURCE (DROPDOWN) -->
 
-            <LabeledField label="Source">
-              <q-select v-model="eventForm.source_name" outlined dense emit-value map-options :options="sourceOptions"
-                placeholder="Select Source" class="custom-input"
-                :display-value="eventForm.source_name ? undefined : 'Select Source'" />
+          <LabeledField label="Source">
+            <q-select v-model="eventForm.source_name" outlined dense emit-value map-options :options="sourceOptions"
+              placeholder="Select Source" class="custom-input"
+              :display-value="eventForm.source_name ? undefined : 'Select Source'" />
 
-              <div v-if="eventForm.source_name" class="source-hint">
-                {{ eventForm.source_name === 'internal' ? 'Training conducted by HRDD' : 'Training through Concerned Office' }}
-              </div>
-            </LabeledField>
+            <div v-if="eventForm.source_name" class="source-hint">
+              {{ eventForm.source_name === 'internal' ? 'Training conducted by HRDD' : 'Training through Concerned Office' }}
+            </div>
+          </LabeledField>
 
-            <LabeledField label="Competency">
-              <q-select v-model="eventForm.category_name" outlined dense use-input hide-selected fill-input
-                input-debounce="400" new-value-mode="add-unique" :options="categoryOptions" :loading="categoryLoading"
-                @filter="filterCategory" @input-value="onCategoryInput" popup-content-class="title-dropdown-scroll"
-                placeholder="Enter event category" class="custom-input" />
-            </LabeledField>
-            <LabeledField label="Hours">
-              <q-input v-model.number="eventForm.hours" type="number" outlined dense min="0"
-                placeholder="Enter number of hours" class="custom-input" />
-            </LabeledField>
-            <LabeledField label="Activity">
-              <q-select v-model="eventForm.type_name" outlined dense use-input hide-selected fill-input
-                input-debounce="400" new-value-mode="add-unique" :options="typeOptions" :loading="typeLoading"
-                @filter="filterType" @input-value="onTypeInput" placeholder="Enter event type"
-                popup-content-class="title-dropdown-scroll" class="custom-input" />
-            </LabeledField>
+          <LabeledField label="Competency">
+            <q-select v-model="eventForm.category_name" outlined dense use-input hide-selected fill-input
+              input-debounce="400" new-value-mode="add-unique" :options="categoryOptions" :loading="categoryLoading"
+              @filter="filterCategory" @input-value="onCategoryInput" popup-content-class="title-dropdown-scroll"
+              placeholder="Enter event category" class="custom-input" />
+          </LabeledField>
+          <LabeledField label="Hours">
+            <q-input v-model.number="eventForm.hours" type="number" outlined dense min="0"
+              placeholder="Enter number of hours" class="custom-input" />
+          </LabeledField>
+          <LabeledField label="Activity">
+            <q-select v-model="eventForm.type_name" outlined dense use-input hide-selected fill-input
+              input-debounce="400" new-value-mode="add-unique" :options="typeOptions" :loading="typeLoading"
+              @filter="filterType" @input-value="onTypeInput" placeholder="Enter event type"
+              popup-content-class="title-dropdown-scroll" class="custom-input" />
+          </LabeledField>
 
-            <LabeledField label="Conductor">
-              <q-input v-model.number="eventForm.conducted_by" type="string" outlined dense
-                placeholder="Enter conductor" class="custom-input" />
-            </LabeledField>
+          <LabeledField label="Conductor">
+            <q-input v-model.number="eventForm.conducted_by" type="string" outlined dense placeholder="Enter conductor"
+              class="custom-input" />
+          </LabeledField>
 
-            <LabeledField label="Mode">
-              <q-select v-model="eventForm.mode_name" outlined dense use-input hide-selected fill-input
-                input-debounce="400" new-value-mode="add-unique" :options="modeOptions" :loading="modeLoading"
-                @filter="filterModes" @input-value="onModesInput" placeholder="Enter event mode"
-                popup-content-class="title-dropdown-scroll" class="custom-input" />
-            </LabeledField>
+          <LabeledField label="Mode">
+            <q-select v-model="eventForm.mode_name" outlined dense use-input hide-selected fill-input
+              input-debounce="400" new-value-mode="add-unique" :options="modeOptions" :loading="modeLoading"
+              @filter="filterModes" @input-value="onModesInput" placeholder="Enter event mode"
+              popup-content-class="title-dropdown-scroll" class="custom-input" />
+          </LabeledField>
 
 
-            <LabeledField label="Fee">
-              <q-input v-model="eventForm.fee" outlined dense placeholder="e.g Php 4000" class="custom-input" />
-            </LabeledField>
+          <LabeledField label="Fee">
+            <q-input v-model="eventForm.fee" outlined dense placeholder="e.g Php 4000" class="custom-input" />
+          </LabeledField>
 
 
-<!-- 
+          <!-- 
             <LabeledField label="Qualifications">
               <q-input v-model="eventForm.qualifications" outlined dense type="text" rows="2"
                 placeholder="Enter qualifications" class="custom-input" />
             </LabeledField> -->
-            <!-- Full width, nasa labas ng two-column grid cell -->
+          <!-- Full width, nasa labas ng two-column grid cell -->
           <div class="qualifications-field">
             <LabeledField label="Qualifications">
               <q-input v-model="eventForm.qualifications" outlined type="textarea" rows="4"
@@ -165,276 +165,272 @@
 
 
 
+        </div>
+        <div class="section-divider"></div>
+        <!-- RESOURCE SPEAKER -->
+        <LabeledField label="Resource Speaker" class="speaker-group">
+          <div v-for="(speaker, index) in eventForm.speakers" :key="speaker.id" class="speaker-row">
+            <q-input v-model="speaker.name" outlined dense placeholder="Enter resource speaker"
+              class="custom-input speaker-input" />
+            <q-input v-model="speaker.position" outlined dense placeholder="Position"
+              class="custom-input speaker-agency-input" />
+
+            <q-input v-model="speaker.agency" outlined dense placeholder="Agency"
+              class="custom-input speaker-agency-input" />
+
+
+            <q-btn v-if="eventForm.speakers.length > 1" flat round dense icon="close" class="remove-speaker-btn"
+              @click="removeSpeaker(index)">
+              <q-tooltip>Remove Speaker</q-tooltip>
+            </q-btn>
           </div>
-          <div class="section-divider"></div>
-          <!-- RESOURCE SPEAKER -->
-          <LabeledField label="Resource Speaker" class="speaker-group">
-            <div v-for="(speaker, index) in eventForm.speakers" :key="speaker.id" class="speaker-row">
-              <q-input v-model="speaker.name" outlined dense placeholder="Enter resource speaker"
-                class="custom-input speaker-input" />
-              <q-input v-model="speaker.position" outlined dense placeholder="Position"
-                class="custom-input speaker-agency-input" />
 
-              <q-input v-model="speaker.agency" outlined dense placeholder="Agency"
-                class="custom-input speaker-agency-input" />
+          <div class="speaker-action">
+            <q-btn outline no-caps icon="add" label="Add Another Speaker" class="add-speaker-btn" @click="addSpeaker" />
+          </div>
+        </LabeledField>
+        <!-- COMPETENCY -->
+        <div class="section-divider"></div>
+        <div class="section-title forms-title">Competency</div>
 
-
-              <q-btn v-if="eventForm.speakers.length > 1" flat round dense icon="close" class="remove-speaker-btn"
-                @click="removeSpeaker(index)">
-                <q-tooltip>Remove Speaker</q-tooltip>
-              </q-btn>
-            </div>
-
-            <div class="speaker-action">
-              <q-btn outline no-caps icon="add" label="Add Another Speaker" class="add-speaker-btn"
-                @click="addSpeaker" />
-            </div>
-          </LabeledField>
-          <!-- COMPETENCY -->
-          <div class="section-divider"></div>
-          <div class="section-title forms-title">Competency</div>
-
-          <div class="competency-groups">
-            <div class="competency-group">
-              <div class="competency-group-title">Core</div>
-              <div class="competency-grid">
-                <q-checkbox v-for="option in coreOptions" :key="option.value" v-model="eventForm.competencies"
-                  :val="option.value" :label="option.label" color="green" keep-color dense
-                  class="competency-checkbox" />
-              </div>
-            </div>
-
-            <div class="competency-group">
-              <div class="competency-group-title">Technical</div>
-              <div class="competency-grid">
-                <q-checkbox v-for="option in technicalOptions" :key="option.value" v-model="eventForm.competencies"
-                  :val="option.value" :label="option.label" color="green" keep-color dense
-                  class="competency-checkbox" />
-              </div>
-            </div>
-
-            <div class="competency-group">
-              <div class="competency-group-title">Leadership</div>
-              <div class="competency-grid">
-                <q-checkbox v-for="option in leadershipOptions" :key="option.value" v-model="eventForm.competencies"
-                  :val="option.value" :label="option.label" color="green" keep-color dense
-                  class="competency-checkbox" />
-              </div>
+        <div class="competency-groups">
+          <div class="competency-group">
+            <div class="competency-group-title">Core</div>
+            <div class="competency-grid">
+              <q-checkbox v-for="option in coreOptions" :key="option.value" v-model="eventForm.competencies"
+                :val="option.value" :label="option.label" color="green" keep-color dense class="competency-checkbox" />
             </div>
           </div>
 
+          <div class="competency-group">
+            <div class="competency-group-title">Technical</div>
+            <div class="competency-grid">
+              <q-checkbox v-for="option in technicalOptions" :key="option.value" v-model="eventForm.competencies"
+                :val="option.value" :label="option.label" color="green" keep-color dense class="competency-checkbox" />
+            </div>
+          </div>
+
+          <div class="competency-group">
+            <div class="competency-group-title">Leadership</div>
+            <div class="competency-grid">
+              <q-checkbox v-for="option in leadershipOptions" :key="option.value" v-model="eventForm.competencies"
+                :val="option.value" :label="option.label" color="green" keep-color dense class="competency-checkbox" />
+            </div>
+          </div>
+        </div>
 
 
-          <!-- TABS: SCHEDULE DATE & DEPARTMENT -->
-          <q-tabs v-model="activeTab" dense class="tab-navigation" active-color="green" indicator-color="green"
-            align="left" narrow-indicator>
-            <q-tab name="schedule" label="Schedule Date" />
-            <q-tab name="department" label="Department" />
-          </q-tabs>
 
-          <q-separator />
+        <!-- TABS: SCHEDULE DATE & DEPARTMENT -->
+        <q-tabs v-model="activeTab" dense class="tab-navigation" active-color="green" indicator-color="green"
+          align="left" narrow-indicator>
+          <q-tab name="schedule" label="Schedule Date" />
+          <q-tab name="department" label="Department" />
+        </q-tabs>
 
-          <!-- TAB PANELS -->
-          <q-tab-panels v-model="activeTab" animated class="tab-panels">
-            <!-- SCHEDULE TAB -->
-            <q-tab-panel name="schedule" class="tab-panel">
-              <div class="schedule-heading-row">
-                <div>
-                  <div v-if="selectedDateRange" class="selected-date-range">
-                    {{ selectedDateRange }}
-                  </div>
-                  <div v-else class="selected-date-range empty">
-                    No dates selected
-                  </div>
+        <q-separator />
 
-                  <!-- <div v-if="eventForm.schedules.length" class="total-hours-label">
+        <!-- TAB PANELS -->
+        <q-tab-panels v-model="activeTab" animated class="tab-panels">
+          <!-- SCHEDULE TAB -->
+          <q-tab-panel name="schedule" class="tab-panel">
+            <div class="schedule-heading-row">
+              <div>
+                <div v-if="selectedDateRange" class="selected-date-range">
+                  {{ selectedDateRange }}
+                </div>
+                <div v-else class="selected-date-range empty">
+                  No dates selected
+                </div>
+
+                <!-- <div v-if="eventForm.schedules.length" class="total-hours-label">
                     Total Hours: <strong>{{ totalScheduleHours }} hrs</strong>
                     <span class="lunch-note">(lunch break 12:00–1:00 excluded)</span>
                   </div> -->
-                </div>
-
-                <q-btn outline no-caps icon="calendar_month" label="Select Date" class="select-date-btn"
-                  @click="openDateDialog" />
               </div>
 
-              <!-- SCHEDULE TABLE -->
-              <div class="schedule-table">
-                <div class="schedule-table-header">
-                  <div class="date-column">Date</div>
-                  <div class="time-column">Time</div>
-                  <!-- <div class="hours-column">Hours</div> -->
-                  <div class="action-column">Action</div>
+              <q-btn outline no-caps icon="calendar_month" label="Select Date" class="select-date-btn"
+                @click="openDateDialog" />
+            </div>
+
+            <!-- SCHEDULE TABLE -->
+            <div class="schedule-table">
+              <div class="schedule-table-header">
+                <div class="date-column">Date</div>
+                <div class="time-column">Time</div>
+                <!-- <div class="hours-column">Hours</div> -->
+                <div class="action-column">Action</div>
+              </div>
+
+              <div v-for="(schedule, index) in eventForm.schedules" :key="schedule.id" class="schedule-row">
+                <div class="date-column schedule-date">
+                  <q-icon name="calendar_today" size="15px" />
+                  <span>{{ schedule.date }}</span>
                 </div>
 
-                <div v-for="(schedule, index) in eventForm.schedules" :key="schedule.id" class="schedule-row">
-                  <div class="date-column schedule-date">
-                    <q-icon name="calendar_today" size="15px" />
-                    <span>{{ schedule.date }}</span>
+                <div class="time-column">
+                  <div class="time-inputs">
+                    <!-- START TIME (q-time picker, 24hr storage) -->
+                    <q-input :model-value="formatTimeDisplay(schedule.morning_in)" outlined dense
+                      placeholder="Morning In" class="time-input">
+                      <template #append>
+                        <q-icon name="access_time" class="time-picker-icon">
+                          <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                            <q-time v-model="schedule.morning_in" mask="HH:mm" color="green">
+                              <div class="row items-center justify-end">
+                                <q-btn v-close-popup label="Close" color="green" flat no-caps />
+                              </div>
+                            </q-time>
+                          </q-popup-proxy>
+                        </q-icon>
+                      </template>
+                    </q-input>
+
+                    <!-- START TIME (q-time picker, 24hr storage) -->
+                    <q-input :model-value="formatTimeDisplay(schedule.morning_out)" outlined dense
+                      placeholder="Morning Out" class="time-input">
+                      <template #append>
+                        <q-icon name="access_time" class="time-picker-icon">
+                          <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                            <q-time v-model="schedule.morning_out" mask="HH:mm" color="green">
+                              <div class="row items-center justify-end">
+                                <q-btn v-close-popup label="Close" color="green" flat no-caps />
+                              </div>
+                            </q-time>
+                          </q-popup-proxy>
+                        </q-icon>
+                      </template>
+                    </q-input>
+
+                    <span class="time-separator">-</span>
+
+                    <!-- END TIME (q-time picker, 24hr storage) -->
+                    <q-input :model-value="formatTimeDisplay(schedule.afternoon_in)" outlined dense
+                      placeholder="Afternoon In" class="time-input">
+                      <template #append>
+                        <q-icon name="access_time" class="time-picker-icon">
+                          <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                            <q-time v-model="schedule.afternoon_in" mask="HH:mm" color="green">
+                              <div class="row items-center justify-end">
+                                <q-btn v-close-popup label="Close" color="green" flat no-caps />
+                              </div>
+                            </q-time>
+                          </q-popup-proxy>
+                        </q-icon>
+                      </template>
+                    </q-input>
+                    <q-input :model-value="formatTimeDisplay(schedule.afternoon_out)" outlined dense
+                      placeholder="Afternoon Out" class="time-input">
+                      <template #append>
+                        <q-icon name="access_time" class="time-picker-icon">
+                          <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                            <q-time v-model="schedule.afternoon_out" mask="HH:mm" color="green">
+                              <div class="row items-center justify-end">
+                                <q-btn v-close-popup label="Close" color="green" flat no-caps />
+                              </div>
+                            </q-time>
+                          </q-popup-proxy>
+                        </q-icon>
+                      </template>
+                    </q-input>
                   </div>
+                </div>
 
-                  <div class="time-column">
-                    <div class="time-inputs">
-                      <!-- START TIME (q-time picker, 24hr storage) -->
-                      <q-input :model-value="formatTimeDisplay(schedule.morning_in)" outlined dense
-                        placeholder="Morning In" class="time-input">
-                        <template #append>
-                          <q-icon name="access_time" class="time-picker-icon">
-                            <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                              <q-time v-model="schedule.morning_in" mask="HH:mm" color="green">
-                                <div class="row items-center justify-end">
-                                  <q-btn v-close-popup label="Close" color="green" flat no-caps />
-                                </div>
-                              </q-time>
-                            </q-popup-proxy>
-                          </q-icon>
-                        </template>
-                      </q-input>
-
-                      <!-- START TIME (q-time picker, 24hr storage) -->
-                      <q-input :model-value="formatTimeDisplay(schedule.morning_out)" outlined dense
-                        placeholder="Morning Out" class="time-input">
-                        <template #append>
-                          <q-icon name="access_time" class="time-picker-icon">
-                            <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                              <q-time v-model="schedule.morning_out" mask="HH:mm" color="green">
-                                <div class="row items-center justify-end">
-                                  <q-btn v-close-popup label="Close" color="green" flat no-caps />
-                                </div>
-                              </q-time>
-                            </q-popup-proxy>
-                          </q-icon>
-                        </template>
-                      </q-input>
-
-                      <span class="time-separator">-</span>
-
-                      <!-- END TIME (q-time picker, 24hr storage) -->
-                      <q-input :model-value="formatTimeDisplay(schedule.afternoon_in)" outlined dense
-                        placeholder="Afternoon In" class="time-input">
-                        <template #append>
-                          <q-icon name="access_time" class="time-picker-icon">
-                            <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                              <q-time v-model="schedule.afternoon_in" mask="HH:mm" color="green">
-                                <div class="row items-center justify-end">
-                                  <q-btn v-close-popup label="Close" color="green" flat no-caps />
-                                </div>
-                              </q-time>
-                            </q-popup-proxy>
-                          </q-icon>
-                        </template>
-                      </q-input>
-                      <q-input :model-value="formatTimeDisplay(schedule.afternoon_out)" outlined dense
-                        placeholder="Afternoon Out" class="time-input">
-                        <template #append>
-                          <q-icon name="access_time" class="time-picker-icon">
-                            <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                              <q-time v-model="schedule.afternoon_out" mask="HH:mm" color="green">
-                                <div class="row items-center justify-end">
-                                  <q-btn v-close-popup label="Close" color="green" flat no-caps />
-                                </div>
-                              </q-time>
-                            </q-popup-proxy>
-                          </q-icon>
-                        </template>
-                      </q-input>
-                    </div>
-                  </div>
-
-                  <!-- <div class="hours-column schedule-hours">
+                <!-- <div class="hours-column schedule-hours">
                     {{ getScheduleHours(schedule) }} hrs
                   </div> -->
 
-                  <!-- Action Column -->
+                <!-- Action Column -->
 
-                  <div class="action-column">
-                    <q-btn flat round dense icon="delete_outline" class="delete-btn" @click="removeSchedule(index)">
-                      <q-tooltip>Remove Date</q-tooltip>
-                    </q-btn>
-                  </div>
-                </div>
-
-                <div v-if="!eventForm.schedules.length" class="schedule-empty">
-                  <q-icon name="calendar_month" size="28px" />
-                  <span>Select a date to create a schedule</span>
-                </div>
-              </div>
-            </q-tab-panel>
-
-            <!-- DEPARTMENT TAB -->
-            <q-tab-panel name="department" class="tab-panel">
-              <div class="department-header">
-                <div class="attendee-count-wrapper">
-                  <div class="attendee-count">
-                    Total of Attendees:
-                    <strong>{{ totalAttendees }}</strong>
-                  </div>
-                </div>
-
-                <div class="add-department-wrapper">
-                  <q-btn outline no-caps icon="add" label="Add Department" class="add-department-btn"
-                    @click="openDepartmentDialog" />
+                <div class="action-column">
+                  <q-btn flat round dense icon="delete_outline" class="delete-btn" @click="removeSchedule(index)">
+                    <q-tooltip>Remove Date</q-tooltip>
+                  </q-btn>
                 </div>
               </div>
 
-              <q-input v-model="departmentSearch" outlined dense clearable placeholder="Search and add a department"
-                class="department-search">
-                <template #prepend>
-                  <q-icon name="search" size="17px" />
-                </template>
-              </q-input>
+              <div v-if="!eventForm.schedules.length" class="schedule-empty">
+                <q-icon name="calendar_month" size="28px" />
+                <span>Select a date to create a schedule</span>
+              </div>
+            </div>
+          </q-tab-panel>
 
-              <!-- Department Table with Pagination -->
-              <div class="department-table-container">
-                <q-table :rows="filteredDepartments" :columns="departmentColumns" row-key="id"
-                  :rows-per-page-options="[5, 10, 25]" v-model:pagination="departmentPagination"
-                  class="department-table" flat bordered>
-                  <!-- Department Name Column -->
-                  <template #body-cell-name="props">
-                    <q-td :props="props">
-                      <div class="department-name-cell">
-                        {{ props.row.name }}
-                      </div>
-                    </q-td>
-                  </template>
+          <!-- DEPARTMENT TAB -->
+          <q-tab-panel name="department" class="tab-panel">
+            <div class="department-header">
+              <div class="attendee-count-wrapper">
+                <div class="attendee-count">
+                  Total of Attendees:
+                  <strong>{{ totalAttendees }}</strong>
+                </div>
+              </div>
 
-                  <!-- Attendees Column -->
-                  <template #body-cell-attendees="props">
-                    <q-td :props="props">
-                      <q-input v-model.number="props.row.attendees" type="number" min="0" outlined dense
-                        class="attendee-input-main" />
-                    </q-td>
-                  </template>
+              <div class="add-department-wrapper">
+                <q-btn outline no-caps icon="add" label="Add Department" class="add-department-btn"
+                  @click="openDepartmentDialog" />
+              </div>
+            </div>
 
-                  <!-- Action Column -->
+            <q-input v-model="departmentSearch" outlined dense clearable placeholder="Search and add a department"
+              class="department-search">
+              <template #prepend>
+                <q-icon name="search" size="17px" />
+              </template>
+            </q-input>
 
-                  <template #body-cell-action="props">
-                    <q-td :props="props">
-                      <div class="action-btn-group">
-                        <q-btn flat round dense icon="visibility" color="primary"
-                          @click="openDepartmentEmployeesDialog(props.row)">
-                          <q-tooltip>View Selected Employees</q-tooltip>
-                        </q-btn>
-
-                        <q-btn flat round dense icon="delete_outline" class="delete-btn"
-                          @click="removeDepartment(props.rowIndex)">
-                          <q-tooltip>Remove Department</q-tooltip>
-                        </q-btn>
-                      </div>
-                    </q-td>
-                  </template>
-
-                  <!-- No Data State -->
-                  <template #no-data>
-                    <div class="empty-state">
-                      <q-icon name="business" size="32px" color="grey-4" />
-                      <div>No departments added.</div>
+            <!-- Department Table with Pagination -->
+            <div class="department-table-container">
+              <q-table :rows="filteredDepartments" :columns="departmentColumns" row-key="id"
+                :rows-per-page-options="[5, 10, 25]" v-model:pagination="departmentPagination" class="department-table"
+                flat bordered>
+                <!-- Department Name Column -->
+                <template #body-cell-name="props">
+                  <q-td :props="props">
+                    <div class="department-name-cell">
+                      {{ props.row.name }}
                     </div>
-                  </template>
-                </q-table>
-              </div>
-            </q-tab-panel>
-          </q-tab-panels>
-        </template>
+                  </q-td>
+                </template>
+
+                <!-- Attendees Column -->
+                <template #body-cell-attendees="props">
+                  <q-td :props="props">
+                    <q-input v-model.number="props.row.attendees" type="number" min="0" outlined dense
+                      class="attendee-input-main" />
+                  </q-td>
+                </template>
+
+                <!-- Action Column -->
+
+                <template #body-cell-action="props">
+                  <q-td :props="props">
+                    <div class="action-btn-group">
+                      <q-btn flat round dense icon="visibility" color="primary"
+                        @click="openDepartmentEmployeesDialog(props.row)">
+                        <q-tooltip>View Selected Employees</q-tooltip>
+                      </q-btn>
+
+                      <q-btn flat round dense icon="delete_outline" class="delete-btn"
+                        @click="removeDepartment(props.rowIndex)">
+                        <q-tooltip>Remove Department</q-tooltip>
+                      </q-btn>
+                    </div>
+                  </q-td>
+                </template>
+
+                <!-- No Data State -->
+                <template #no-data>
+                  <div class="empty-state">
+                    <q-icon name="business" size="32px" color="grey-4" />
+                    <div>No departments added.</div>
+                  </div>
+                </template>
+              </q-table>
+            </div>
+          </q-tab-panel>
+        </q-tab-panels>
+      </template>
     </EventTwoColumnLayout>
 
     <!-- =========================================================
@@ -706,7 +702,7 @@
           </div>
 
           <!-- TRAINING SECTION -->
-          <div class="record-section-title training-title">Training History</div>
+          <div class="record-section-title training-title">Training Attended</div>
 
           <div v-if="selectedEmployeeRecord?.x_training?.length" class="record-table">
             <q-markup-table flat bordered dense>
@@ -733,7 +729,37 @@
             </q-markup-table>
           </div>
           <div v-else class="record-empty">
-            No training records found.
+       No trainings attended yet.
+          </div>
+
+          <div class="record-section-title training-title">Recent Training</div>
+
+          <div v-if="selectedEmployeeRecord?.previous_training" class="record-table">
+            <q-markup-table flat bordered dense>
+              <thead>
+                <tr>
+                  <th class="text-left">Training</th>
+                  <th class="text-left">Hours</th>
+                  <th class="text-left">Conductor</th>
+                   <th class="text-left">Date From</th>
+                  <th class="text-left">Date To</th>
+                  <th class="text-left">Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{{ selectedEmployeeRecord.previous_training.training }}</td>
+                  <td>{{ selectedEmployeeRecord.previous_training.NumHours }}</td>
+                  <td>{{ selectedEmployeeRecord.previous_training.Conductor }}</td>
+                  <td>{{ selectedEmployeeRecord.previous_training.DateFrom }}</td>
+                       <td>{{ selectedEmployeeRecord.previous_training.DateTo }}</td>
+                  <td>{{ selectedEmployeeRecord.previous_training.Type }}</td>
+                </tr>
+              </tbody>
+            </q-markup-table>
+          </div>
+          <div v-else class="record-empty">
+        No recent training found.
           </div>
         </q-card-section>
 
@@ -938,7 +964,7 @@ export default defineComponent({
       },
       {
         name: "trainingCount",
-        label: "trainingsAttended",
+        label: "Trainings Attended",
         field: "trainingCount",
         align: "center",
         sortable: true,
@@ -951,6 +977,15 @@ export default defineComponent({
         align: "center",
         sortable: true,
         style: "min-width: 90px;",
+      },
+        {
+        name: "recentTrainingDate",
+        label: "Recent training date",
+        field: (row) => row.previous_training?.Date ?? null,
+        format: (val) => val || "—",
+        align: "center",
+        sortable: true,
+        style: "min-width: 140px;",
       },
       {
         name: "Action",
@@ -2846,17 +2881,19 @@ export default defineComponent({
 }
 
 .employee-record-dialog {
-  width: 700px;
-  max-width: 92vw;
+  width: 1500px;          /* mas malapad para hindi putol ang columns */
+  max-width: 95vw;
+  max-height: 90vh;
   border-radius: 13px;
+  display: flex;
+  flex-direction: column;
 }
 
 .employee-record-body {
-  padding: 18px;
-  max-height: 60vh;
-  overflow-y: auto;
+  padding: 25px;
+  flex: 1;
+  overflow-y: auto;      /* alisin ang max-height: 60vh */
 }
-
 .record-section-title {
   margin-bottom: 8px;
   color: #222222;
@@ -2869,12 +2906,12 @@ export default defineComponent({
 }
 
 .record-table :deep(th) {
-  font-size: 11px;
+  font-size: 12px;
   background: #f5f5f5;
 }
 
 .record-table :deep(td) {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .record-empty {
@@ -3001,9 +3038,11 @@ export default defineComponent({
   color: #373737;
   font-size: 11px;
 }
+
 /* Qualifications: full width + malaking textarea */
 .qualifications-field {
-  grid-column: 1 / -1; /* tumatawid sa dalawang column */
+  grid-column: 1 / -1;
+  /* tumatawid sa dalawang column */
 }
 
 .qualifications-input :deep(.q-field__control) {
@@ -3015,6 +3054,7 @@ export default defineComponent({
 .qualifications-input :deep(.q-field__native) {
   min-height: 90px;
   font-size: 12px;
-  resize: vertical; /* pwedeng i-drag para palakihin pa */
+  resize: vertical;
+  /* pwedeng i-drag para palakihin pa */
 }
 </style>

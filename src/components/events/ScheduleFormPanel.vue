@@ -1028,7 +1028,7 @@
           <div v-else class="record-empty">No civil service records found.</div>
 
           <!-- TRAINING SECTION -->
-          <div class="record-section-title training-title">Training History</div>
+          <div class="record-section-title training-title">Trainings Related to This Event</div>
 
           <div v-if="selectedEmployeeRecord?.x_training?.length" class="record-table">
             <q-markup-table flat bordered dense>
@@ -1055,6 +1055,37 @@
             </q-markup-table>
           </div>
           <div v-else class="record-empty">No training records found.</div>
+
+              <div class="record-section-title training-title">Recent Training</div>
+
+          <div v-if="selectedEmployeeRecord?.previous_training" class="record-table">
+            <q-markup-table flat bordered dense>
+              <thead>
+                <tr>
+                  <th class="text-left">Training</th>
+                  <th class="text-left">Hours</th>
+                  <th class="text-left">Conductor</th>
+                   <th class="text-left">Date From</th>
+                  <th class="text-left">Date To</th>
+                  <th class="text-left">Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{{ selectedEmployeeRecord.previous_training.training }}</td>
+                  <td>{{ selectedEmployeeRecord.previous_training.NumHours }}</td>
+                  <td>{{ selectedEmployeeRecord.previous_training.Conductor }}</td>
+                  <td>{{ selectedEmployeeRecord.previous_training.DateFrom }}</td>
+                       <td>{{ selectedEmployeeRecord.previous_training.DateTo }}</td>
+                  <td>{{ selectedEmployeeRecord.previous_training.Type }}</td>
+                </tr>
+              </tbody>
+            </q-markup-table>
+          </div>
+          <div v-else class="record-empty">
+        No recent training found.
+          </div>
+        
         </q-card-section>
 
         <q-card-actions align="right" class="dialog-actions">
@@ -1647,6 +1678,15 @@ export default defineComponent({
         align: "center",
         sortable: true,
         style: "min-width: 90px;",
+      },
+      {
+        name: "recentTrainingDate",
+        label: "Recent training date",
+        field: (row) => row.previous_training?.Date ?? null,
+        format: (val) => val || "—",
+        align: "center",
+        sortable: true,
+        style: "min-width: 140px;",
       },
       {
         name: "Action",
@@ -2666,15 +2706,18 @@ watch(sgFilter, () => {
    EMPLOYEE RECORD DIALOG
 ========================================================= */
 .employee-record-dialog {
-  width: 700px;
-  max-width: 92vw;
+  width: 1500px;          /* mas malapad para hindi putol ang columns */
+  max-width: 95vw;
+  max-height: 90vh;
   border-radius: 13px;
+  display: flex;
+  flex-direction: column;
 }
 
 .employee-record-body {
-  padding: 18px;
-  max-height: 60vh;
-  overflow-y: auto;
+  padding: 25px;
+  flex: 1;
+  overflow-y: auto;      /* alisin ang max-height: 60vh */
 }
 
 .record-section-title {
@@ -2689,12 +2732,12 @@ watch(sgFilter, () => {
 }
 
 .record-table :deep(th) {
-  font-size: 11px;
+  font-size: 12px;
   background: #f5f5f5;
 }
 
 .record-table :deep(td) {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .record-empty {
