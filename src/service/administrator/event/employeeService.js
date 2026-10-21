@@ -33,13 +33,15 @@ export const employee_update_form_submission= (nominatedEmployeeId,payload) => {
 };
 
 
-export const employee_attendance= (nominatedEmployeeId) => {
+export const employee_attendance = (nominatedEmployeeId) => {
   return api.get(`event/employee/attendance/employee/${nominatedEmployeeId}`);
 };
 
 
-export const employee_form_submission = (params = {}) => {
-  return api.get(`event/employee/submission/list`, { params });
+export const employee_form_submission = (scheduleId, params = {}) => {
+  return api.get(`event/employee/submission/list/schedule/${scheduleId}`, {
+    params,
+  });
 };
 
 
@@ -52,4 +54,9 @@ export const employee_documents_submission = (eventId,scheduleId,controlNO, page
 
 export const employee_view_documents_submission = (documentId) => {
   return api.get(`event/employee/documents/file/${documentId}`, { responseType: "blob" });
+};
+
+
+export const  event_participant_certificate = (params = {}) => {
+  return api.get(`event/employee/submission/event/participants`,{ params });
 };

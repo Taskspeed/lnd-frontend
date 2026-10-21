@@ -4,6 +4,7 @@ import {
   nominated_employee,
   suggested_employees,
   nomination_approval,
+  event_details,
 } from "src/service/administrator/event/eventService";
 
 export const useEventStore = defineStore("event", {
@@ -15,6 +16,7 @@ export const useEventStore = defineStore("event", {
     employees: [],
     nominated_employee: [],
     pagination: { page: 1, rowsPerPage: 10, rowsNumber: 0 },
+    event_schedule: null,
 
   }),
 
@@ -195,6 +197,23 @@ export const useEventStore = defineStore("event", {
       } catch (err) {
         this.error =
           err.response?.data?.message || "Failed to update nomination status.";
+        return { success: false, message: this.error };
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // event details for submission
+   async fetchEventDetails(eventId, scheduleId) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await event_details(eventId, scheduleId);
+        this.event_schedule = response.data.data || null;
+        return { success: true, data: this.event_schedule };
+      } catch (err) {
+        this.error = err.response?.data?.message || "Failed to load event details.";
+        this.event_schedule = null;
         return { success: false, message: this.error };
       } finally {
         this.loading = false;

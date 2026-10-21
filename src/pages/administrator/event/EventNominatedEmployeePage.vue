@@ -881,6 +881,7 @@ export default defineComponent({
   border: 1px solid #edf1ef;
   border-radius: 12px;
   background: #fcfdfc;
+  margin-top: 99px;
 }
 
 .office-head {
@@ -888,6 +889,7 @@ export default defineComponent({
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+
 }
 
 .office-head-title {

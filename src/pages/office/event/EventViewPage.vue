@@ -1166,7 +1166,7 @@ export default defineComponent({
 
 .section-title {
   color: #19354a;
-  font-size: 13.5px;
+   font-size: 16px;
   font-weight: 750;
 }
 
@@ -1654,9 +1654,7 @@ export default defineComponent({
   font-size: 19px;
 }
 
-.section-title {
-  font-size: 16px;
-}
+
 
 .section-sub {
   margin-top: 3px;

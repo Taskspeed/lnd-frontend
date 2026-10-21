@@ -28,4 +28,9 @@ export const nomination_approval = (nominatedEmployeeId,payload) => {
     `event/employee/nomination/approval/${nominatedEmployeeId}`,payload);
 };
 
-
+// event details for submission
+export const event_details = (eventId, scheduleId,) => {
+  return api.get(`event/employee/submission/event/${eventId}/schedule/${scheduleId}`, {
+  
+  });
+};
