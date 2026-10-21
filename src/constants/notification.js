@@ -22,3 +22,16 @@ export const notificationRoutes = {
     query: { nominated_employee_id: data.nominated_employee_id },
   }),
 };
+
+
+// icons
+export const notificationIcons = {
+  event_created: { icon: "event", color: "indigo" },
+  nomination_status_updated: { icon: "how_to_reg", color: "primary" },
+  employees_nominated: { icon: "groups", color: "primary" },
+  form_submitted: { icon: "fact_check", color: "teal" },
+
+  
+};
+
+export const defaultNotificationIcon = { icon: "notifications", color: "primary" };

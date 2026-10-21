@@ -17,20 +17,19 @@
             {{ notificationCount }}
           </q-badge>
 
-          <q-menu anchor="bottom right" self="top right" max-width="360px">
+          <q-menu anchor="bottom right" self="top right" max-width="1000px">
             <q-list class="notification-list">
               <q-item-label header class="notification-header">Notifications</q-item-label>
 
               <template v-if="notifications.length">
-                <q-item v-for="n in notifications" :key="n.id" clickable v-close-popup @click="goToNotification(n)"
-                  :class="{ 'notification-unread': !n.read_at }">
+                <q-item v-for="n in notifications" :key="n.id" clickable v-close-popup class="notification-item"
+                  :class="{ 'notification-unread': !n.read_at }" @click="goToNotification(n)">
                   <q-item-section avatar>
-                    <q-icon :name="n.data.title?.includes('Disapproved') ? 'cancel' : 'notifications'"
-                      :color="n.data.title?.includes('Disapproved') ? 'negative' : 'primary'" />
+                    <q-icon :name="getNotificationIcon(n).icon" :color="getNotificationIcon(n).color" size="28px" />
                   </q-item-section>
                   <q-item-section>
                     <q-item-label class="notification-title">{{ n.data.title }}</q-item-label>
-                    <q-item-label caption lines="2">{{ n.data.message }}</q-item-label>
+                    <q-item-label caption lines="3">{{ n.data.message }}</q-item-label>
                   </q-item-section>
                 </q-item>
               </template>
@@ -59,20 +58,20 @@
           </div>
         </q-btn> -->
         <q-btn flat no-caps class="header-user q-px-md" @click="goToProfile">
-        <q-avatar class="header-avatar">
-          {{ userInitials }}
-        </q-avatar>
+          <q-avatar class="header-avatar">
+            {{ userInitials }}
+          </q-avatar>
 
-        <div class="header-user-info">
-          <div class="header-user-name">
-            {{ userName }}
-          </div>
+          <div class="header-user-info">
+            <div class="header-user-name">
+              {{ userName }}
+            </div>
 
-          <div class="header-user-role">
-            {{ userRole }}
+            <div class="header-user-role">
+              {{ userRole }}
+            </div>
           </div>
-        </div>
-      </q-btn>
+        </q-btn>
       </q-toolbar>
     </q-header>
 
@@ -121,11 +120,11 @@
                 <q-item-section avatar>
                   <q-icon name="account_tree" />
                 </q-item-section>
-       
+
                 <q-item-section> BPM </q-item-section>
               </q-item>
 
-               <!-- <q-item clickable v-ripple :to="{ name: 'office-events2' }" class="nav-item"
+              <!-- <q-item clickable v-ripple :to="{ name: 'office-events2' }" class="nav-item"
                 active-class="nav-item-active">
                 <q-item-section avatar><q-icon name="event" /></q-item-section>
                 <q-item-section>Events2</q-item-section>
@@ -182,8 +181,8 @@
                 <q-item-section> Certificate </q-item-section>
               </q-item>
 
-            <div class="nav-section">Forms</div>
-              
+              <div class="nav-section">Forms</div>
+
               <q-item clickable v-ripple :to="{ name: 'list_of_submission' }" class="nav-item"
                 active-class="nav-item-active">
                 <q-item-section avatar>
@@ -328,7 +327,11 @@ import { defineComponent, ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "stores/authStore";
 import { useNotificationStore } from "src/stores/notificationStore";
-import { notificationRoutes } from "src/constants/notification";
+import {
+  notificationRoutes,
+  notificationIcons,
+  defaultNotificationIcon,
+} from "src/constants/notification";
 
 export default defineComponent({
   name: "MainLayout",
@@ -363,18 +366,18 @@ export default defineComponent({
     const notifications = computed(() => notificationStore.notifications);
     let pollInterval = null;
 
-  function goToNotification(n) {
-    if (!n.read_at) notificationStore.markAsRead(n.id);
+    function goToNotification(n) {
+      if (!n.read_at) notificationStore.markAsRead(n.id);
 
-    const data = n.data || {};
-    const buildRoute = notificationRoutes[data.type];
+      const data = n.data || {};
+      const buildRoute = notificationRoutes[data.type];
 
-    if (buildRoute) {
-      router.push(buildRoute(data));
-    } else {
-      console.warn("Unknown notification type:", data.type);
+      if (buildRoute) {
+        router.push(buildRoute(data));
+      } else {
+        console.warn("Unknown notification type:", data.type);
+      }
     }
-  }
 
     onMounted(() => {
       notificationStore.fetchNotifications();
@@ -418,6 +421,13 @@ export default defineComponent({
       });
     }
 
+    function getNotificationIcon(n) {
+      // Disapproved palaging red na cancel icon
+      if (n.data?.title?.includes("Disapproved")) {
+        return { icon: "cancel", color: "negative" };
+      }
+      return notificationIcons[n.data?.type] || defaultNotificationIcon;
+    }
     return {
       leftDrawerOpen,
 
@@ -440,6 +450,7 @@ export default defineComponent({
       logout,
       notifications,
       goToNotification,
+      getNotificationIcon,
     };
   },
 });
@@ -586,28 +597,10 @@ export default defineComponent({
    SIDEBAR BRAND
 ========================================================= */
 
-/* .sidebar-brand {
-  display: flex;
-  align-items: center;
-  padding: 20px 16px 16px;
-  border-bottom: 1px solid #e6eee8;
-}
-
-.sidebar-logo {
-  width: 50px;
-  height: 50px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-.sidebar-brand-text {
-  margin-left: 10px;
-  min-width: 0;
-} */
-
 .sidebar-brand {
   display: flex;
-  flex-direction: column;   /* logo sa taas, text sa baba */
+  flex-direction: column;
+  /* logo sa taas, text sa baba */
   align-items: center;
   text-align: center;
   padding: 22px 16px 18px;
@@ -622,10 +615,12 @@ export default defineComponent({
 }
 
 .sidebar-brand-text {
-  margin-left: 0;           /* dati 10px, tanggalin na */
+  margin-left: 0;
+  /* dati 10px, tanggalin na */
   margin-top: 10px;
   min-width: 0;
 }
+
 .sidebar-title {
   font-size: 13px;
   font-weight: 750;
@@ -856,8 +851,12 @@ export default defineComponent({
 }
 
 .notification-list {
-  min-width: 300px;
-  max-height: 400px;
+  width: 500px;
+  /* adjust this for width */
+  max-width: 95vw;
+  /* prevents overflow on small screens */
+  max-height: 80vh;
+  /* adjust this for height */
   overflow-y: auto;
 }
 
@@ -865,12 +864,21 @@ export default defineComponent({
   font-size: 11px;
   font-weight: 700;
   color: #7c898f;
+  padding: 16px 20px 8px;
+}
+
+.notification-item {
+  min-height: 80px;
+  /* same height for read and unread */
+  padding: 16px 20px;
+  border-bottom: 1px solid #eef3ef;
 }
 
 .notification-title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 650;
   color: #172b3a;
+  /* no fixed height here */
 }
 
 .notification-unread {
