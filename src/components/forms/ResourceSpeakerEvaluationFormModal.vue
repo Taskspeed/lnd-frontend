@@ -59,12 +59,12 @@
                   </span>
                 </td>
               </tr>
-              <tr>
-                <td class="spk-factor spk-comment-label">Other comments:</td>
-                <td v-for="(s, i) in speakers" :key="i" class="spk-comment-cell">
-                  {{ s.comments || '' }}
-                </td>
-              </tr>
+          <tr>
+  <td class="spk-factor spk-comment-label">Other comments:</td>
+  <td v-for="(s, i) in speakers" :key="i" class="spk-comment-cell">
+    <div class="spk-comment-box">{{ s.comments || '' }}</div>
+  </td>
+</tr>
             </tbody>
           </table>
         </div>
@@ -300,8 +300,18 @@ const tableMinWidth = computed(() => `${200 + speakers.value.length * 110}px`)
 
 .spk-comment-cell {
   vertical-align: top;
-  height: 90px;
+  padding: 0;               /* para sakop ng box ang buong cell */
   font-size: 11px;
+}
+
+.spk-comment-box {
+  /* 8 rows: ~8 lines x 1.5 line-height x 11px font + padding */
+  height: calc(8 * 1.5em + 12px);
+  padding: 6px 4px;
+  line-height: 1.5;
+  overflow-y: auto;
+  white-space: pre-wrap;    /* sinusunod ang line breaks ng text */
+  word-break: break-word;   /* hindi lumalabas sa cell ang mahabang salita */
 }
 
 .lir-sig-single {

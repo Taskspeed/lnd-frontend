@@ -76,26 +76,27 @@
         <!-- MONITORING FIELDS -->
         <div class="lamr-box lamr-box-full">
           <div class="lamr-box-title lamr-box-title-left">Goals</div>
-          <q-input dense borderless :readonly="readonly" type="textarea" v-model="goals" rows="2"
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="goals" rows="8"
             class="lamr-textarea" />
         </div>
         <div class="lamr-box lamr-box-full">
           <div class="lamr-box-title lamr-box-title-left">Key Performance Indicator</div>
-          <q-input dense borderless :readonly="readonly" type="textarea" v-model="kpi" rows="2" class="lamr-textarea" />
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="kpi" rows="8" class="lamr-textarea" />
         </div>
         <div class="lamr-box lamr-box-full">
           <div class="lamr-box-title lamr-box-title-left">Learning Strategies Applied</div>
-          <q-input dense borderless :readonly="readonly" type="textarea" v-model="strategiesApplied" rows="2"
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="strategiesApplied" rows="8"
             class="lamr-textarea" />
         </div>
         <div class="lamr-box lamr-box-full">
           <div class="lamr-box-title lamr-box-title-left">Required Resources</div>
-          <q-input dense borderless :readonly="readonly" type="textarea" v-model="requiredResources" rows="2"
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="requiredResources" rows="8"
             class="lamr-textarea" />
         </div>
         <div class="lamr-box lamr-box-full">
           <div class="lamr-box-title lamr-box-title-left">Target Date of Completion</div>
-          <q-input dense borderless :readonly="readonly" v-model="targetDate" class="lamr-textarea" />
+          <q-input dense borderless :readonly="readonly" type="textarea"  v-model="targetDate" rows="8" 
+          class="lamr-textarea"/>
         </div>
 
         <!-- STATUS UPDATES -->
@@ -104,7 +105,7 @@
             <span class="lamr-box-title lamr-box-title-left lamr-status-label">Status as of</span>
             <!-- <q-input dense borderless :readonly="readonly" v-model="status.date" class="lamr-status-date" /> -->
           </div>
-          <q-input dense borderless :readonly="readonly" type="textarea" v-model="status.notes" rows="2"
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="status.notes" rows="8"
             class="lamr-textarea" />
         </div>
         <div v-if="!readonly" class="lamr-add-status">
@@ -114,7 +115,7 @@
         <!-- REMARKS -->
         <div class="lamr-box lamr-box-full">
           <div class="lamr-box-title lamr-box-title-left">Remarks</div>
-          <q-input dense borderless :readonly="readonly" type="textarea" v-model="remarks" rows="3"
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="remarks" rows="8"
             class="lamr-textarea" />
         </div>
 
@@ -337,9 +338,11 @@ watch(() => props.formData, populateFromFormData, { immediate: true })
 .lamr-field-line {
   flex: 1;
   border-bottom: 1px solid #333;
-  height: 16px;
+
   font-size: 12px;
   color: #1a1a1a;
+  min-height: 16px;
+  padding-bottom:  2px;
 }
 
 .lamr-section-label {

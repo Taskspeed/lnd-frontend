@@ -89,7 +89,7 @@
         <!-- COMMENTS -->
         <div class="lir-box lir-box-full">
           <div class="lir-box-title lir-box-title-left">Comments/Suggestions</div>
-          <q-input dense borderless readonly type="textarea" :model-value="comments" rows="3"
+          <q-input dense borderless readonly type="textarea" :model-value="comments" rows="8"
             class="lir-textarea" />
         </div>
       </q-card-section>

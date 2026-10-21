@@ -81,7 +81,7 @@
           <div class="lir-box-title lir-box-title-left">
             {{ field.label }} <span class="lir-box-subtext">({{ field.question }})</span>
           </div>
-          <q-input dense borderless :readonly="readonly" type="textarea" v-model="form[field.model]" rows="2"
+          <q-input dense borderless :readonly="readonly" type="textarea" v-model="form[field.model]" rows="8"
             class="lir-textarea" />
         </div>
 
@@ -326,7 +326,7 @@ watch(
 .lir-field-line {
   flex: 1;
   border-bottom: 1px solid #333;
-  height: 16px;
+  min-height: 16px;
   font-size: 12px;
   color: #1a1a1a;
   padding-bottom: 2px;
