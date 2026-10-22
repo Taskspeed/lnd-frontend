@@ -30,26 +30,6 @@
             placeholder="Enter event title" class="custom-input" />
         </LabeledField>
 
-        <!-- L&D INTERVENTION -->
-        <!-- <div class="section-divider"></div>
-
-        <div class="section-title forms-title">L&amp;D Intervention</div> -->
-
-        <!-- INTERVENTION -->
-        <!-- <LabeledField label="Intervention">
-          <q-select v-model="eventForm.intervention_name" outlined dense emit-value map-options
-            :options="interventionOptions" placeholder="Select Intervention" class="custom-input" :display-value="eventForm.intervention_name ? undefined : 'Select Intervention'
-              " />
-        </LabeledField> -->
-
-
-        <!-- <div class="section-title forms-title">Forms</div>
-        <div class="competency-group">
-          <div class="competency-grid">
-            <q-checkbox v-for="option in formsOptions" :key="option.value" :model-value="true" :val="option.value"
-              :label="option.label" color="green" keep-color dense disable class="competency-checkbox" />
-          </div>
-        </div> -->
         <div class="section-divider"></div>
 
         <div class="section-title forms-title">Forms</div>
@@ -70,6 +50,24 @@
               class="competency-checkbox" />
           </div>
         </div>
+                <div class="section-divider"></div>
+        <div class="section-title forms-title">ARMS</div>
+        <div class="arms-card" :class="{ 'arms-card--on': eventForm.sync_to_arms }">
+          <div class="arms-card-info">
+            <q-icon name="sync_alt" size="20px" class="arms-card-icon" />
+            <div>
+              <div class="arms-card-title">Create event on ARMS</div>
+              <div class="arms-card-desc">
+                When turned on, this event will also be created on ARMS once it is saved.
+              </div>
+            </div>
+          </div>
+          <q-toggle v-model="eventForm.sync_to_arms" color="green" keep-color />
+        </div>
+
+        <div v-if="eventForm.sync_to_arms" class="arms-hint">
+<q-icon name="info" size="25px" color="blue-7" />
+        <span class="arms-hint-text">Make sure the Venue, Schedule Date, and Department are complete.</span>        </div>
 
       </template>
 
@@ -109,9 +107,9 @@
               placeholder="Select Source" class="custom-input"
               :display-value="eventForm.source_name ? undefined : 'Select Source'" />
 
-            <div v-if="eventForm.source_name" class="source-hint">
+            <!-- <div v-if="eventForm.source_name" class="source-hint">
               {{ eventForm.source_name === 'internal' ? 'Training conducted by HRDD' : 'Training through Concerned Office' }}
-            </div>
+            </div> -->
           </LabeledField>
 
           <LabeledField label="Competency">
@@ -829,6 +827,8 @@ import { buildCompetenciesPayload, buildFormsPayload } from "src/composables/eve
 
 import { formsOptions, evaluationOptions } from "src/constants/form";
 
+import Swal from "sweetalert2";
+
 export default defineComponent({
   name: "CreateEventPage",
 
@@ -876,6 +876,7 @@ export default defineComponent({
       title_name: "",
       category_name: null,
       source_name: null,
+      sync_to_arms: false,
       intervention_name: "Formal Learning",
       type_name: null,
       venue_name: "",
@@ -1876,7 +1877,44 @@ export default defineComponent({
       }
     }
 
+// =========================================================
+// ARMS AUTO-ENABLE (Source = In-house / internal)
+// =========================================================
+let armsAutoEnabled = false; // para malaman kung system ang nag-on, hindi ang user
 
+watch(
+  () => eventForm.value.source_name,
+  (source) => {
+    if (source === "internal") {
+      if (!eventForm.value.sync_to_arms) {
+        eventForm.value.sync_to_arms = true;
+        armsAutoEnabled = true;
+
+          Swal.fire({
+        icon: "info",
+        title: "Create Event in ARMS",
+        html: `
+          Since the event source is <b>In-house</b>, this event will also
+          be created in <b>ARMS</b> when you click <b>Create Event</b>.
+
+          <br><br>
+
+          <small style="color: #888; font-size: 15px;">
+            You can disable this option anytime in the <b>ARMS</b> section.
+          </small>
+        `,
+        confirmButtonText: "Got it",
+        confirmButtonColor: "#18bd4f",
+        allowOutsideClick: false,
+      });
+      }
+    } else if (armsAutoEnabled) {
+      // nag-switch sa External: i-off lang kung system ang nag-on
+      eventForm.value.sync_to_arms = false;
+      armsAutoEnabled = false;
+    }
+  }
+);
 
     // =========================================================
     // RETURN
@@ -3056,5 +3094,61 @@ export default defineComponent({
   font-size: 12px;
   resize: vertical;
   /* pwedeng i-drag para palakihin pa */
+}
+/* =========================================================
+   ARMS INTEGRATION
+========================================================= */
+.arms-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  background: #fafafa;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.arms-card--on {
+  border-color: #18bd4f;
+  background: #f0fbf4;
+}
+
+.arms-card-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.arms-card-icon {
+  margin-top: 2px;
+  color: #18bd4f;
+}
+
+.arms-card-title {
+  color: #222222;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.arms-card-desc {
+  margin-top: 2px;
+  color: #777777;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.arms-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: #666666;
+  font-size: 12px;
+}
+.arms-hint-text {
+  color: #666666;
+  font-size: 12px;
 }
 </style>
