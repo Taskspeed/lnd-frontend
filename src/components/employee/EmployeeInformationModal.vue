@@ -52,7 +52,7 @@
             <q-separator class="qs-divider" />
 
             <div class="qs-nomination-block">
-              <div class="qs-info-label">Nomination Status</div>
+              <!-- <div class="qs-info-label">Nomination Status</div>
               <q-badge class="qs-nominate-badge" :class="{
                 'nominate-approved': employee.nominate_status === 'Approved',
                 'nominate-disapproved': employee.nominate_status === 'Disapproved',
@@ -60,6 +60,9 @@
               }">
                 {{ employee.nominate_status || "Pending" }}
               </q-badge>
+                  <q-separator class="qs-divider" /> -->
+              <!-- <div class="qs-info-label ">Reason</div>
+              <div class="qs-reason-text">{{ employee.nominate_reason || " " }}</div> -->
             </div>
           </template>
         </div>
@@ -133,9 +136,9 @@
                 </template>
               </q-table>
 
-              <q-separator class="qs-divider" />
+              <!-- <q-separator class="qs-divider" />
               <div class="qs-info-label q-mt-md">Reason</div>
-              <div class="qs-reason-text">{{ employee.nominate_reason || " " }}</div>
+              <div class="qs-reason-text">{{ employee.nominate_reason || " " }}</div> -->
             </q-tab-panel>
 
             <!-- ================= ATTENDANCE TAB ================= -->
