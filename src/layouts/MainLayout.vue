@@ -855,9 +855,6 @@ export default defineComponent({
   /* adjust this for width */
   max-width: 95vw;
   /* prevents overflow on small screens */
-  max-height: 80vh;
-  /* adjust this for height */
-  overflow-y: auto;
 }
 
 .notification-header {
