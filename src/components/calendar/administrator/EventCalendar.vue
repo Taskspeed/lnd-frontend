@@ -165,6 +165,9 @@ const normalizeStatus = (raw) => {
   if (v.includes('going')) return 'ongoing'
   return 'upcoming'
 }
+const DEFAULT_TIME = '00:00'
+const timeOrDefault = (value) =>
+  value === null || value === undefined || value === '' ? '00:00' : value
 
 /* ---------- DATE HELPERS ---------- */
 const pad = (n) => String(n).padStart(2, '0')
@@ -230,25 +233,26 @@ const loadMonth = async (year, month) => {
 
   const next = { ...eventMap.value }
   const schedules = res.data || []
-  schedules.forEach((s) => {
-    const days = s.schedule_date_time || []
-    days.forEach((d) => {
-      const date = toIso(d.schedule_date)
-      if (!date) return
-      const title = s.event?.title_name || ' '
-      next[`${s.scheduleId}-${d.id}`] = {
-        id: `${s.scheduleId}-${d.id}`,
-        scheduleId: s.scheduleId,
-        title,
-        date,
-        status: normalizeStatus(s.computedStatus),
-        eventId: s.event_id,
-        venue: s.venue_name || '',
-        am: d.morning_in && d.morning_out ? `${d.morning_in} - ${d.morning_out}` : '',
-        pm: d.afternoon_in && d.afternoon_out ? `${d.afternoon_in} - ${d.afternoon_out}` : '',
-      }
-    })
+ schedules.forEach((s) => {
+  const days = s.schedule_date_time || []
+  days.forEach((d) => {
+    const date = toIso(d.schedule_date)
+    if (!date) return
+    const title = s.event?.title_name || ' '
+    const key = `${s.scheduleId}-${d.schedule_date_time_id}`   // <-- ito
+    next[key] = {
+      id: key,
+      scheduleId: s.scheduleId,
+      title,
+      date,
+      status: normalizeStatus(s.computedStatus),
+      eventId: s.event_id,
+      venue: s.venue_name || '',
+      am: `${timeOrDefault(d.morning_in)} - ${timeOrDefault(d.morning_out)}`,
+      pm: `${timeOrDefault(d.afternoon_in)} - ${timeOrDefault(d.afternoon_out)}`,
+    }
   })
+})
   eventMap.value = next
 }
 
