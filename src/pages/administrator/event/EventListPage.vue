@@ -20,18 +20,7 @@
       <!-- ===================================================
            FILTERS
       ==================================================== -->
-      <!-- <div class="filter-section">
-        <q-input v-model="search" outlined dense clearable placeholder="Search by event name" class="search-input">
-          <template #prepend>
-            <q-icon name="search" />
-          </template>
-</q-input>
-<div class="status-filters">
-  <q-checkbox v-for="option in STATUS_OPTIONS" :key="option.value" v-model="selectedStatuses" :val="option.value"
-    :label="option.label" dense class="status-checkbox" />
-</div>
-<q-btn flat no-caps icon="filter_alt_off" label="Clear" class="clear-btn" @click="clearFilters" />
-</div> -->
+
 
 
       <div class="filter-section">
@@ -56,8 +45,7 @@
         <!-- <q-table flat :rows="filteredRows" :columns="columns" row-key="event_id"
           :rows-per-page-options="[0, 2, 10, 40, 100]" :loading="eventStore.loading" class="app-table"> -->
         <q-table flat :rows="tableRows" :columns="columns" row-key="event_id" v-model:pagination="pagination"
-          :rows-per-page-options="[50,75,90,100]" :loading="eventStore.loading" @request="onRequest"
-          class="app-table">
+          :rows-per-page-options="[50, 75, 90, 100]" :loading="eventStore.loading" @request="onRequest" class="app-table">
           <!-- EVENT NAME -->
           <template #body-cell-event="props">
             <q-td :props="props">
@@ -86,11 +74,13 @@
             <q-td :props="props">
               <div class="action-buttons">
                 <q-btn flat round dense icon="visibility" class="action-view" color="green"
+                  :loading="isViewLoading(props.row.event_id)" :disable="isAnyViewLoading() || isAnyEditLoading()"
                   @click="goToEvent(props.row.event_id)">
                   <q-tooltip>View Event</q-tooltip>
                 </q-btn>
 
                 <q-btn flat round dense icon="edit" class="action-edit" color="orange"
+                  :loading="isEditLoading(props.row.event_id)" :disable="isAnyViewLoading() || isAnyEditLoading()"
                   @click="editEvent(props.row.raw)">
                   <q-tooltip>Edit Event</q-tooltip>
                 </q-btn>
@@ -187,6 +177,7 @@ import { useRouter, useRoute } from "vue-router";
 import { useQuasar, } from "quasar";
 import { useEventStore } from "stores/eventStore";
 import Swal from "sweetalert2";
+import { useRowLoading } from "src/composables/useRowLoading";
 
 
 export default defineComponent({
@@ -198,10 +189,8 @@ export default defineComponent({
     const router = useRouter();
     const eventStore = useEventStore();
     const route = useRoute();
-
     const selectedStatuses = ref([]);
     const search = ref("");
-    const status = ref(null);
     const pagination = ref({ page: 1, rowsPerPage: 50, rowsNumber: 0 });
 
 
@@ -260,24 +249,6 @@ export default defineComponent({
       })
     );
 
-    const filteredRows = computed(() => {
-      const keyword = search.value.toLowerCase().trim();
-
-      return tableRows.value.filter((row) => {
-        const matchesSearch =
-          !keyword ||
-          row.title_name?.toLowerCase().includes(keyword) ||
-          row.venue?.toLowerCase().includes(keyword) ||
-          row.computedStatus?.toLowerCase().includes(keyword);
-
-        const matchesStatus =
-          selectedStatuses.value.length === 0 ||
-          selectedStatuses.value.includes(row.computedStatus);
-
-        return matchesSearch && matchesStatus;
-      });
-    });
-
     function clearFilters() {
       search.value = "";
       selectedStatuses.value = [];
@@ -295,11 +266,15 @@ export default defineComponent({
     // VIEW EVENT (navigates to its own page)
     // ---------------------------------------------------------------
     function goToEvent(eventId) {
-      router.push({
-        name: "view events",
-        query: { id: eventId },
+      return runView(eventId, async () => {
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+        await router.push({
+          name: "view events",
+          query: { id: eventId },
+        });
       });
     }
+
 
     // ---------------------------------------------------------------
     // ADD / EDIT EVENT (shared form + dialog)
@@ -328,17 +303,17 @@ export default defineComponent({
     }
 
     function editEvent(event) {
-      const primarySchedule = event.schedule?.[0] || {};
-
-      isEditMode.value = true;
-      editingEvent.value = event;
-      form.value = {
-        title_name: event.title_name || "",
-      };
-      eventStore.clearError();
-      showFormDialog.value = true;
+      return runEdit(event.event_id, async () => {
+           await new Promise((resolve) => setTimeout(resolve, 1500));
+        isEditMode.value = true;
+        editingEvent.value = event;
+        form.value = {
+          title_name: event.title_name || "",
+        };
+        eventStore.clearError();
+        showFormDialog.value = true;
+      });
     }
-
     function buildPayload() {
       const primarySchedule = editingEvent.value?.schedule?.[0];
 
@@ -428,7 +403,6 @@ export default defineComponent({
     }
 
 
-
     async function fetchData(
       page = pagination.value.page,
       rowsPerPage = pagination.value.rowsPerPage
@@ -454,6 +428,10 @@ export default defineComponent({
     // optional filters: balik sa page 1 kapag nagbago
     let searchTimer;
 
+    const { isLoading: isViewLoading, isAnyLoading: isAnyViewLoading, run: runView } = useRowLoading();
+    const { isLoading: isEditLoading, isAnyLoading: isAnyEditLoading, run: runEdit } = useRowLoading();
+
+
     watch(search, () => {
       clearTimeout(searchTimer);
       searchTimer = setTimeout(() => fetchData(1), 400);
@@ -475,7 +453,11 @@ export default defineComponent({
       goToEvent, showFormDialog, isEditMode, form,
       openAddEvent, editEvent, saveEvent,
       showDeleteDialog, eventToDelete, confirmDeleteEvent,
+      isViewLoading,
+      isAnyViewLoading,
 
+      isEditLoading,
+      isAnyEditLoading,
 
 
     };
