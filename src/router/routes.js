@@ -53,9 +53,16 @@ const routes = [
       {
         path: "list_of_submission",
         name: "list_of_submission",
-        component: () => import("pages/administrator/employee/submission/ListEmployeeSubmissionPage.vue"),
+        component: () => import("pages/administrator/employee/submission/ListEventParticipantsPage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
+          {
+        path: "/event/:eventId/schedules/:scheduleId/participants",
+        name: "event-participant-submission",
+        component: () => import("pages/administrator/employee/submission/ViewEmployeeSubmissionPage.vue"),
+        meta: { requiresAuth: true, roles: ["hr_admin"] },
+      },
+
 
          {
         path: "certification",

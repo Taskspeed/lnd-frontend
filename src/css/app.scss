@@ -58,21 +58,7 @@ body {
 // =========================================================
 // GLOBAL TABLE TYPOGRAPHY — applies to ALL q-table sa buong app
 // =========================================================
-// .q-table {
-//   font-family: inherit;
 
-//   thead tr th {
-//     font-size: 12px;
-//     font-weight: 700;
-//     color: #0d0d0e;
-//     letter-spacing: 0.2px;
-//   }
-
-//   tbody tr td {
-//     font-size: 12px;
-//     color: #151718;
-//   }
-// }
 
 .status-badge {
   display: inline-flex;
@@ -102,6 +88,10 @@ body {
   color: #2b6cb0;
   background: #eef1f2;
 }
+.status-incomplete {
+  color: #c73f3f;
+  background: #fbe9e9;
+}
 .status-cancelled {
   color: #c73f3f;
   background: #fbe9e9;
@@ -120,6 +110,14 @@ body {
   background: #fbf3df;
 }
 
+.status-issued {
+  color: #087c42;
+  background: #e1f7e7;
+}
+.status-pending {
+  color: #b8860b;
+  background: #fbf3df;
+}
 // src/css/app.scss
 
 /* =========================================================

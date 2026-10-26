@@ -232,10 +232,12 @@
         <template #body-cell-action="props">
           <q-td :props="props">
             <div class="action-buttons">
+
               <q-btn flat dense round icon="visibility" color="primary"
                 :loading="isViewLoading(props.row.nominated_employee_id)" :disable="isAnyViewLoading()"
                 @click.stop="viewEmployeeInformation(props.row)">
                 <q-tooltip>View Details</q-tooltip>
+                
               </q-btn>
 
 
@@ -249,23 +251,50 @@
         </template>
       </q-table>
     </q-card>
+        <!-- =====================================================
+            CERTIFICATE PREVIEW DIALOG
+        ==================================================== -->
+        <q-dialog v-model="showCertificateModal" @hide="closeCertificatePreview">
+            <q-card class="certificate-preview-dialog">
+                <q-card-section class="dialog-header">
+                    <div class="dialog-title">Certificate Preview</div>
+                    <q-btn flat round dense icon="close" v-close-popup />
+                </q-card-section>
+
+                <q-separator />
+
+                <q-card-section class="q-pa-none certificate-body">
+                    <q-inner-loading :showing="loadingCertificate" color="primary" />
+                    <iframe v-if="certificateUrl" :src="certificateUrl" class="certificate-frame"
+                        title="Certificate Preview"></iframe>
+                </q-card-section>
+
+                <q-separator />
+
+                <q-card-actions align="right" class="dialog-actions">
+                    <q-btn flat no-caps label="Close" v-close-popup />
+                    <q-btn unelevated no-caps label="Send Certificate" icon="send" class="send-cert-btn"
+                        :loading="sendingCertificate" :disable="!certificateUrl" @click="sendCertificate" />
+                </q-card-actions>
+
+            </q-card>
+        </q-dialog>
     <EmployeeInformationModal v-model="showEmployeeModal" :employee-data="EmployeeInformation"
       :loading="loadingEmployeeInfo" @view-submission="handleViewSubmission" />
   </q-page>
 </template>
 
 <script>
-import { defineComponent, computed, onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { defineComponent, computed, onMounted, ref,watch } from "vue";
+import { useRoute,useRouter} from "vue-router";
 import Swal from "sweetalert2";
 import LoadingState from "src/components/LoadingStatePage.vue";
 import { useEventStore } from "src/stores/eventStore";
 import { useEmployeeSubmissionStore } from "src/stores/administrator/employee/employeeSubmissionStore";
-import { usePdfStore } from "src/stores/administrator/pdf/pdfStore";
 import { useRowLoading } from "src/composables/useRowLoading";
 import EmployeeInformationModal from "src/components/employee/EmployeeInformationModal.vue";
 import { useEmployeeInformationStore } from "src/stores/administrator/employee/employeeInformationStore";
-
+import { useCertificationStore } from "src/stores/administrator/certification/certificateStore";
 export default defineComponent({
   name: "EventNominatedEmployeePage",
   components: { LoadingState, EmployeeInformationModal },
@@ -274,8 +303,9 @@ export default defineComponent({
     const eventStore = useEventStore();
     const employeeSubmissionStore = useEmployeeSubmissionStore();
     const employeeInformationStore = useEmployeeInformationStore();
-    const pdfStore = usePdfStore();
+    const certificationStore = useCertificationStore();
     const route = useRoute();
+    const router = useRouter();
     const eventId = route.params.eventId;
     const scheduleId = route.params.scheduleId;
 
@@ -349,16 +379,17 @@ export default defineComponent({
     const pagination = ref({ page: 1, rowsPerPage: 10, rowsNumber: 0 });
 
     const participantColumns = [
-      { name: "full_name", label: "Name", field: "full_name", align: "left" },
-      { name: "office", label: "Office", field: "office", align: "left", style: "white-space: normal; min-width: 220px;" },
-      { name: "pending", label: "Pending", field: "pending", align: "center" },
-      { name: "returned", label: "Returned", field: "returned", align: "center" },
-      { name: "approved", label: "Approved", field: "approved", align: "center" },
-      { name: "form_status", label: "Form Status", field: "form_status", align: "center" },
-      { name: "certificate_issued", label: "Certificate Status", field: "certificate_issued", align: "center" },
-      { name: "action", label: "Action", field: "action", align: "center" },
-    ];
-
+  { name: "full_name", label: "Name", field: "full_name", align: "left" },
+  { name: "designation", label: "Position", field: "designation", align: "left" },
+  { name: "status", label: "Status", field: "status", align: "left" },
+  { name: "office", label: "Office", field: "office_abbr", align: "left" },
+  { name: "pending", label: "Pending", field: "pending", align: "center" },
+  { name: "returned", label: "Returned", field: "returned", align: "center" },
+  { name: "approved", label: "Approved", field: "approved", align: "center" },
+  { name: "form_status", label: "Form Status", field: "form_status", align: "center" },
+  { name: "certificate_issued", label: "Certificate Status", field: "certificate_issued", align: "center" },
+  { name: "action", label: "Action", field: "action", align: "center" },
+];
     async function loadParticipants() {
       const result = await employeeSubmissionStore.fetchEmployeeSubmission(scheduleId, {
         page: pagination.value.page,
@@ -409,30 +440,6 @@ export default defineComponent({
 
     function toggleOffice(office) {
       return applyOfficeFilter(selectedOffice.value === office ? null : office);
-    }
-
-    // function certificateStatusClass(status) {
-    //   return status === "Complete" ? "status-complete" : "status-incomplete";
-    // }
-
-    // ------------------------------------------------------------
-    // PRINT
-    // ------------------------------------------------------------
-    async function printAttendance(dateRow) {
-      return runAttendance(dateRow.schedule_date_time_id, async () => {
-        const result = await pdfStore.fetchAttendanceSheet(eventId, scheduleId, dateRow.schedule_date_time_id);
-        if (result.success) {
-          const url = window.URL.createObjectURL(new Blob([result.blob], { type: "application/pdf" }));
-          window.open(url, "_blank");
-        } else {
-          Swal.fire({
-            title: "Failed",
-            text: result.message || "Unable to print attendance.",
-            icon: "error",
-            scrollbarPadding: false,
-          });
-        }
-      });
     }
 
     const showEmployeeModal = ref(false);
@@ -486,9 +493,124 @@ export default defineComponent({
       pagination.value.page = 1;
       return loadParticipants();
     }
+
+     const showCertificateModal = ref(false);
+        const certificateUrl = ref(null);
+        const loadingCertificate = ref(false);
+        const previewingRow = ref(null);   // 👈 bagong ref — itatago kung sinong employee ang preview
+        const sendingCertificate = ref(false);   // 👈 idagdag — dating wala
+
+
+        async function certificatePreview(row) {
+            previewingRow.value = row;
+            showCertificateModal.value = true;
+            // loadingCertificate.value = true;
+
+            return runPreview(row.nominated_employee_id, async () => {
+                loadingCertificate.value = true;
+                const result = await certificationStore.fetchCertificate(row.nominated_employee_id);
+
+                loadingCertificate.value = false;
+
+                if (result.success) {
+                    const rawUrl = window.URL.createObjectURL(
+                        new Blob([result.blob], { type: "application/pdf" })
+                    );
+                    certificateUrl.value = `${rawUrl}#zoom=60`;   // 👈 idagdag ang fragment
+                }
+                else {
+                    showCertificateModal.value = false;
+                    Swal.fire({
+                        title: "Failed",
+                        text: result.message || "Unable to preview certificate.",
+                        icon: "error",
+                        scrollbarPadding: false,
+                    });
+                }
+            });
+
+        }
+
+             function closeCertificatePreview() {
+            if (certificateUrl.value) {
+                window.URL.revokeObjectURL(certificateUrl.value);
+                certificateUrl.value = null;
+            }
+            previewingRow.value = null;
+        }
+         async function sendCertificate() {
+            if (!previewingRow.value) return;
+
+            const row = previewingRow.value;
+
+            const confirm = await Swal.fire({
+                title: "Certificate",
+                text: `Are you want to send Certificate ${row.full_name}?`,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Send",
+                cancelButtonText: "Cancel",
+                confirmButtonColor: "#18b64d",
+                cancelButtonColor: "#9e9e9e",
+                reverseButtons: true,
+                scrollbarPadding: false,
+                heightAuto: false,
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            sendingCertificate.value = true;
+
+            const result = await certificationStore.sendCertificate(row.nominated_employee_id);
+
+            sendingCertificate.value = false;
+
+            if (result.success) {
+                showCertificateModal.value = false;
+
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    icon: "success",
+                    title: "Certificate sent successfully.",
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                    scrollbarPadding: false,
+                });
+
+                // i-refresh ang listahan para ma-update yung certificate_status
+                await loadParticipants();
+            } else {
+                Swal.fire({
+                    title: "Failed",
+                    text: result.message || "Unable to send certificate.",
+                    icon: "error",
+                    scrollbarPadding: false,
+                });
+            }
+        }
+           async function openFromNotification() {
+            const id = route.query.nominated_employee_id;
+            if (!id) return;
+
+            router.replace({ query: {} }); // linisin ang URL para hindi mag-reopen
+
+            const nominatedId = Number(id);
+
+            // hanapin ang row sa listahan para pareho ang id type sa button
+            const row = employeeSubmissionStore.list.find(
+                (r) => Number(r.nominated_employee_id) === nominatedId
+            );
+
+            await viewEmployeeInformation(row ?? { nominated_employee_id: nominatedId });
+        }
+                watch(() => route.query.nominated_employee_id, openFromNotification);
+
     onMounted(() => {
       loadEventDetails();
       loadParticipants();
+            openFromNotification();
     });
 
     return {
@@ -531,6 +653,15 @@ export default defineComponent({
       formStatusOptions,
       certificateOptions,
       applyFilters,
+
+      certificatePreview,
+      closeCertificatePreview,
+      showCertificateModal,
+ certificateUrl,
+              sendCertificate,
+            sendingCertificate,
+            loadingCertificate
+
     };
   },
 });
@@ -1010,7 +1141,10 @@ export default defineComponent({
 }
 
 .dialog-header {
-  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 18px;
 }
 
 .row-actions {
@@ -1402,6 +1536,48 @@ export default defineComponent({
 .approval-count {
   color: #405967;
   font-weight: 700;
+}
+
+
+.certificate-preview-dialog {
+    width: 1500px;
+    max-width: 95vw;
+    height: 85vh;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.certificate-preview-dialog :deep(.certificate-body) {
+    flex: 1;
+    min-height: 0;
+    /* kailangan ito para gumana nang tama ang flex sa loob ng scroll container */
+    overflow: hidden;
+}
+
+.certificate-frame {
+    width: 100%;
+    height: 100%;
+    /* 👈 dating 78vh, palitan ng 100% para sumunod na lang sa parent nito */
+    border: none;
+    display: block;
+}
+.dialog-title {
+    color: #19354a;
+
+    font-size: 16px;
+    font-weight: 750;
+}
+.dialog-actions {
+  padding: 12px 16px;
+  background: #fcfdfc;
+}
+.send-cert-btn {
+    background: linear-gradient(135deg, #18b64d, #0ca344);
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 0 16px;
 }
 
 /*  */

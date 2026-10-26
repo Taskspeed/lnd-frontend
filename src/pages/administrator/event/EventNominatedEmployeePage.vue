@@ -7,21 +7,13 @@
       <div class="page-heading">
         <div class="page-heading-copy">
           <div class="page-eyebrow">
-            <q-icon name="event_note" />
+            <q-icon name="event_note" size="19px" />
             Training schedule
           </div>
           <h5>Event Schedule Details</h5>
           <p>Review schedule information, participating offices, and employee nominations.</p>
         </div>
-        <q-btn
-          flat
-          dense
-          no-caps
-          icon="arrow_back"
-          label="Back to Events"
-          class="back-btn"
-          @click="$router.back()"
-        />
+        <q-btn flat dense no-caps icon="arrow_back" label="Back to Events" class="back-btn" @click="$router.back()" />
       </div>
     </section>
 
@@ -61,7 +53,7 @@
                   <span class="detail-label">Venue</span>
                   <span class="detail-value">{{ schedule.venue_name }}</span>
                 </div>
-               
+
                 <div class="detail-item">
                   <span class="detail-label">Hours</span>
                   <span class="detail-value">{{ schedule.hours }}</span>
@@ -86,11 +78,11 @@
                   <span class="detail-label">Source</span>
                   <span class="detail-value">{{ schedule.source_name }}</span>
                 </div>
-                 <div class="detail-item">
+                <div class="detail-item">
                   <span class="detail-label">learning type</span>
                   <span class="detail-value">{{ schedule.learning_intervention }}</span>
                 </div>
-             
+
                 <div class="detail-item">
                   <span class="detail-label">Conducted by</span>
                   <span class="detail-value">{{ schedule.conducted_by || "—" }}</span>
@@ -166,7 +158,7 @@
                 <q-btn outline dense no-caps icon="print" label="Print Nomination" class="print-btn"
                   :loading="isNominationLoading('nomination')" :disable="isAnyNominationLoading()"
                   @click="printNomination" />
-             
+
               </div>
 
               <div v-if="officeList.length" class="office-list">
@@ -193,6 +185,30 @@
                 </div>
               </div>
               <div v-else class="table-empty">No offices tagged.</div>
+
+              <!-- ============ assessment ============ -->
+              <div class="assessment-block">
+                <div class="office-heading">
+                  <q-icon name="quiz" class="section-icon" />
+                  <div class="office-head-title">Assessment</div>
+                </div>
+
+                <div class="assessment-list">
+                  <div v-for="item in assessmentItems" :key="item.key" class="assessment-item">
+                    <div class="assessment-info">
+                      <span class="detail-label">{{ item.label }}</span>
+                      <a v-if="item.url" :href="item.url" target="_blank" rel="noopener noreferrer"
+                        class="assessment-link">
+                        {{ item.url }}
+                      </a>
+                      <span v-else class="assessment-empty">No link added</span>
+                    </div>
+
+                    <q-btn v-if="item.url" outline dense no-caps icon="open_in_new" label="Open" class="print-btn"
+                      :href="item.url" target="_blank" rel="noopener noreferrer" />
+                  </div>
+                </div>
+              </div>
             </aside>
           </div>
         </div>
@@ -294,6 +310,7 @@
               <span class="detail-value">{{ viewedNomination?.status }}</span>
             </div>
             <div class="detail-item" style="grid-column: 1 / -1">
+
               <span class="detail-label">Reason</span>
               <span class="detail-value">{{ viewedNomination?.nominate_reason || "—" }}</span>
             </div>
@@ -307,7 +324,7 @@
     </q-dialog>
 
     <!-- EMPLOYEE INFORMATION MODAL -->
-    <EmployeeInformationModal v-model="showEmployeeModal" :employee-data="EmployeeInformation"
+    <EmployeeNominationModal v-model="showEmployeeModal" :employee-data="EmployeeInformation"
       :loading="loadingEmployeeInfo" @view-submission="handleViewSubmission" />
   </q-page>
 </template>
@@ -318,16 +335,14 @@ import { useRoute } from "vue-router";
 import LoadingState from "src/components/LoadingStatePage.vue";
 import { useEventStore } from "src/stores/eventStore";
 import Swal from "sweetalert2";
-
-import EmployeeInformationModal from "src/components/employee/EmployeeInformationModal.vue";
 import { useEmployeeInformationStore } from "src/stores/administrator/employee/employeeInformationStore";
-
 import { useRowLoading } from "src/composables/useRowLoading";
 import { usePdfStore } from "src/stores/administrator/pdf/pdfStore";
+import EmployeeNominationModal from "src/components/employee/EmployeeNominationModal.vue";
 
 export default defineComponent({
   name: "EventNominatedEmployeePage",
-  components: { LoadingState, EmployeeInformationModal },
+  components: { LoadingState, EmployeeNominationModal },
 
   setup() {
     const eventStore = useEventStore();
@@ -342,11 +357,24 @@ export default defineComponent({
 
     const eventInfo = computed(() => eventDetail.value || {});
     const schedule = computed(() => eventInfo.value.schedule?.[0] || {});
-    const scheduleDates = computed(() => schedule.value.schedule_date_time || []);
+
     const offices = computed(() => (schedule.value.office || []).map((o) => o.office_name));
     const speakers = computed(() => schedule.value.speaker || []);
     const nominatedEmployees = computed(() => schedule.value.nominated_employee?.data || []);
 
+    function timeOrDefault(value, defaultValue = "00:00") {
+      return value === null || value === undefined || value === "" ? defaultValue : value;
+    }
+
+    const scheduleDates = computed(() =>
+      (schedule.value.schedule_date_time || []).map((d) => ({
+        ...d,
+        morning_in: timeOrDefault(d.morning_in),
+        morning_out: timeOrDefault(d.morning_out),
+        afternoon_in: timeOrDefault(d.afternoon_in),
+        afternoon_out: timeOrDefault(d.afternoon_out),
+      }))
+    );
     // Offices for the right column (with nominee counts)
     const officeList = computed(() =>
       (schedule.value.office || [])
@@ -365,6 +393,7 @@ export default defineComponent({
         // may nominees muna sa taas, tapos alphabetical
         .sort((a, b) => b.nominees - a.nominees || a.name.localeCompare(b.name))
     );
+    
 
     const showEmployeeModal = ref(false);
     const EmployeeInformation = ref({});
@@ -446,7 +475,7 @@ export default defineComponent({
       showNominationDetailsDialog.value = true;
     }
 
- 
+
 
     async function loadNominatedEmployees(
       page = pagination.value.page,
@@ -653,6 +682,18 @@ export default defineComponent({
     function toggleOffice(office) {
       return applyOfficeFilter(selectedOffice.value === office ? null : office);
     }
+
+    const assessment = computed(() => schedule.value.event_assessment?.[0] || {});
+
+    const assessmentItems = computed(() => [
+      { key: "pre", label: "Pre Test", url: assessment.value.pre_test_assessment || "" },
+      { key: "post", label: "Post Test", url: assessment.value.post_test_assessment || "" },
+    ]);
+
+  
+
+
+
     return {
       loading,
       errorMessage,
@@ -689,7 +730,6 @@ export default defineComponent({
       isNominationLoading,
       isAnyNominationLoading,
 
-
       isAttendanceLoading,
       isAnyAttendanceLoading,
 
@@ -707,6 +747,10 @@ export default defineComponent({
 
       printNomination,
       printingNomination,
+
+      assessment,
+      assessmentItems,
+
     };
   },
 });
@@ -881,7 +925,7 @@ export default defineComponent({
   border: 1px solid #edf1ef;
   border-radius: 12px;
   background: #fcfdfc;
-  margin-top: 99px;
+  margin-top: 71px;
 }
 
 .office-head {
@@ -1254,8 +1298,8 @@ export default defineComponent({
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #2b6cb0;
-  font-size: 10px;
+  color: green;
+  font-size: 12px;
   font-weight: 750;
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -1315,7 +1359,7 @@ export default defineComponent({
 
 .section-icon {
   flex: 0 0 auto;
-  color: #2b6cb0;
+  color: green;
   font-size: 19px;
 }
 
@@ -1573,5 +1617,55 @@ export default defineComponent({
   .detail-item-wide {
     grid-column: auto;
   }
+}
+
+.assessment-block {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e4ebef;
+}
+
+.assessment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.assessment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e4ebef;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+.assessment-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.assessment-link {
+  overflow: hidden;
+  color: #24699b;
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.assessment-link:hover {
+  text-decoration: underline;
+}
+
+.assessment-empty {
+  color: #aab5bb;
+  font-size: 11.5px;
 }
 </style>

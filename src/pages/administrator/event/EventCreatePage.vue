@@ -50,7 +50,8 @@
               class="competency-checkbox" />
           </div>
         </div>
-                <div class="section-divider"></div>
+
+        <div class="section-divider"></div>
         <div class="section-title forms-title">ARMS</div>
         <div class="arms-card" :class="{ 'arms-card--on': eventForm.sync_to_arms }">
           <div class="arms-card-info">
@@ -66,9 +67,32 @@
         </div>
 
         <div v-if="eventForm.sync_to_arms" class="arms-hint">
-<q-icon name="info" size="25px" color="blue-7" />
-        <span class="arms-hint-text">Make sure the Venue, Schedule Date, and Department are complete.</span>        </div>
+          <q-icon name="info" size="25px" color="blue-7" />
+          <span class="arms-hint-text">Make sure the Venue, Schedule Date, and Department are complete.</span>
+        </div>
+       <div class="section-divider"></div>
 
+<div class="assessment-header">
+  <div class="section-title forms-title">Assessment</div>
+  <q-btn
+    outline
+    no-caps
+    icon="open_in_new"
+    label="Create Google Form"
+    class="create-assessment-btn"
+    @click="openGoogleForms"
+  />
+</div>
+
+<LabeledField label="Pre Test">
+  <q-input v-model="eventForm.pre_test_assessment" type="url" outlined dense
+    placeholder="e.g. https://forms.gle/abc123XYZ" class="custom-input" />
+</LabeledField>
+
+<LabeledField label="Post Test">
+  <q-input v-model="eventForm.post_test_assessment" type="url" outlined dense
+    placeholder="e.g. https://forms.gle/xyz789ABC" class="custom-input" />
+</LabeledField>
       </template>
 
       <!-- =======================================================
@@ -254,8 +278,8 @@
             <!-- SCHEDULE TABLE -->
             <div class="schedule-table">
               <div class="schedule-table-header">
-                <div class="date-column">Date</div>
-                <div class="time-column">Time</div>
+                <div class="date-column-text">Date</div>
+                <div class="time-column-text">Morning - Afternoon</div>
                 <!-- <div class="hours-column">Hours</div> -->
                 <div class="action-column">Action</div>
               </div>
@@ -272,7 +296,9 @@
                     <q-input :model-value="formatTimeDisplay(schedule.morning_in)" outlined dense
                       placeholder="Morning In" class="time-input">
                       <template #append>
-                        <q-icon name="access_time" class="time-picker-icon">
+                        <q-icon v-if="schedule.morning_in" name="close" class="time-picker-icon time-clear-icon"
+                          @click.stop="schedule.morning_in = null" />
+                        <q-icon v-else name="access_time" class="time-picker-icon">
                           <q-popup-proxy cover transition-show="scale" transition-hide="scale">
                             <q-time v-model="schedule.morning_in" mask="HH:mm" color="green">
                               <div class="row items-center justify-end">
@@ -288,7 +314,9 @@
                     <q-input :model-value="formatTimeDisplay(schedule.morning_out)" outlined dense
                       placeholder="Morning Out" class="time-input">
                       <template #append>
-                        <q-icon name="access_time" class="time-picker-icon">
+                        <q-icon v-if="schedule.morning_out" name="close" class="time-picker-icon time-clear-icon"
+                          @click.stop="schedule.morning_out = null" />
+                        <q-icon v-else name="access_time" class="time-picker-icon">
                           <q-popup-proxy cover transition-show="scale" transition-hide="scale">
                             <q-time v-model="schedule.morning_out" mask="HH:mm" color="green">
                               <div class="row items-center justify-end">
@@ -306,7 +334,9 @@
                     <q-input :model-value="formatTimeDisplay(schedule.afternoon_in)" outlined dense
                       placeholder="Afternoon In" class="time-input">
                       <template #append>
-                        <q-icon name="access_time" class="time-picker-icon">
+                        <q-icon v-if="schedule.afternoon_in" name="close" class="time-picker-icon time-clear-icon"
+                          @click.stop="schedule.afternoon_in = null" />
+                        <q-icon v-else name="access_time" class="time-picker-icon">
                           <q-popup-proxy cover transition-show="scale" transition-hide="scale">
                             <q-time v-model="schedule.afternoon_in" mask="HH:mm" color="green">
                               <div class="row items-center justify-end">
@@ -320,7 +350,9 @@
                     <q-input :model-value="formatTimeDisplay(schedule.afternoon_out)" outlined dense
                       placeholder="Afternoon Out" class="time-input">
                       <template #append>
-                        <q-icon name="access_time" class="time-picker-icon">
+                        <q-icon v-if="schedule.afternoon_out" name="close" class="time-picker-icon time-clear-icon"
+                          @click.stop="schedule.afternoon_out = null" />
+                        <q-icon v-else name="access_time" class="time-picker-icon">
                           <q-popup-proxy cover transition-show="scale" transition-hide="scale">
                             <q-time v-model="schedule.afternoon_out" mask="HH:mm" color="green">
                               <div class="row items-center justify-end">
@@ -727,7 +759,7 @@
             </q-markup-table>
           </div>
           <div v-else class="record-empty">
-       No trainings attended yet.
+            No trainings attended yet.
           </div>
 
           <div class="record-section-title training-title">Recent Training</div>
@@ -739,7 +771,7 @@
                   <th class="text-left">Training</th>
                   <th class="text-left">Hours</th>
                   <th class="text-left">Conductor</th>
-                   <th class="text-left">Date From</th>
+                  <th class="text-left">Date From</th>
                   <th class="text-left">Date To</th>
                   <th class="text-left">Type</th>
                 </tr>
@@ -750,14 +782,14 @@
                   <td>{{ selectedEmployeeRecord.previous_training.NumHours }}</td>
                   <td>{{ selectedEmployeeRecord.previous_training.Conductor }}</td>
                   <td>{{ selectedEmployeeRecord.previous_training.DateFrom }}</td>
-                       <td>{{ selectedEmployeeRecord.previous_training.DateTo }}</td>
+                  <td>{{ selectedEmployeeRecord.previous_training.DateTo }}</td>
                   <td>{{ selectedEmployeeRecord.previous_training.Type }}</td>
                 </tr>
               </tbody>
             </q-markup-table>
           </div>
           <div v-else class="record-empty">
-        No recent training found.
+            No recent training found.
           </div>
         </q-card-section>
 
@@ -898,6 +930,8 @@ export default defineComponent({
       employees: [], // ← idagdag ito
       forms: formsOptions.map((o) => o.value),            // naka-check lahat by default
       evaluations: evaluationOptions.map((o) => o.value),
+      pre_test_assessment: null,
+      post_test_assessment: null
     });
 
     // =========================================================
@@ -979,7 +1013,7 @@ export default defineComponent({
         sortable: true,
         style: "min-width: 90px;",
       },
-        {
+      {
         name: "recentTrainingDate",
         label: "Recent training date",
         field: (row) => row.previous_training?.Date ?? null,
@@ -1070,69 +1104,6 @@ export default defineComponent({
       // { label: "Self-Directed Learning", value: "Self-Directed Learning" },
     ];
 
-    // const typeOptionsMap = {
-    //   "Formal Learning": [
-    //     "Seminar",
-    //     "Workshop",
-    //     "Conference",
-    //     "Course",
-    //     "Training",
-    //   ],
-    //   "Learning by Doing": [
-    //     "Benchmarking",
-    //     "Job Rotation",
-    //     "Temporary Assignment",
-    //     "Special Project",
-    //     "Cross-Program Assignment",
-    //     "Other Work-Based Learning",
-    //   ],
-    //   "Social Learning": [
-    //     "Coaching",
-    //     "Mentoring",
-    //     "Knowledge Sharing",
-    //     "Job Shadowing",
-    //     "Peer Learning",
-    //   ],
-    //   "Self-Directed Learning": [
-    //     "E-Learning",
-    //     "Self-Study",
-    //     "Reading",
-    //     "Webinar",
-    //     "Research",
-    //   ],
-    // };
-
-    // Fields that belong to each intervention's own form, used both
-    // to reset state on category change and to build the payload.
-    // const interventionFormFieldsMap = {
-    //   "Learning by Doing": [
-    //     { key: "example", label: "Example" },
-    //     { key: "output", label: "Output / Deliverable" },
-    //     { key: "supervisor", label: "Assigned Supervisor / Mentor" },
-    //   ],
-    //   "Social Learning": [
-    //     { key: "learning_partner", label: "Learning Partner / Mentor" },
-    //     { key: "topic", label: "Topic Covered" },
-    //     { key: "frequency", label: "Frequency" },
-    //   ],
-    //   "Self-Directed Learning": [
-    //     { key: "resource", label: "Learning Resource / Material" },
-    //     { key: "proof", label: "Proof of Completion" },
-    //     { key: "objective", label: "Learning Objective" },
-    //   ],
-    // };
-
-    // Type options depend on the selected Intervention category.
-    // const typeOptions = computed(() => {
-    //   const category = eventForm.value.intervention_name;
-    //   if (!category) return [];
-
-    //   return (typeOptionsMap[category] || []).map((type) => ({
-    //     label: type,
-    //     value: type,
-    //   }));
-    // });
-
     function resetInterventionForm() {
       eventForm.value.interventionForm = {
         example: "",
@@ -1157,21 +1128,6 @@ export default defineComponent({
         resetInterventionForm();
       }
     );
-
-    // Builds only the payload entries relevant to the currently
-    // selected Intervention category, skipping empty fields.
-    // function buildInterventionFormPayload() {
-    //   const category = eventForm.value.intervention_name;
-    //   const data = eventForm.value.interventionForm;
-    //   const fields = interventionFormFieldsMap[category] || [];
-
-    //   return fields
-    //     .filter((field) => data[field.key])
-    //     .map((field) => ({
-    //       form_name: field.label,
-    //       form_value: data[field.key],
-    //     }));
-    // }
 
     // =========================================================
     // DEPARTMENT TABLE (MAIN)
@@ -1390,11 +1346,11 @@ export default defineComponent({
           id: existing?.id || Date.now() + Math.random(),
           rawDate: date,
           date: formatDate(date),
-          // Default to 08:00 - 17:00, same as EventCreatePage
-          morning_in: existing?.morning_in || "08:00",
-          morning_out: existing?.morning_out || "12:00",
-          afternoon_in: existing?.afternoon_in || "13:00",
-          afternoon_out: existing?.afternoon_out || "17:00",
+          // Leave times blank by default. Morning or afternoon can be entered independently.
+          morning_in: existing?.morning_in ?? null,
+          morning_out: existing?.morning_out ?? null,
+          afternoon_in: existing?.afternoon_in ?? null,
+          afternoon_out: existing?.afternoon_out ?? null,
         };
       });
 
@@ -1455,6 +1411,11 @@ export default defineComponent({
 
       return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${period}`;
     }
+
+    function formatTimeForPayload(timeStr) {
+      // API expects h:i A, so a blank time is sent as midnight in that format.
+      return timeStr ? formatTimeDisplay(timeStr) || "12:00 AM" : "12:00 AM";
+    }
     function computeScheduleMinutes(schedule) {
       const start = parseTimeToMinutes(schedule.time_start);
       const end = parseTimeToMinutes(schedule.time_end);
@@ -1486,13 +1447,6 @@ export default defineComponent({
       return formatHours(computeScheduleMinutes(schedule));
     }
 
-    // const totalScheduleHours = computed(() => {
-    //   const totalMinutes = eventForm.value.schedules.reduce(
-    //     (sum, schedule) => sum + computeScheduleMinutes(schedule),
-    //     0
-    //   );
-    //   return formatHours(totalMinutes);
-    // });
 
     // =========================================================
     // DEPARTMENT DIALOG
@@ -1719,6 +1673,7 @@ export default defineComponent({
         mode_name: eventForm.value.mode_name,
         fee: eventForm.value.fee,
 
+
         employee: eventForm.value.employees, // ← idagdag ito
 
         office: eventForm.value.departments.map((department) => ({
@@ -1735,15 +1690,16 @@ export default defineComponent({
           })),
         DateTime: eventForm.value.schedules.map((schedule) => ({
           schedule_date: schedule.rawDate,
-          morning_in: formatTimeDisplay(schedule.morning_in),
-          morning_out: formatTimeDisplay(schedule.morning_out),
-          afternoon_in: formatTimeDisplay(schedule.afternoon_in),
-          afternoon_out: formatTimeDisplay(schedule.afternoon_out),
+          morning_in: formatTimeForPayload(schedule.morning_in),
+          morning_out: formatTimeForPayload(schedule.morning_out),
+          afternoon_in: formatTimeForPayload(schedule.afternoon_in),
+          afternoon_out: formatTimeForPayload(schedule.afternoon_out),
         })),
 
         ...buildFormsPayload(eventForm.value.forms, eventForm.value.evaluations),
         ...buildCompetenciesPayload(eventForm.value.competencies), // ← spread, hindi nested key
-
+        post_test_assessment: eventForm.value.post_test_assessment,
+        pre_test_assessment: eventForm.value.pre_test_assessment,
       };
 
       eventStore.clearError();
@@ -1877,23 +1833,26 @@ export default defineComponent({
       }
     }
 
-// =========================================================
-// ARMS AUTO-ENABLE (Source = In-house / internal)
-// =========================================================
-let armsAutoEnabled = false; // para malaman kung system ang nag-on, hindi ang user
+    function openGoogleForms() {
+      window.open("https://docs.google.com/forms/u/0/", "_blank", "noopener");
+    }
+    // =========================================================
+    // ARMS AUTO-ENABLE (Source = In-house / internal)
+    // =========================================================
+    let armsAutoEnabled = false; // para malaman kung system ang nag-on, hindi ang user
 
-watch(
-  () => eventForm.value.source_name,
-  (source) => {
-    if (source === "internal") {
-      if (!eventForm.value.sync_to_arms) {
-        eventForm.value.sync_to_arms = true;
-        armsAutoEnabled = true;
+    watch(
+      () => eventForm.value.source_name,
+      (source) => {
+        if (source === "internal") {
+          if (!eventForm.value.sync_to_arms) {
+            eventForm.value.sync_to_arms = true;
+            armsAutoEnabled = true;
 
-          Swal.fire({
-        icon: "info",
-        title: "Create Event in ARMS",
-        html: `
+            Swal.fire({
+              icon: "info",
+              title: "Create Event in ARMS",
+              html: `
           Since the event source is <b>In-house</b>, this event will also
           be created in <b>ARMS</b> when you click <b>Create Event</b>.
 
@@ -1903,18 +1862,18 @@ watch(
             You can disable this option anytime in the <b>ARMS</b> section.
           </small>
         `,
-        confirmButtonText: "Got it",
-        confirmButtonColor: "#18bd4f",
-        allowOutsideClick: false,
-      });
+              confirmButtonText: "Got it",
+              confirmButtonColor: "#18bd4f",
+              allowOutsideClick: false,
+            });
+          }
+        } else if (armsAutoEnabled) {
+          // nag-switch sa External: i-off lang kung system ang nag-on
+          eventForm.value.sync_to_arms = false;
+          armsAutoEnabled = false;
+        }
       }
-    } else if (armsAutoEnabled) {
-      // nag-switch sa External: i-off lang kung system ang nag-on
-      eventForm.value.sync_to_arms = false;
-      armsAutoEnabled = false;
-    }
-  }
-);
+    );
 
     // =========================================================
     // RETURN
@@ -2030,7 +1989,8 @@ watch(
 
       // forms
       formsOptions,
-      evaluationOptions
+      evaluationOptions,
+      openGoogleForms
     };
   },
 });
@@ -2172,6 +2132,28 @@ watch(
   font-size: 11px;
 }
 
+
+
+.assessment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.assessment-header .forms-title {
+  margin-bottom: 0;
+}
+
+.create-assessment-btn {
+  min-height: 32px;
+  padding: 0 18px;
+  border-color: #18bd4f;
+  border-radius: 8px;
+  color: #18bd4f;
+  font-size: 11px;
+}
+
 /* =========================================================
    TABS
 ========================================================= */
@@ -2268,7 +2250,7 @@ watch(
   padding: 0 12px;
   background: #f5f5f5;
   border-bottom: 1px solid #cccccc;
-  color: #a0a0a0;
+  color: black;
   font-size: 10px;
   font-weight: 600;
 }
@@ -2357,10 +2339,12 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 12px;
+  font-weight: 580;
 }
 
 .delete-btn {
-  color: #999999;
+  color: #999999
 }
 
 .delete-btn:hover {
@@ -2919,7 +2903,8 @@ watch(
 }
 
 .employee-record-dialog {
-  width: 1500px;          /* mas malapad para hindi putol ang columns */
+  width: 1500px;
+  /* mas malapad para hindi putol ang columns */
   max-width: 95vw;
   max-height: 90vh;
   border-radius: 13px;
@@ -2930,8 +2915,10 @@ watch(
 .employee-record-body {
   padding: 25px;
   flex: 1;
-  overflow-y: auto;      /* alisin ang max-height: 60vh */
+  overflow-y: auto;
+  /* alisin ang max-height: 60vh */
 }
+
 .record-section-title {
   margin-bottom: 8px;
   color: #222222;
@@ -3095,6 +3082,7 @@ watch(
   resize: vertical;
   /* pwedeng i-drag para palakihin pa */
 }
+
 /* =========================================================
    ARMS INTEGRATION
 ========================================================= */
@@ -3147,8 +3135,18 @@ watch(
   color: #666666;
   font-size: 12px;
 }
+
 .arms-hint-text {
   color: #666666;
   font-size: 12px;
+}
+.time-column-text {
+   text-align: center;
+  font-size: 12px;
+    font-weight: 580;
+}
+.date-column-text{
+    font-size: 12px;
+    font-weight: 580;
 }
 </style>

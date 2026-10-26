@@ -18,11 +18,15 @@ export const notificationRoutes = {
   }),
 
   form_submitted: (data) => ({
-    name: "list_of_submission", // <-- palitan ng tamang route name ng Submission page mo
-    query: { nominated_employee_id: data.nominated_employee_id },
-  }),
-};
+  name: "event-participant-submission",
+  params: {
+    eventId: data.event_id,
+    scheduleId: data.event_schedule_id,
+  },
+  query: { nominated_employee_id: data.nominated_employee_id },
+}),
 
+};
 
 // icons
 export const notificationIcons = {
@@ -31,7 +35,6 @@ export const notificationIcons = {
   employees_nominated: { icon: "groups", color: "primary" },
   form_submitted: { icon: "fact_check", color: "teal" },
 
-  
 };
 
 export const defaultNotificationIcon = { icon: "notifications", color: "primary" };

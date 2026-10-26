@@ -71,6 +71,58 @@
                 :label="option.label" color="green" keep-color dense disable class="competency-checkbox" />
             </div>
           </div>
+          <template v-if="scheduleView === 'form'">
+            <div class="section-divider"></div>
+            <div class="section-title forms-title">ARMS</div>
+            <div class="arms-card" :class="{ 'arms-card--on': syncToArms }">
+              <div class="arms-card-info">
+                <q-icon name="sync_alt" size="20px" class="arms-card-icon" />
+                <div>
+                  <div class="arms-card-title">Create event on ARMS</div>
+                  <div class="arms-card-desc">
+                    When turned on, this event will also be created on ARMS once it is saved.
+                  </div>
+                </div>
+              </div>
+              <q-toggle v-model="syncToArms" color="green" keep-color />
+            </div>
+
+            <div v-if="syncToArms" class="arms-hint">
+              <q-icon name="info" size="20px" color="blue-7" />
+              <span class="arms-hint-text">
+                Make sure the Venue, Schedule Date, and Department are complete.
+              </span>
+            </div>
+            <div class="section-divider"></div>
+            <div class="section-title forms-title">Assessment</div>
+
+            <LabeledField label="Pre Test">
+              <div class="assessment-link-row">
+                <q-input v-model="preTestAssessment" type="url" outlined dense
+                  placeholder="e.g. https://forms.gle/abc123XYZ" class="custom-input assessment-url-input" />
+                <q-btn v-if="isValidUrl(preTestAssessment)" outline dense no-caps icon="open_in_new" color="green"
+                  :href="preTestAssessment.trim()" target="_blank" rel="noopener noreferrer">
+                  <q-tooltip>Open link</q-tooltip>
+                </q-btn>
+              </div>
+            </LabeledField>
+
+            <LabeledField label="Post Test">
+              <div class="assessment-link-row">
+                <q-input v-model="postTestAssessment" type="url" outlined dense
+                  placeholder="e.g. https://forms.gle/xyz789ABC" class="custom-input assessment-url-input" />
+                <q-btn v-if="isValidUrl(postTestAssessment)" outline dense no-caps icon="open_in_new" color="green"
+                  :href="postTestAssessment.trim()" target="_blank" rel="noopener noreferrer">
+                  <q-tooltip>Open link</q-tooltip>
+                </q-btn>
+
+              </div>
+
+            </LabeledField>
+
+          </template>
+
+
         </template>
 
         <!-- =====================================================
@@ -93,7 +145,7 @@
                 :rows-per-page-options="[5, 10, 25]" v-model:pagination="pagination"
                 class="app-table schedule-table" flat bordered> -->
               <q-table :rows="scheduleRows" :columns="scheduleColumns" row-key="scheduleId"
-                v-model:pagination="pagination" :rows-per-page-options="[10, 25,50]" :loading="eventStore.loading"
+                v-model:pagination="pagination" :rows-per-page-options="[10, 25, 50]" :loading="eventStore.loading"
                 @request="onScheduleRequest" class="app-table schedule-table" flat bordered>
 
                 <!-- venue -->
@@ -143,16 +195,25 @@
 
                       <!-- view schedule-->
                       <q-btn flat round dense icon="visibility" color="green" class="action-btn"
-                        @click="viewSchedule(props.row)">
+                        :loading="isViewLoading(props.row.scheduleId)" :disable="isAnyViewLoading()"
+                        @click.stop="viewSchedule(props.row)">
                         <q-tooltip>View</q-tooltip>
                       </q-btn>
+                      <!--                       
+              <q-btn flat dense round icon="visibility" color="primary"
+                :loading="isViewLoading(props.row.nominated_employee_id)" :disable="isAnyViewLoading()"
+                @click.stop="viewEmployeeInformation(props.row)">
+                <q-tooltip>View Details</q-tooltip>
+                
+              </q-btn> -->
 
                       <q-btn flat round dense icon="edit" color="orange" class="action-btn"
+                        :loading="isEditLoading(props.row.scheduleId)" :disable="isAnyEditLoading()"
                         @click="editSchedule(props.row)">
                         <q-tooltip>Edit Schedule</q-tooltip>
                       </q-btn>
-
                       <q-btn flat round dense icon="delete" color="red" class="action-btn delete-action"
+                        :loading="isDeleteLoading(props.row.scheduleId)" :disable="isAnyDeleteLoading()"
                         @click="deleteSchedule(props.row)">
                         <q-tooltip>Delete Schedule</q-tooltip>
                       </q-btn>
@@ -180,7 +241,8 @@
                SCHEDULE FORM VIEW (Add / Edit)
           ============================================= -->
           <ScheduleFormPanel v-else :event-id="eventId" :event-title="event.title_name" :schedule="editingScheduleData"
-            @saved="onScheduleSaved" @cancel="backToScheduleList" />
+            v-model:sync-to-arms="syncToArms" v-model:pre-test-assessment="preTestAssessment"
+            v-model:post-test-assessment="postTestAssessment" @saved="onScheduleSaved" @cancel="backToScheduleList" />
         </template>
       </EventTwoColumnLayout>
     </template>
@@ -205,7 +267,7 @@ import { useScheduleStore } from "src/stores/event/schedule/scheduleStore";
 import Swal from "sweetalert2";
 
 import { coreOptions, technicalOptions, leadershipOptions } from "src/constants/competency";
-
+import { useRowLoading } from "src/composables/useRowLoading";
 
 
 export default defineComponent({
@@ -256,11 +318,17 @@ export default defineComponent({
     //   rowsPerPage: 5,
     //   page: 1,
     // });
+    const { isLoading: isViewLoading, isAnyLoading: isAnyViewLoading, run: runView } = useRowLoading();
+    const { isLoading: isEditLoading, isAnyLoading: isAnyEditLoading, run: runEdit } = useRowLoading();
+    const { isLoading: isDeleteLoading, isAnyLoading: isAnyDeleteLoading, run: runDelete } = useRowLoading();
+
 
     const scheduleView = ref("list");
     // null = Add mode. Row object = Edit mode.
     const editingScheduleData = ref(null);
-
+    const syncToArms = ref(false);
+    const preTestAssessment = ref("");
+    const postTestAssessment = ref("");
     const selectedIntervention = ref("Formal Learning");
 
 
@@ -271,7 +339,8 @@ export default defineComponent({
         field: "venue_name",
         align: "left",
         sortable: true,
-        style: "min-width: 200px;",
+        style: "min-width: 200px; max-width: 320px; white-space: normal; word-break: break-word;",
+
       },
       {
         name: "date",
@@ -298,6 +367,22 @@ export default defineComponent({
         style: "min-width: 120px;",
       },
       {
+        name: "pending_count",
+        label: "Pending",
+        field: "pending_count",
+        align: "center",
+        sortable: true,
+        style: "min-width: 120px;",
+      },
+      {
+        name: "approved_count",
+        label: "Approved",
+        field: "approved_count",
+        align: "center",
+        sortable: true,
+        style: "min-width: 120px;",
+      },
+      {
         name: "action",
         label: "Action",
         field: "action",
@@ -314,6 +399,9 @@ export default defineComponent({
     function openAddSchedule() {
       editingScheduleData.value = null;
       eventStore.clearError();
+      syncToArms.value = false;
+      preTestAssessment.value = "";   // bago
+      postTestAssessment.value = "";  // bago
       scheduleView.value = "form";
     }
 
@@ -423,48 +511,56 @@ export default defineComponent({
     }
 
     async function editSchedule(item) {
-      eventStore.clearError();
+      return runEdit(item.scheduleId, async () => {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      const result = await scheduleStore.view_schedule(item.scheduleId);
+        eventStore.clearError();
 
-      if (result?.success) {
-        editingScheduleData.value = mapScheduleResponseToForm(result.data);
-        scheduleView.value = "form";
-      } else {
-        Swal.fire({
-          title: "Failed",
-          text: result?.message || "Unable to fetch schedule details.",
-          icon: "error",
-          scrollbarPadding: false,
-        });
-      }
-    }
-    function viewSchedule(item) {
-      router.push({
-        name: "event-nominated-employee", // palitan ng actual route name mo sa router/routes.js
-        params: {
-          eventId: eventId.value,
-          scheduleId: item.scheduleId,
-        },
+        const result = await scheduleStore.view_schedule(item.scheduleId);
+
+        if (result?.success) {
+          editingScheduleData.value = mapScheduleResponseToForm(result.data);
+          syncToArms.value = !!result.data.sync_to_arms;
+          const assessment = result.data.event_assessment?.[0];
+          preTestAssessment.value = assessment?.pre_test_assessment ?? "";
+          postTestAssessment.value = assessment?.post_test_assessment ?? "";
+          scheduleView.value = "form";
+        } else {
+          Swal.fire({
+            title: "Failed",
+            text: result?.message || "Unable to fetch schedule details.",
+            icon: "error",
+            scrollbarPadding: false,
+          });
+        }
       });
     }
 
+    async function viewSchedule(item) {
+      await runView(item.scheduleId, async () => {
+        // Bigyan ang Vue ng isang render cycle para maipakita ang spinner.
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        await router.push({
+          name: "event-nominated-employee",
+          params: {
+            eventId: eventId.value,
+            scheduleId: item.scheduleId,
+          },
+        });
+      });
+    }
 
     function backToScheduleList() {
       eventStore.clearError();
       scheduleView.value = "list";
     }
 
-    async function onScheduleSaved() {
-      await eventStore.fetchEventById(eventId.value);
-      backToScheduleList();
-    }
-
     // =========================================================
     // DELETE SCHEDULE
     // =========================================================
     function deleteSchedule(item) {
-      Swal.fire({
+      return Swal.fire({
         title: "Delete Schedule",
         text: "Are you sure you want to delete this schedule?",
         icon: "warning",
@@ -474,44 +570,46 @@ export default defineComponent({
         confirmButtonColor: "#d83d3d",
         cancelButtonColor: "#9e9e9e",
         reverseButtons: true,
-        scrollbarPadding: false, // 👈 ito yung fix para sa fixed header/drawer mo
-        heightAuto: false, // 👈 idagdag ito
-      }).then(async (result) => {
+        scrollbarPadding: false,
+        heightAuto: false,
+      }).then((result) => {
         if (!result.isConfirmed) return;
 
-        try {
-          const deleteResult = await scheduleStore.deleteSchedule(item.scheduleId);
+        return runDelete(item.scheduleId, async () => {
+          try {
+            const deleteResult = await scheduleStore.deleteSchedule(item.scheduleId);
 
-          if (deleteResult?.success) {
+            if (deleteResult?.success) {
+              Swal.fire({
+                toast: true,
+                position: "top-end",
+                icon: "success",
+                title: "Schedule deleted successfully.",
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                scrollbarPadding: false,
+              });
+              const isLastOnPage = scheduleRows.value.length === 1 && pagination.value.page > 1;
+              await loadEvent(isLastOnPage ? pagination.value.page - 1 : pagination.value.page);
+            } else {
+              Swal.fire({
+                title: "Failed",
+                text: deleteResult?.message || "Unable to delete schedule.",
+                icon: "error",
+                scrollbarPadding: false,
+              });
+            }
+          } catch (error) {
+            console.error(error);
             Swal.fire({
-              toast: true,
-              position: "top-end",
-              icon: "success",
-              title: "Schedule deleted successfully.",
-              showConfirmButton: false,
-              timer: 2500,
-              timerProgressBar: true,
-              scrollbarPadding: false, // 👈 idagdag din dito para consistent
-            });
-            const isLastOnPage = scheduleRows.value.length === 1 && pagination.value.page > 1;
-            await loadEvent(isLastOnPage ? pagination.value.page - 1 : pagination.value.page);
-          } else {
-            Swal.fire({
-              title: "Failed",
-              text: deleteResult?.message || "Unable to delete schedule.",
+              title: "Error",
+              text: error?.message || "Unable to delete schedule.",
               icon: "error",
               scrollbarPadding: false,
             });
           }
-        } catch (error) {
-          console.error(error);
-          Swal.fire({
-            title: "Error",
-            text: error?.message || "Unable to delete schedule.",
-            icon: "error",
-            scrollbarPadding: false,
-          });
-        }
+        });
       });
     }
     // =========================================================
@@ -577,6 +675,19 @@ export default defineComponent({
       await loadEvent(); // same page
       backToScheduleList();
     }
+
+    function isValidUrl(value) {
+      if (!value) return false;
+      try {
+        const url = new URL(value.trim());
+        return url.protocol === "http:" || url.protocol === "https:";
+      } catch {
+        return false;
+      }
+    }
+
+
+
     return {
       eventStore,
       officeStore,
@@ -603,6 +714,20 @@ export default defineComponent({
       isFormSelected, // ← idagdag
       scheduleRows,
       onScheduleRequest,
+      syncToArms,
+
+      preTestAssessment,
+      postTestAssessment,
+      isValidUrl,
+
+      isViewLoading,
+      isAnyViewLoading,
+
+      isEditLoading,
+      isAnyEditLoading,
+
+      isDeleteLoading,
+      isAnyDeleteLoading,
 
     };
   },
@@ -668,6 +793,21 @@ export default defineComponent({
 .custom-input :deep(.q-field__input),
 .custom-input :deep(.q-field__label) {
   font-size: 12px;
+}
+
+.assessment-link-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.assessment-url-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.assessment-link-row :deep(.q-btn) {
+  flex-shrink: 0;
 }
 
 /* =========================================================
@@ -876,5 +1016,63 @@ export default defineComponent({
 .competency-checkbox :deep(.q-checkbox__label) {
   font-size: 11.5px;
   line-height: 1.3;
+}
+
+/* =========================================================
+   ARMS INTEGRATION
+========================================================= */
+.arms-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  background: #fafafa;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.arms-card--on {
+  border-color: #18bd4f;
+  background: #f0fbf4;
+}
+
+.arms-card-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.arms-card-icon {
+  margin-top: 2px;
+  color: #18bd4f;
+}
+
+.arms-card-title {
+  color: #222222;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.arms-card-desc {
+  margin-top: 2px;
+  color: #777777;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.arms-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: #666666;
+  font-size: 12px;
+}
+
+.arms-hint-text {
+  color: #666666;
+  font-size: 12px;
 }
 </style>
