@@ -91,8 +91,8 @@
             <span v-else class="sg-row-empty">Not set</span>
           </div>
 
-          <q-btn outline no-caps dense icon="tune" :label="sgLabel ? 'Edit SG' : 'Set Salary Grade'"
-            class="sg-set-btn" @click="openSgDialog" />
+          <q-btn outline no-caps dense icon="tune" :label="sgLabel ? 'Edit SG' : 'Set Salary Grade'" class="sg-set-btn"
+            @click="openSgDialog" />
         </div>
 
         <LabeledField label="Qualifications">
@@ -177,8 +177,8 @@
 
               <div class="time-column">
                 <div class="time-inputs">
-                  <q-input :model-value="formatTimeDisplay(schedule.morning_in)" outlined dense
-                    placeholder="Morning In" class="time-input">
+                  <q-input :model-value="formatTimeDisplay(schedule.morning_in)" outlined dense placeholder="Morning In"
+                    class="time-input">
                     <template #append>
                       <q-icon v-if="schedule.morning_in" name="close" class="time-picker-icon time-clear-icon"
                         @click.stop="schedule.morning_in = null" />
@@ -1129,8 +1129,9 @@ export default defineComponent({
 
     const sgLabel = computed(() => {
       const { sg_from, sg_to } = eventForm.value;
-      if (!sg_from || !sg_to) return "";
-      return sg_from === sg_to ? `SG ${sg_from}` : `SG ${sg_from} - ${sg_to}`;
+      if (!sg_from) return "";
+      if (!sg_to || sg_from === sg_to) return `SG ${sg_from}`;
+      return `SG ${sg_from} - ${sg_to}`;
     });
 
     function openSgDialog() {
@@ -1141,11 +1142,11 @@ export default defineComponent({
 
     function applySg() {
       const from = sgDraft.value.from;
-      let to = sgDraft.value.to;
-      const hasFrom = from !== null && from !== "";
-      const hasTo = to !== null && to !== "";
+      const to = sgDraft.value.to;
+      const hasFrom = from !== null && from !== "" && from !== undefined;
+      const hasTo = to !== null && to !== "" && to !== undefined;
 
-      // both empty = no SG (optional)
+      // parehong walang laman = walang SG
       if (!hasFrom && !hasTo) {
         clearSg();
         showSgDialog.value = false;
@@ -1157,21 +1158,24 @@ export default defineComponent({
         return;
       }
 
-      // To is optional: no To = single SG
-      if (!hasTo) to = from;
-
-      if (!Number.isInteger(from) || !Number.isInteger(to) || from < 1 || to > 33) {
+      if (!Number.isInteger(from) || from < 1 || from > 33) {
         sgError.value = "SG must be a whole number between 1 and 33.";
         return;
       }
 
-      if (from > to) {
-        sgError.value = "From must not be higher than To.";
-        return;
+      if (hasTo) {
+        if (!Number.isInteger(to) || to < 1 || to > 33) {
+          sgError.value = "SG must be a whole number between 1 and 33.";
+          return;
+        }
+        if (from > to) {
+          sgError.value = "From must not be higher than To.";
+          return;
+        }
       }
 
       eventForm.value.sg_from = from;
-      eventForm.value.sg_to = to;
+      eventForm.value.sg_to = hasTo ? to : null; // hindi na kokopyahin ang From
       sgError.value = "";
       showSgDialog.value = false;
     }
