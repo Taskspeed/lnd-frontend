@@ -1,8 +1,6 @@
 <template>
   <q-page class="event-page">
-    <!-- =====================================================
-         PAGE HEADER
-    ====================================================== -->
+    <!-- PAGE HEADER -->
     <section class="page-header">
       <div class="page-heading">
         <div class="page-heading-copy">
@@ -17,16 +15,12 @@
       </div>
     </section>
 
-    <!-- ===================================================
-         LOADING / ERROR
-    ==================================================== -->
+    <!-- LOADING / ERROR -->
     <LoadingState v-if="loading" message="Loading schedule details..." full-page />
     <div v-else-if="errorMessage" class="error-state">{{ errorMessage }}</div>
 
     <template v-else>
-      <!-- ===================================================
-           1. SCHEDULE DETAILS  (Event | Schedule)
-      ==================================================== -->
+      <!-- 1. SCHEDULE DETAILS (Event | Schedule) -->
       <q-card flat bordered class="detail-card">
         <div class="section-head">
           <div class="section-head-text">
@@ -86,21 +80,6 @@
                   <span class="detail-value">{{ schedule.qualifications }}</span>
                 </div>
               </div>
-
-              <!-- <template v-if="competencyGroups.length">
-                <div class="section-label">Competencies</div>
-                <div class="competency-groups">
-                  <div v-for="group in competencyGroups" :key="group.key" class="competency-group-block"
-                    :class="'competency-' + group.color">
-                    <div class="competency-group-title">{{ group.label }}</div>
-                    <div class="tag-row">
-                      <span v-for="(item, i) in group.items" :key="i" class="tag">
-                        {{ item }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </template> -->
             </div>
 
             <!-- RIGHT: SCHEDULE (dates + speakers per date) -->
@@ -134,9 +113,7 @@
         </div>
       </q-card>
 
-      <!-- ===================================================
-           2. TAGGED EMPLOYEES
-      ==================================================== -->
+      <!-- 2. TAGGED EMPLOYEES -->
       <q-card flat bordered class="detail-card">
         <div class="section-head">
           <div class="section-head-text">
@@ -156,9 +133,12 @@
           <template #body-cell-action="props">
             <q-td :props="props">
               <div class="row-actions">
-                <q-btn flat dense round icon="person_add" color="green" :disable="isAlreadyNominated(props.row)"
+                <q-btn flat dense round icon="person_add" color="green"
+                  :disable="isAlreadyNominated(props.row) || slotsFull"
                   @click.stop="openSuggestedDialog(props.row)">
-                  <q-tooltip>{{ isAlreadyNominated(props.row) ? 'Already nominated' : 'Nominate' }}</q-tooltip>
+                  <q-tooltip>
+                    {{ isAlreadyNominated(props.row) ? 'Already nominated' : slotsFull ? 'Slots are full' : 'Nominate' }}
+                  </q-tooltip>
                 </q-btn>
               </div>
             </q-td>
@@ -213,12 +193,9 @@
           </q-card-actions>
         </q-card>
       </q-dialog>
-
     </template>
 
-    <!-- ===================================================
-         3. NOMINATION
-    ==================================================== -->
+    <!-- 3. NOMINATION -->
     <q-card flat bordered class="detail-card">
       <div class="section-head">
         <div class="section-head-text">
@@ -226,10 +203,20 @@
             <q-icon name="how_to_reg" class="section-icon" />
             <div class="section-title">Nominations</div>
           </div>
-          <div class="section-sub">Select employees to nominate for this schedule</div>
+         <div class="section-sub">
+  Select employees to nominate for this schedule
+  <span v-if="attendeeLimit !== null" class="slots-pill" :class="'slots-' + slotsState">
+    <q-icon :name="slotsState === 'full' ? 'block' : slotsState === 'low' ? 'warning' : 'check_circle'" size="15px" />
+    {{ activeNominationCount }} / {{ attendeeLimit }} slots
+    <span class="slots-pill-sep">·</span>
+    <strong>{{ remainingSlots }} available</strong>
+  </span>
+</div>
         </div>
         <q-btn no-caps unelevated icon="add" label="Nominate Employees" class="nominate-btn"
-          @click="openNominationDialog" />
+          :disable="slotsFull" @click="openNominationDialog">
+          <q-tooltip v-if="slotsFull">Slots are full</q-tooltip>
+        </q-btn>
         <q-btn no-caps unelevated icon="print" label="Nomination Form"
           class="nominate-form-btn nominate-form-btn--light" :loading="isNominationFormLoading(scheduleId)"
           :disable="isAnyNominationFormLoading()" @click.stop="inHouseNominationPreview" />
@@ -291,9 +278,7 @@
       </q-table>
     </q-card>
 
-    <!-- =====================================================
-         NOMINATION DIALOG — 3 STEPS
-    ====================================================== -->
+    <!-- NOMINATION DIALOG — 3 STEPS -->
     <q-dialog v-model="showNominationDialog" persistent>
       <q-card class="nomination-dialog">
         <q-card-section class="dialog-header">
@@ -307,6 +292,11 @@
           class="nomination-stepper">
           <!-- STEP 1: SELECT EMPLOYEES -->
           <q-step :name="1" title="Select Employees" icon="group" :done="nominationStep > 1">
+            <q-banner v-if="attendeeLimit !== null" dense rounded class="bg-blue-1 text-blue-9 q-mb-md">
+              {{ selectedNominees.length }} selected · {{ remainingSlots }} slot(s) available
+              (limit: {{ attendeeLimit }})
+            </q-banner>
+
             <q-input v-model="employeeSearch" outlined dense clearable placeholder="Search employees..."
               class="office-search">
               <template #prepend><q-icon name="search" /></template>
@@ -394,6 +384,7 @@
       </q-card>
     </q-dialog>
 
+    <!-- EMPLOYEE TRAINING RECORD DIALOG -->
     <q-dialog v-model="showEmployeeRecordDialog">
       <q-card style="width:100%; max-width: 90vw;">
         <q-card-section class="dialog-header">
@@ -436,40 +427,7 @@
       </q-card>
     </q-dialog>
 
-    <!-- <q-dialog v-model="showNominationDetailsDialog">
-      <q-card style="width: 500px; max-width: 90vw;">
-        <q-card-section class="dialog-header">
-          <div class="section-title">{{ viewedNomination?.full_name }}</div>
-          <div class="section-sub">
-            {{ viewedNomination?.designation }} — {{ viewedNomination?.office }}
-          </div>
-        </q-card-section>
-
-        <q-separator />
-
-        <q-card-section>
-          <div class="detail-grid">
-            <div class="detail-item">
-              <span class="detail-label">Control No.</span>
-              <span class="detail-value">{{ viewedNomination?.control_no }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Status</span>
-              <span class="detail-value">{{ viewedNomination?.status }}</span>
-            </div>
-            <div class="detail-item" style="grid-column: 1 / -1;">
-              <span class="detail-label">Reason</span>
-              <span class="detail-value">{{ viewedNomination?.nominate_reason || "—" }}</span>
-            </div>
-          </div>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat no-caps label="Close" v-close-popup />
-        </q-card-actions>
-      </q-card>
-    </q-dialog> -->
-
+    <!-- EDIT REASON DIALOG -->
     <q-dialog v-model="showEditReasonDialog">
       <q-card style="width: 480px; max-width: 90vw;">
         <q-card-section class="dialog-header">
@@ -493,12 +451,9 @@
       </q-card>
     </q-dialog>
 
-
-<EmployeeNominationModal
-  v-model="showNominationDetailsDialog"
-  :employee-data="viewedNomination || {}"
-  :loading="loadingEmployeeInfo"
-/>
+    <!-- NOMINATION DETAILS MODAL -->
+    <EmployeeNominationModal v-model="showNominationDetailsDialog" :employee-data="viewedNomination || {}"
+      :loading="loadingEmployeeInfo" />
   </q-page>
 </template>
 
@@ -523,6 +478,7 @@ export default defineComponent({
   setup() {
     const officeEventStore = useOfficeEventStore();
     const employeeStore = useEmployeeStore();
+    const employeeInformationStore = useEmployeeInformationStore();
     const route = useRoute();
     const formStore = useFormStore();
     const scheduleId = route.params.scheduleId;
@@ -545,7 +501,11 @@ export default defineComponent({
     const showFormPreview = ref(false);
     const formPreviewUrl = ref("");
 
-    const { isLoading: isNominationFormLoading, isAnyLoading: isAnyNominationFormLoading, run: runNominationForm } = useRowLoading();
+    const {
+      isLoading: isNominationFormLoading,
+      isAnyLoading: isAnyNominationFormLoading,
+      run: runNominationForm,
+    } = useRowLoading();
 
     const employeeColumns = [
       { name: "ControlNo", label: "Control No.", field: "ControlNo", align: "left" },
@@ -612,12 +572,12 @@ export default defineComponent({
         .map((group) => {
           const entry = schedule.value[group.key]?.[0] || {};
           const items = Object.entries(entry)
-            .filter(([field, value]) => value === true)
+            .filter(([, value]) => value === true)
             .map(([field]) => labelize(field));
 
           return { ...group, items };
         })
-        .filter((group) => group.items.length); // itago yung grupo kung walang true values
+        .filter((group) => group.items.length);
     });
 
     async function loadSchedule() {
@@ -643,13 +603,35 @@ export default defineComponent({
     const employeeSearch = ref("");
     const selectedNominees = ref([]); // Step 1 output
     const nominationReasons = reactive({}); // Step 2 output, keyed by ControlNo
-    const nominatedList = ref([]); // Step 3 result / summary after save
+    const nominatedList = ref([]);
 
     const nominatedEmployees = computed(() => employeeStore.nominatedEmployee || []);
 
     async function loadNominatedEmployees() {
       await employeeStore.fetchEmployeeListNominated(scheduleId);
     }
+
+    // =====================================================
+    // ATTENDEE SLOT LIMIT (Approved + Pending lang ang counted)
+    // =====================================================
+    // limit ng office para sa schedule (null = walang limit)
+    // NOTE: kung maraming office sa response, hanapin ang office ng user dito
+    const attendeeLimit = computed(() => {
+      const limit = schedule.value.office?.[0]?.number_of_attendees;
+      return limit > 0 ? limit : null;
+    });
+
+    const activeNominationCount = computed(
+      () => nominatedEmployees.value.filter((n) => n.nominate_status !== "Disapproved").length
+    );
+
+    const remainingSlots = computed(() =>
+      attendeeLimit.value === null
+        ? Infinity
+        : Math.max(attendeeLimit.value - activeNominationCount.value, 0)
+    );
+
+    const slotsFull = computed(() => remainingSlots.value === 0);
 
     const nominatedColumns = [
       { name: "controlNo", label: "Control No.", field: "control_no", align: "left" },
@@ -694,9 +676,18 @@ export default defineComponent({
     });
 
     async function openNominationDialog() {
+      if (slotsFull.value) {
+        Notify.create({
+          type: "warning",
+          message: "Nomination slots are already full for your office.",
+        });
+        return;
+      }
+
       resetNominationDialog();
       showNominationDialog.value = true;
-      await employeeStore.fetchEmployeeListNomination(eventInfo.value.title_name,
+      await employeeStore.fetchEmployeeListNomination(
+        eventInfo.value.title_name,
         schedule.value.sg_from,
         schedule.value.sg_to
       );
@@ -713,15 +704,33 @@ export default defineComponent({
       nominationStep.value += 1;
     }
 
-    // Prevent orphaned reasons if user goes back to Step 1 and unchecks someone
+    // - tanggalin ang reasons ng na-uncheck
+    // - hindi pwedeng lumampas sa natitirang slots
     watch(selectedNominees, (newVal) => {
       const validControlNos = new Set(newVal.map((e) => e.ControlNo));
       Object.keys(nominationReasons).forEach((k) => {
         if (!validControlNos.has(k)) delete nominationReasons[k];
       });
+
+      if (newVal.length > remainingSlots.value) {
+        selectedNominees.value = newVal.slice(0, remainingSlots.value);
+        Notify.create({
+          type: "warning",
+          position: "top",
+          message: `Only ${attendeeLimit.value} attendee(s) allowed for your office. ${remainingSlots.value} slot(s) left.`,
+        });
+      }
     });
 
     async function submitNomination() {
+      if (selectedNominees.value.length > remainingSlots.value) {
+        Notify.create({
+          type: "negative",
+          message: `Only ${remainingSlots.value} slot(s) left for your office.`,
+        });
+        return;
+      }
+
       const missingReason = selectedNominees.value.find(
         (emp) => !nominationReasons[emp.ControlNo]?.trim()
       );
@@ -746,23 +755,38 @@ export default defineComponent({
       const result = await employeeStore.storeNominateEmployee(payload);
 
       if (result.success) {
-        Notify.create({ type: "positive", message: result.message });
+        Notify.create({ type: "positive", position:"top" , message: result.message });
         showNominationDialog.value = false;
         resetNominationDialog();
-        await loadNominatedEmployees(); // i-refresh yung table matapos mag-nominate
+        await loadNominatedEmployees();
       } else {
-        Notify.create({ type: "negative", message: result.message });
+        Notify.create({ type: "negative",position:"top" , message: result.message });
       }
     }
 
+    // =====================================================
+    // NOMINATION DETAILS MODAL
+    // =====================================================
     const showNominationDetailsDialog = ref(false);
     const viewedNomination = ref(null);
+    const loadingEmployeeInfo = ref(false);
 
-    function viewNominationDetails(row) {
-      viewedNomination.value = row;
+    async function viewNominationDetails(row) {
+      viewedNomination.value = row; // may agad na ipapakita habang naglo-load
       showNominationDetailsDialog.value = true;
+      loadingEmployeeInfo.value = true;
+
+      const result = await employeeInformationStore.fetchEmployeeInformation(
+        row.nominated_employee_id
+      );
+      loadingEmployeeInfo.value = false;
+
+      if (result.success) viewedNomination.value = result.data;
     }
 
+    // =====================================================
+    // EDIT REASON
+    // =====================================================
     const showEditReasonDialog = ref(false);
     const editingReasonRow = ref(null);
     const editReasonText = ref("");
@@ -789,19 +813,11 @@ export default defineComponent({
       );
 
       if (result.success) {
-        Notify.create({
-          type: "positive",
-          message: result.message,
-          position: "top",
-        });
+        Notify.create({ type: "positive", message: result.message, position: "top" });
         showEditReasonDialog.value = false;
         await loadNominatedEmployees();
       } else {
-        Notify.create({
-          type: "negative",
-          message: result.message,
-          position: "top",
-        });
+        Notify.create({ type: "negative", message: result.message, position: "top" });
       }
     }
 
@@ -835,7 +851,7 @@ export default defineComponent({
               timerProgressBar: true,
               scrollbarPadding: false,
             });
-            await loadNominatedEmployees(); // i-refresh yung table
+            await loadNominatedEmployees();
           } else {
             Swal.fire({
               title: "Failed",
@@ -913,7 +929,15 @@ export default defineComponent({
     }
 
     async function confirmSuggestedNomination() {
-      // validate reason
+      if (slotsFull.value) {
+        Notify.create({
+          type: "warning",
+          message: "Nomination slots are already full.",
+          position: "top",
+        });
+        return;
+      }
+
       const valid = await suggestedReasonRef.value?.validate();
       if (!valid) return;
 
@@ -957,19 +981,13 @@ export default defineComponent({
       }
     }
 
-    const employeeInformationStore = useEmployeeInformationStore();
-const loadingEmployeeInfo = ref(false);
+    // ok = may slots pa, low = isa na lang ang natitira, full = puno na
+const slotsState = computed(() => {
+  if (slotsFull.value) return "full";
+  if (attendeeLimit.value > 1 && remainingSlots.value === 1) return "low";
+  return "ok";
+});
 
-async function viewNominationDetails(row) {
-  viewedNomination.value = row;          // may agad na ipapakita habang naglo-load
-  showNominationDetailsDialog.value = true;
-  loadingEmployeeInfo.value = true;
-
-  const result = await employeeInformationStore.fetchEmployeeInformation(row.nominated_employee_id);
-  loadingEmployeeInfo.value = false;
-
-  if (result.success) viewedNomination.value = result.data;
-}
     onMounted(async () => {
       await loadSchedule();
       await loadNominatedEmployees();
@@ -1005,6 +1023,12 @@ async function viewNominationDetails(row) {
       goToNextStep,
       submitNomination,
 
+      // slot limit
+      attendeeLimit,
+      activeNominationCount,
+      remainingSlots,
+      slotsFull,
+
       reasonColumns,
       showEmployeeRecordDialog,
       viewedEmployee,
@@ -1014,16 +1038,14 @@ async function viewNominationDetails(row) {
       nominatedEmployees,
       nominatedColumns,
 
-      // actions
       deleteNominatedEmployee,
-
-      // function helper
       truncateText,
 
-      // dialog
+      // details modal
       showNominationDetailsDialog,
       viewedNomination,
       viewNominationDetails,
+      loadingEmployeeInfo,
 
       showEditReasonDialog,
       editingReasonRow,
@@ -1052,6 +1074,10 @@ async function viewNominationDetails(row) {
 });
 </script>
 
+<!-- ============================================================
+     STYLE: walang binago. Panatilihin ang kasalukuyan mong
+     <style scoped> block sa ilalim ng file na ito.
+============================================================= -->
 <style scoped>
 /* =========================================================
    PAGE
@@ -1966,5 +1992,40 @@ async function viewNominationDetails(row) {
   .detail-split .detail-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+/* =========================================================
+   SLOTS PILL
+========================================================= */
+.slots-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 10px;
+  padding: 4px 12px;
+  border: 1px solid #cdeedb;
+  border-radius: 20px;
+  background: #e1f7e7;
+  color: #087c42;
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.slots-pill-sep {
+  opacity: 0.5;
+}
+
+/* LOW — amber */
+.slots-pill.slots-low {
+  border-color: #f3dcb0;
+  background: #fdf3e0;
+  color: #b45f06;
+}
+
+/* FULL — red */
+.slots-pill.slots-full {
+  border-color: #f3c4c4;
+  background: #fbe9e9;
+  color: #c73f3f;
 }
 </style>
