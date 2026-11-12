@@ -63,10 +63,7 @@
                                     <q-tooltip>View Speaker</q-tooltip>
                                 </q-btn>
 
-                                <q-btn flat round dense icon="edit" class="action-edit"
-                                    @click="editSpeaker(props.row.speakerId)">
-                                    <q-tooltip>Edit Speaker</q-tooltip>
-                                </q-btn>
+                          
 
                                 <q-btn flat round dense icon="delete" class="action-delete"
                                     @click="confirmDeleteSpeaker(props.row.speakerId)">
@@ -97,46 +94,7 @@
             </div>
         </q-card>
 
-        <!-- =====================================================
-         EDIT Speaker DIALOG
-    ====================================================== -->
-        <!-- =====================================================
-     EDIT Speaker DIALOG
-====================================================== -->
-        <q-dialog v-model="showEditDialog">
-            <q-card class="Speaker-dialog">
-                <q-card-section class="dialog-header">
-                    <div>
-                        <div class="dialog-speaker">Edit</div>
-                        <div class="dialog-subspeaker">Edit this Speaker name</div>
-                    </div>
 
-                    <q-btn flat round dense icon="close" v-close-popup />
-                </q-card-section>
-
-                <q-separator />
-
-                <q-card-section class="dialog-body">
-                    <q-banner v-if="SpeakerStore.error" dense rounded class="bg-red-2 text-red-9 q-mb-sm">
-                        {{ SpeakerStore.error }}
-                    </q-banner>
-
-                    <div class="section-label">Speaker Details</div>
-
-                    <div class="form-grid">
-                        <q-input v-model="editForm.speaker_name" outlined dense label="Speaker Name"
-                            class="col-span-2" />
-                    </div>
-                </q-card-section>
-
-                <q-card-actions align="right" class="dialog-actions">
-                    <q-btn flat no-caps label="Cancel" class="cancel-btn" v-close-popup />
-
-                    <q-btn unelevated no-caps label="Save Changes" class="save-btn" :loading="SpeakerStore.loading"
-                        @click="updateSpeakerSubmit" />
-                </q-card-actions>
-            </q-card>
-        </q-dialog>
         <!-- =====================================================
      VIEW Speaker DIALOG
 ====================================================== -->
@@ -197,40 +155,8 @@
         <!-- =====================================================
      ADD Speaker DIALOG
 ====================================================== -->
-        <q-dialog v-model="showAddDialog">
-            <q-card class="Speaker-dialog">
-                <q-card-section class="dialog-header">
-                    <div>
-                        <div class="dialog-speaker">Add Speaker</div>
-                        <div class="dialog-subspeaker">Create a new Speaker</div>
-                    </div>
-
-                    <q-btn flat round dense icon="close" v-close-popup />
-                </q-card-section>
-
-                <q-separator />
-
-                <q-card-section class="dialog-body">
-                    <q-banner v-if="SpeakerStore.error" dense rounded class="bg-red-2 text-red-9 q-mb-sm">
-                        {{ SpeakerStore.error }}
-                    </q-banner>
-
-                    <div class="section-label">Speaker Details</div>
-
-                    <div class="form-grid">
-                        <q-input v-model="addForm.speaker_name" outlined dense label="Speaker Name"
-                            class="col-span-2" />
-                    </div>
-                </q-card-section>
-
-                <q-card-actions align="right" class="dialog-actions">
-                    <q-btn flat no-caps label="Cancel" class="cancel-btn" v-close-popup />
-
-                    <q-btn unelevated no-caps label="Create Speaker" class="save-btn" :loading="SpeakerStore.loading"
-                        @click="createSpeakerSubmit" />
-                </q-card-actions>
-            </q-card>
-        </q-dialog>
+        <SpeakerAddDialog v-model="showAddDialog" :loading="SpeakerStore.loading" :error="SpeakerStore.error || ''"
+            @submit="createSpeakerSubmit" />
     </q-page>
 </template>
 <script>
@@ -238,9 +164,10 @@ import { defineComponent, computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useQuasar } from "quasar";
 import { useSpeakerStore } from "src/stores/library/event/speakerStore";
+import SpeakerAddDialog from "src/components/speaker/SpeakerAddDialog.vue";
 export default defineComponent({
     name: "SpeakerPage",
-
+    components: { SpeakerAddDialog },
     setup() {
         const $q = useQuasar();
         const router = useRouter();
@@ -252,33 +179,23 @@ export default defineComponent({
         // ---------------------------------------------------------------
         const columns = [
             { name: "speakerId", label: "id", field: "speakerId", align: "left" },
-            {
-                name: "speaker",
-                label: "Speaker Name",
-                field: "speaker_name",
-                align: "left",
-                sortable: true,
-            },
-            {
-                name: "create_at",
-                label: "Created At",
-                field: "create_at",
-                align: "left",
-            },
-            { name: "actions", label: "action", field: "actions", align: "center" },
+            { name: "speaker", label: "Speaker Name", field: "speaker_name", align: "left", sortable: true },
+            { name: "agency", label: "Agency", field: "agency", align: "left", format: (val) => val || "—" },
+            { name: "position", label: "Position", field: "position", align: "left", format: (val) => val || "—" },
+            { name: "employment_type", label: "Status", field: "employment_type", align: "left", format: (val) => val || "—" },
+            { name: "actions", label: "Action", field: "actions", align: "center" },
         ];
-
         // Flattens each Speaker into a row the table can use
         const tableRows = computed(() =>
             SpeakerStore.Speakers.map((speaker) => ({
-                // no: index + 1,
                 speakerId: speaker.speakerId,
                 speaker_name: speaker.speaker_name,
-                create_at: speaker.created_at,
+                agency: speaker.employment?.agency ?? null,
+                position: speaker.employment?.position ?? null,
+                employment_type: speaker.employment?.employment_type ?? null,
                 raw: speaker,
             }))
         );
-
         const filteredRows = computed(() => {
             const keyword = search.value.toLowerCase().trim();
             if (!keyword) return tableRows.value;
@@ -312,8 +229,7 @@ export default defineComponent({
         const viewingSpeaker = ref(null);
 
         function viewSpeaker(speakerId) {
-            viewingSpeaker.value = findSpeakerById(speakerId);
-            showViewDialog.value = true;
+            router.push({ name: "speaker-view", params: { speakerId } });
         }
         // ---------------------------------------------------------------
         // ADD / EDIT Speaker
@@ -325,16 +241,13 @@ export default defineComponent({
         const addForm = ref({ speaker_name: "" });
 
         function openAddSpeaker() {
-            addForm.value = { speaker_name: "" };
             SpeakerStore.clearError();
             showAddDialog.value = true;
         }
-
-        async function createSpeakerSubmit() {
+        async function createSpeakerSubmit(payload, photoFile) {
             SpeakerStore.clearError();
 
-            const payload = { speaker_name: addForm.value.speaker_name };
-            const result = await SpeakerStore.createSpeaker(payload);
+            const result = await SpeakerStore.createSpeaker(payload, photoFile);
 
             if (result.success) {
                 showAddDialog.value = false;
@@ -344,36 +257,6 @@ export default defineComponent({
             }
         }
 
-        // ---------------------------------------------------------------
-        // EDIT Speaker
-        // ---------------------------------------------------------------
-        const showEditDialog = ref(false);
-        const editingSpeaker = ref(null);
-        const editForm = ref({ speaker_name: "" });
-
-        function editSpeaker(speakerId) {
-            const speaker = findSpeakerById(speakerId);
-            if (!speaker) return;
-
-            editingSpeaker.value = speaker;
-            editForm.value = { speaker_name: speaker.speaker_name || "" };
-            SpeakerStore.clearError();
-            showEditDialog.value = true;
-        }
-
-        async function updateSpeakerSubmit() {
-            SpeakerStore.clearError();
-
-            const payload = { speaker_name: editForm.value.speaker_name };
-            const result = await SpeakerStore.updateSpeaker(editingSpeaker.value.speakerId, payload);
-
-            if (result.success) {
-                showEditDialog.value = false;
-                notify("success", result.message || "Speaker updated successfully.");
-            } else {
-                notify("error", result.message || "Failed to update speaker.");
-            }
-        }
 
         // ---------------------------------------------------------------
         // DELETE Speaker
@@ -424,12 +307,6 @@ export default defineComponent({
             addForm,
             openAddSpeaker,
             createSpeakerSubmit,
-
-            // Edit
-            showEditDialog,
-            editForm,
-            editSpeaker,
-            updateSpeakerSubmit,
 
             // Delete
             showDeleteDialog,
@@ -611,12 +488,9 @@ export default defineComponent({
 }
 
 .action-view {
-    color: #4b7c94;
+  color: #16a84a;
 }
 
-.action-edit {
-    color: #16a84a;
-}
 
 .action-delete {
     color: #d35d5d;
