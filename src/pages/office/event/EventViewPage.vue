@@ -436,7 +436,7 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="showNominationDetailsDialog">
+    <!-- <q-dialog v-model="showNominationDetailsDialog">
       <q-card style="width: 500px; max-width: 90vw;">
         <q-card-section class="dialog-header">
           <div class="section-title">{{ viewedNomination?.full_name }}</div>
@@ -468,7 +468,7 @@
           <q-btn flat no-caps label="Close" v-close-popup />
         </q-card-actions>
       </q-card>
-    </q-dialog>
+    </q-dialog> -->
 
     <q-dialog v-model="showEditReasonDialog">
       <q-card style="width: 480px; max-width: 90vw;">
@@ -492,6 +492,13 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+
+<EmployeeNominationModal
+  v-model="showNominationDetailsDialog"
+  :employee-data="viewedNomination || {}"
+  :loading="loadingEmployeeInfo"
+/>
   </q-page>
 </template>
 
@@ -505,11 +512,13 @@ import { useEmployeeStore } from "src/stores/office/event/employeeStore";
 import LoadingState from "src/components/LoadingStatePage.vue";
 import { useFormStore } from "src/stores/office/form/formStore";
 import { useRowLoading } from "src/composables/useRowLoading";
+import EmployeeNominationModal from "src/components/employee/EmployeeNominationModal.vue";
 import Swal from "sweetalert2";
+import { useEmployeeInformationStore } from "src/stores/administrator/employee/employeeInformationStore";
 
 export default defineComponent({
   name: "EventViewPage",
-  components: { LoadingState },
+  components: { LoadingState, EmployeeNominationModal },
 
   setup() {
     const officeEventStore = useOfficeEventStore();
@@ -647,6 +656,7 @@ export default defineComponent({
       { name: "name", label: "Name", field: "full_name", align: "left" },
       { name: "designation", label: "Position", field: "designation", align: "left" },
       { name: "status", label: "Status", field: "status", align: "left" },
+      { name: "sg", label: "Salary Grade(SG)", field: "sg", align: "center" },
       { name: "nominate_status", label: "Nomination Status", field: "nominate_status", align: "center" },
       { name: "action", label: "Action", field: "action", align: "center" },
     ];
@@ -947,6 +957,19 @@ export default defineComponent({
       }
     }
 
+    const employeeInformationStore = useEmployeeInformationStore();
+const loadingEmployeeInfo = ref(false);
+
+async function viewNominationDetails(row) {
+  viewedNomination.value = row;          // may agad na ipapakita habang naglo-load
+  showNominationDetailsDialog.value = true;
+  loadingEmployeeInfo.value = true;
+
+  const result = await employeeInformationStore.fetchEmployeeInformation(row.nominated_employee_id);
+  loadingEmployeeInfo.value = false;
+
+  if (result.success) viewedNomination.value = result.data;
+}
     onMounted(async () => {
       await loadSchedule();
       await loadNominatedEmployees();

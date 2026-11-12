@@ -19,7 +19,7 @@
             <div class="qs-col qs-profile">
               <q-avatar square size="110px" class="qs-avatar">
                 <q-spinner v-if="photoLoading" color="green" size="30px" />
-                <img v-else :src="photoSrc || 'https://cdn.quasar.dev/img/avatar.png'" />
+        <img v-else :src="(!photoFailed && photoSrc) || fallbackPhoto" @error="onPhotoError" />
               </q-avatar>
 
               <div class="qs-name">{{ employee.full_name }}</div>
@@ -54,16 +54,24 @@
                   {{ employee.nominate_status || "Pending" }}
                 </q-badge>
               </div>
+
+              
             </div>
           </div>
 
           <!-- BOTTOM: REASON (FULL WIDTH) -->
-          <div class="qs-reason-block">
-            <div class="qs-info-label">Reason</div>
-            <div class="qs-reason-box">
-              <div class="qs-reason-text">{{ employee.nominate_reason || "—" }}</div>
-            </div>
-          </div>
+     <!-- BOTTOM: REMARKS (Disapproved only) + REASON -->
+      <div v-if="isDisapproved" class="qs-remarks-box">
+        <div class="qs-remarks-label">Remarks (Disapproved):</div>
+        <div class="qs-remarks-text">{{ employee.nomination_remarks || "—" }}</div>
+      </div>
+
+      <div class="qs-reason-block">
+        <div class="qs-info-label">Reason</div>
+        <div class="qs-reason-box">
+          <div class="qs-reason-text">{{ employee.nominate_reason || "—" }}</div>
+        </div>
+</div>
         </template>
       </q-card-section>
     </q-card>
@@ -71,8 +79,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useEmployeeImage } from 'src/composables/useEmployeeImage'
+import fallbackPhoto from 'src/assets/image/logo.png'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -94,6 +103,7 @@ const show = computed({
 })
 
 const employee = computed(() => props.employeeData || {})
+const isDisapproved = computed(() => employee.value.nominate_status === 'Disapproved')
 
 const nominateClass = computed(() => {
   switch (employee.value.nominate_status) {
@@ -109,6 +119,11 @@ const nominateClass = computed(() => {
 const { src: photoSrc, loading: photoLoading } = useEmployeeImage(
   () => employee.value.photo_url
 )
+
+// fallback kapag sira o hindi ma-load ang photo
+const photoFailed = ref(false)
+const onPhotoError = () => { photoFailed.value = true }
+watch(() => employee.value.photo_url, () => { photoFailed.value = false })
 </script>
 
 <style scoped>
@@ -310,5 +325,27 @@ const { src: photoSrc, loading: photoLoading } = useEmployeeImage(
   .qs-top {
     grid-template-columns: 1fr;
   }
+}
+.qs-remarks-box {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid #d83d3d;
+  border-radius: 4px;
+  background: #fdecec;
+}
+
+.qs-remarks-label {
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 750;
+  color: #c73f3f;
+}
+
+.qs-remarks-text {
+  font-size: 12px;
+  line-height: 1.55;
+  color: #1a1a1a;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 </style>

@@ -393,6 +393,7 @@
               <span class="detail-label">Reason</span>
               <span class="detail-value">{{ viewedNomination?.nominate_reason || "—" }}</span>
             </div>
+            
           </div>
         </q-card-section>
 
@@ -543,6 +544,7 @@ export default defineComponent({
       { name: "designation", label: "Position", field: "designation", align: "left" },
       { name: "office", label: "Office", field: (row) => row.office_abbr || row.office, align: "left" },
       { name: "status", label: "Status", field: "status", align: "left" },
+      { name: "sg", label: "Salary Grade(SG)", field: "sg", align: "center" },
       { name: "nominate_status", label: "Nominate status", field: "nominate_status", align: "center" },
       { name: "action", label: "Action", field: "action", align: "center" },
     ];
@@ -778,57 +780,91 @@ export default defineComponent({
 
 
 
-    async function reviewNomination(row) {
-      // 1. Tanong muna (hindi pa naka-loading)
-      const result = await Swal.fire({
-        title: "Review Nomination",
-        text: `Update the nomination status of ${row.full_name}?`,
-        icon: "question",
-        showDenyButton: true,
-        showCancelButton: true,
-        confirmButtonText: "Approve",
-        denyButtonText: "Disapprove",
-        cancelButtonText: "Cancel",
-        confirmButtonColor: "#18b64d",
-        denyButtonColor: "#d83d3d",
-        cancelButtonColor: "#9e9e9e",
-        scrollbarPadding: false,
-        heightAuto: false,
-      });
+  async function reviewNomination(row) {
+  // 1. Choose Approve / Disapprove
+  const result = await Swal.fire({
+    title: "Review Nomination",
+    text: `Update the nomination status of ${row.full_name}?`,
+    icon: "question",
+    showDenyButton: true,
+    showCancelButton: true,
+    confirmButtonText: "Approve",
+    denyButtonText: "Disapprove",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#18b64d",
+    denyButtonColor: "#d83d3d",
+    cancelButtonColor: "#9e9e9e",
+    scrollbarPadding: false,
+    heightAuto: false,
+  });
 
-      let status = null;
-      if (result.isConfirmed) status = "Approved";
-      else if (result.isDenied) status = "Disapproved";
-      else return; // Cancel / close
+  let status = null;
+  let remarks = null;
 
-      // 2. Loading lang habang nagse-save
-      return runReview(row.nominated_employee_id, async () => {
-        const res = await eventStore.approvalNominatedEmployee(row.nominated_employee_id, {
-          nominate_status: status,
-        });
+  if (result.isConfirmed) {
+    status = "Approved";
+  } else if (result.isDenied) {
+    status = "Disapproved";
 
-        if (res.success) {
-          Swal.fire({
-            toast: true,
-            position: "top-end",
-            icon: "success",
-            title: `Nomination ${status.toLowerCase()}.`,
-            showConfirmButton: false,
-            timer: 2000,
-            timerProgressBar: true,
-            scrollbarPadding: false,
-          });
-          await loadNominatedEmployees(pagination.value.page, { silent: true });
-        } else {
-          Swal.fire({
-            title: "Failed",
-            text: res.message || "Unable to update nomination.",
-            icon: "error",
-            scrollbarPadding: false,
-          });
+    // 2. Required remarks for disapproval
+    const remarksResult = await Swal.fire({
+      title: "Disapprove Nomination",
+      text: `Please provide the remarks for disapproving ${row.full_name}.`,
+      icon: "warning",
+      input: "textarea",
+      inputLabel: "Remarks",
+      inputPlaceholder: "Enter remarks...",
+      inputAttributes: { "aria-label": "Remarks" },
+      showCancelButton: true,
+      confirmButtonText: "Disapprove",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#d83d3d",
+      cancelButtonColor: "#9e9e9e",
+      reverseButtons: true,
+      scrollbarPadding: false,
+      heightAuto: false,
+      inputValidator: (value) => {
+        if (!value || !value.trim()) {
+          return "Remarks are required when disapproving a nomination.";
         }
+      },
+    });
+
+    if (!remarksResult.isConfirmed) return; // Cancel / close
+    remarks = remarksResult.value.trim();
+  } else {
+    return; // Cancel / close
+  }
+
+  // 3. Loading while saving
+  return runReview(row.nominated_employee_id, async () => {
+    const payload = { nominate_status: status };
+    if (status === "Disapproved") payload.nomination_remarks = remarks;
+
+    const res = await eventStore.approvalNominatedEmployee(row.nominated_employee_id, payload);
+
+    if (res.success) {
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: `Nomination ${status.toLowerCase()}.`,
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+        scrollbarPadding: false,
+      });
+      await loadNominatedEmployees(pagination.value.page, { silent: true });
+    } else {
+      Swal.fire({
+        title: "Failed",
+        text: res.message || "Unable to update nomination.",
+        icon: "error",
+        scrollbarPadding: false,
       });
     }
+  });
+}
 
     const selectedStatus = ref(null);
     const statusOptions = ["Pending", "Approved", "Disapproved"];
