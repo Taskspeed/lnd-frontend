@@ -5,7 +5,21 @@ import {
   create_speaker,
   update_speaker,
   delete_speaker,
+  view_speaker,
 } from "src/service/library/event/speakerService";
+
+// Kapag 422 (validation), ipakita ang mismong dahilan,
+// halimbawa "The first name field is required."
+function getErrorMessage(err, fallback) {
+  const errors = err.response?.data?.errors;
+
+  if (errors) {
+    const first = Object.values(errors).flat()[0];
+    if (first) return first;
+  }
+
+  return err.response?.data?.message || fallback;
+}
 
 export const useSpeakerStore = defineStore("speaker", () => {
   // ---------------------------------------------------------------
@@ -28,54 +42,54 @@ export const useSpeakerStore = defineStore("speaker", () => {
 
     try {
       const response = await speaker_name();
-
-      console.log("fetchSpeakers response:", response.data);
-
       Speakers.value = response.data.data || [];
     } catch (err) {
-      console.log("fetchSpeakers error:", err);
-      error.value = err.response?.data?.message || "Failed to load speakers.";
+      error.value = getErrorMessage(err, "Failed to load speakers.");
     } finally {
       loading.value = false;
     }
   }
 
-  async function createSpeaker(payload) {
+  async function createSpeaker(payload, photoFile = null) {
     loading.value = true;
     error.value = null;
 
     try {
-      const response = await create_speaker(payload);
-
-      console.log("createSpeaker response:", response.data);
+      const response = await create_speaker(payload, photoFile);
 
       await fetchSpeakers();
 
       return { success: true, message: response.data.message };
     } catch (err) {
-      console.log("createSpeaker error:", err);
-      error.value = err.response?.data?.message || "Failed to create speaker.";
+      error.value = getErrorMessage(err, "Failed to create speaker.");
       return { success: false, message: error.value };
     } finally {
       loading.value = false;
     }
   }
 
-  async function updateSpeaker(speakerId, payload) {
+  async function updateSpeaker(
+    speakerId,
+    payload,
+    photoFile = null,
+    removePhoto = false
+  ) {
     loading.value = true;
     error.value = null;
 
     try {
-      const response = await update_speaker(speakerId, payload);
-
-      console.log("updateSpeaker response:", response.data);
+      const response = await update_speaker(
+        speakerId,
+        payload,
+        photoFile,
+        removePhoto
+      );
 
       await fetchSpeakers();
 
       return { success: true, message: response.data.message };
     } catch (err) {
-      console.log("updateSpeaker error:", err);
-      error.value = err.response?.data?.message || "Failed to update speaker.";
+      error.value = getErrorMessage(err, "Failed to update speaker.");
       return { success: false, message: error.value };
     } finally {
       loading.value = false;
@@ -89,17 +103,35 @@ export const useSpeakerStore = defineStore("speaker", () => {
     try {
       const response = await delete_speaker(speakerId);
 
-      console.log("deleteSpeaker response:", response.data);
-
       Speakers.value = Speakers.value.filter((t) => t.speakerId !== speakerId);
 
       return { success: true, message: response.data.message };
     } catch (err) {
-      console.log("deleteSpeaker error:", err);
-      error.value = err.response?.data?.message || "Failed to delete speaker.";
+      error.value = getErrorMessage(err, "Failed to delete speaker.");
       return { success: false, message: error.value };
     } finally {
       loading.value = false;
+    }
+  }
+
+  const speaker = ref(null);
+
+  async function viewSpeaker(speakerId, silent = false) {
+    if (!silent) {
+      loading.value = true;
+      speaker.value = null; // para hindi lumitaw ang data ng dating speaker
+    }
+    error.value = null;
+
+    try {
+      const response = await view_speaker(speakerId);
+      speaker.value = response.data.data || null;
+      return { success: true };
+    } catch (err) {
+      error.value = getErrorMessage(err, "Failed to load speaker.");
+      return { success: false, message: error.value };
+    } finally {
+      if (!silent) loading.value = false;
     }
   }
 
@@ -112,5 +144,7 @@ export const useSpeakerStore = defineStore("speaker", () => {
     createSpeaker,
     updateSpeaker,
     deleteSpeaker,
+    viewSpeaker,
+    speaker,
   };
 });
