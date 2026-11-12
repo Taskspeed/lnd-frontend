@@ -22,7 +22,7 @@ const routes = [
         path: "dashboard",
         name: "dashboard",
         component: () => import("pages/administrator/DashboardPage.vue"),
-            //  component: () => import("pages/DashboardPageOld.vue"),
+        //  component: () => import("pages/DashboardPageOld.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
       {
@@ -34,7 +34,8 @@ const routes = [
       {
         path: "create-events",
         name: "create events",
-        component: () => import("pages/administrator/event/EventCreatePage.vue"),
+        component: () =>
+          import("pages/administrator/event/EventCreatePage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
       {
@@ -46,32 +47,37 @@ const routes = [
       {
         path: "/events/:eventId/schedules/:scheduleId/nominated",
         name: "event-nominated-employee",
-        component: () => import("pages/administrator/event/EventNominatedEmployeePage.vue"),
+        component: () =>
+          import("pages/administrator/event/EventNominatedEmployeePage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
-
 
       {
         path: "list_of_submission",
         name: "list_of_submission",
-        component: () => import("pages/administrator/employee/submission/ListEventParticipantsPage.vue"),
+        component: () =>
+          import(
+            "pages/administrator/employee/submission/ListEventParticipantsPage.vue"
+          ),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
-          {
+      {
         path: "/event/:eventId/schedules/:scheduleId/participants",
         name: "event-participant-submission",
-        component: () => import("pages/administrator/employee/submission/ViewEmployeeSubmissionPage.vue"),
+        component: () =>
+          import(
+            "pages/administrator/employee/submission/ViewEmployeeSubmissionPage.vue"
+          ),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
 
-
-         {
+      {
         path: "certification",
         name: "certification",
-        component: () => import("pages/administrator/certification/CertificateListPage.vue"),
+        component: () =>
+          import("pages/administrator/certification/CertificateListPage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
-
 
       {
         path: "library",
@@ -109,6 +115,13 @@ const routes = [
         component: () => import("pages/library/event/TypePage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
+      {
+        path: "speakers/:speakerId",
+        name: "speaker-view",
+        component: () =>
+          import("pages/administrator/event/SpeakerViewPage.vue"),
+        meta: { requiresAuth: true, roles: ["hr_admin"] },
+      },
 
       {
         path: "speaker",
@@ -128,7 +141,7 @@ const routes = [
         component: () => import("pages/UserPage.vue"),
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
-       {
+      {
         path: "bpm-admin",
         name: "bpm-admin",
         component: () => import("pages/administrator/BpmPage.vue"),
@@ -138,7 +151,6 @@ const routes = [
         path: "",
         redirect: "dashboard",
       },
-
 
       // office_admin
       {
@@ -168,14 +180,14 @@ const routes = [
         name: "office-event-view",
         component: () => import("pages/office/event/EventViewPage.vue"),
       },
-      
+
       {
         path: "bpm",
         name: "bpm",
         component: () => import("pages/office/BpmPage.vue"),
       },
 
-         {
+      {
         path: "profile",
         name: "profile",
         component: () => import("pages/ProfilePage.vue"),
