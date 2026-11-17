@@ -7,364 +7,340 @@
       <div class="page-heading">
         <div class="page-heading-copy">
           <div class="page-eyebrow">
-            <q-icon name="event_note" size="19px" />
+            <q-icon name="event_note" />
             Training schedule
           </div>
-          <h5>Event Schedule Details</h5>
+          <h5>{{ eventInfo.title_name || "Event Schedule Details" }}</h5>
           <p>Review schedule information, participating offices, and employee nominations.</p>
         </div>
-        <q-btn flat dense no-caps icon="arrow_back" label="Back to Events" class="back-btn" @click="$router.back()" />
+
+        <div class="heading-actions">
+          <span v-if="schedule.computedStatus" class="pill pill-status"
+            :class="'status-' + String(schedule.computedStatus).toLowerCase()">
+            {{ schedule.computedStatus }}
+          </span>
+          <q-btn flat dense no-caps icon="arrow_back" label="Back to Events" class="back-btn"
+            @click="$router.back()" />
+        </div>
       </div>
     </section>
 
-    <!-- ===================================================
+    <!-- =====================================================
          LOADING / ERROR
-    ==================================================== -->
+    ====================================================== -->
     <LoadingState v-if="loading" message="Loading schedule details..." full-page />
     <div v-else-if="errorMessage" class="error-state">{{ errorMessage }}</div>
 
-    <template v-else>
-      <!-- ===================================================
-           1. SCHEDULE DETAILS (2 columns: info | offices)
-      ==================================================== -->
+    <div v-else class="details-col">
+      <!-- =====================================================
+           1. SCHEDULE DETAILS (STEPPER)
+      ====================================================== -->
       <q-card flat bordered class="detail-card">
-        <div class="section-head">
-          <div class="section-head-text">
-            <div class="section-heading">
+        <q-expansion-item v-model="detailsOpen" class="details-expansion" header-class="details-header"
+          expand-icon-class="details-expand-icon">
+          <template #header>
+            <q-item-section avatar class="details-avatar">
               <q-icon name="event" class="section-icon" />
+            </q-item-section>
+            <q-item-section>
               <div class="section-title">Schedule Details</div>
+              <div class="section-sub">Event, sessions, offices, and assessment</div>
+            </q-item-section>
+            <q-item-section side class="details-hint">
+              {{ detailsOpen ? "Hide details" : "Show details" }}
+            </q-item-section>
+          </template>
+
+        <q-stepper v-model="tab" flat animated header-nav color="green" class="schedule-stepper">
+          <!-- OVERVIEW -->
+          <q-step name="overview" title="Overview" caption="Event information" icon="event">
+            <div class="field-label">Event</div>
+            <h6 class="event-title-lg">{{ eventInfo.title_name }}</h6>
+
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Venue</span>
+                <span class="detail-value">{{ show(schedule.venue_name) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Hours</span>
+                <span class="detail-value">{{ show(schedule.hours) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Mode</span>
+                <span class="detail-value">{{ show(schedule.mode_name) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Fee</span>
+                <span class="detail-value">{{ show(schedule.fee) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Type</span>
+                <span class="detail-value">{{ show(schedule.type_name) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Category</span>
+                <span class="detail-value">{{ show(schedule.category_name) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Source</span>
+                <span class="detail-value">{{ show(schedule.source_name) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Learning type</span>
+                <span class="detail-value">{{ show(schedule.learning_intervention) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Conducted by</span>
+                <span class="detail-value">{{ show(schedule.conducted_by) }}</span>
+              </div>
+              <div class="detail-item detail-item-wide">
+                <span class="detail-label">Qualifications</span>
+                <span class="detail-value">{{ show(schedule.qualifications) }}</span>
+              </div>
             </div>
-            <div class="section-sub">Event and schedule information</div>
-          </div>
-          <span class="status-badge" :class="'status-' + schedule.computedStatus">
-            {{ schedule.computedStatus }}
-          </span>
-        </div>
 
-        <div class="detail-body">
-          <div class="schedule-layout">
-            <!-- ============ LEFT: EVENT INFORMATION ============ -->
-            <div class="info-col">
-              <span class="detail-label">Event</span>
-              <h6 class="event-title-lg">{{ eventInfo.title_name }}</h6>
+            <template v-if="competencyGroups.length">
+              <div class="field-label field-label-spaced">Competencies</div>
+              <div class="competency-groups">
+                <div v-for="group in competencyGroups" :key="group.key" class="competency-group-block"
+                  :class="'competency-' + group.color">
+                  <div class="competency-group-title">{{ group.label }}</div>
+                  <div class="tag-row">
+                    <span v-for="(item, i) in group.items" :key="i" class="tag">{{ item }}</span>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </q-step>
 
-              <div class="detail-grid">
-                <div class="detail-item">
-                  <span class="detail-label">Venue</span>
-                  <span class="detail-value">{{ schedule.venue_name }}</span>
-                </div>
+          <!-- DATES & SPEAKERS -->
+          <q-step name="dates" title="Sessions" caption="Dates and speakers" icon="calendar_month">
+            <div class="date-list">
+              <div v-for="d in scheduleDates" :key="d.schedule_date_time_id" class="date-card">
+                <div class="date-card-head">
+                  <div class="date-main">
+                    <q-icon name="event" class="date-icon" />
+                    <strong>{{ d.schedule_date }}</strong>
+                  </div>
 
-                <div class="detail-item">
-                  <span class="detail-label">Hours</span>
-                  <span class="detail-value">{{ schedule.hours }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Mode</span>
-                  <span class="detail-value">{{ schedule.mode_name }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Fee</span>
-                  <span class="detail-value">{{ schedule.fee }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Type</span>
-                  <span class="detail-value">{{ schedule.type_name }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Category</span>
-                  <span class="detail-value">{{ schedule.category_name }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Source</span>
-                  <span class="detail-value">{{ schedule.source_name }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">learning type</span>
-                  <span class="detail-value">{{ schedule.learning_intervention }}</span>
+                  <q-btn outline dense no-caps icon="print" label="Print Attendance" class="print-btn"
+                    :loading="isAttendanceLoading(d.schedule_date_time_id)" :disable="isAnyAttendanceLoading()"
+                    @click="printAttendance(d)" />
                 </div>
 
-                <div class="detail-item">
-                  <span class="detail-label">Conducted by</span>
-                  <span class="detail-value">{{ schedule.conducted_by || "—" }}</span>
+                <div class="time-row">
+                  <span class="time-chip">
+                    <q-icon name="wb_sunny" size="14px" />
+                    Morning {{ d.morning_in }} – {{ d.morning_out }}
+                  </span>
+                  <span class="time-chip">
+                    <q-icon name="wb_twilight" size="14px" />
+                    Afternoon {{ d.afternoon_in }} – {{ d.afternoon_out }}
+                  </span>
                 </div>
-                <div class="detail-item detail-item-wide">
-                  <span class="detail-label">Qualifications</span>
-                  <span class="detail-value">{{ schedule.qualifications }}</span>
+
+                <div class="speaker-block">
+                  <span class="detail-label">Speakers</span>
+                  <div v-if="d.speakers.length" class="speaker-list">
+                    <div v-for="sp in d.speakers" :key="sp.speakerId" class="speaker-item">
+                      <strong>{{ sp.speaker_name }}</strong> — {{ sp.position }}, {{ sp.agency }}
+                    </div>
+                  </div>
+                  <span v-else class="muted-text">No speaker assigned</span>
                 </div>
               </div>
 
-              <div class="section-label">Schedule Dates</div>
-              <div class="date-list">
-                <div v-for="d in scheduleDates" :key="d.schedule_date_time_id" class="date-item">
-                  <strong>{{ d.schedule_date }}</strong>
+              <div v-if="!scheduleDates.length" class="empty-box">No schedule dates.</div>
+            </div>
+          </q-step>
 
-                  <div class="date-right">
-                    <span>
-                      Morning: {{ d.morning_in }} – {{ d.morning_out }} | Afternoon:
-                      {{ d.afternoon_in }} – {{ d.afternoon_out }}
+          <!-- OFFICES -->
+          <q-step name="offices" title="Offices" caption="Participating offices" icon="domain">
+            <div class="step-head">
+              <div>
+                <div class="step-title">Participating offices</div>
+                <div class="step-sub">
+                  {{ officeList.length }} office{{ officeList.length === 1 ? "" : "s" }}
+                </div>
+              </div>
+
+              <q-btn outline dense no-caps icon="print" label="Print Nomination" class="print-btn"
+                :loading="isNominationLoading('nomination')" :disable="isAnyNominationLoading()"
+                @click="printNomination" />
+            </div>
+
+            <div v-if="officeList.length" class="office-grid">
+              <div v-for="o in officeList" :key="o.id" class="office-item" :class="{
+                'has-nominees': o.nominees > 0,
+                'is-full': o.isFull,
+                'is-clickable': o.nominees > 0,
+                'is-active': selectedOffice === o.name,
+              }" @click="o.nominees > 0 && toggleOffice(o.name)">
+                <span class="office-dot"></span>
+                <div class="office-main">
+                  <span class="office-name">{{ o.name }}</span>
+                  <div class="office-stats">
+                    <span class="office-pill pill-attendees">
+                      <span class="pill-label">No. of Attendees</span>
+                      <span class="pill-value">{{ o.attendees ?? "—" }}</span>
                     </span>
-
-                    <q-btn outline dense no-caps icon="print" label="Print Attendance" class="print-btn"
-                      :loading="isAttendanceLoading(d.schedule_date_time_id)" :disable="isAnyAttendanceLoading()"
-                      @click="printAttendance(d)" />
-                  </div>
-
-                  <!-- Speakers ng date na ito -->
-                  <div class="date-speakers">
-                    <span class="detail-label">Speakers</span>
-                    <div v-if="d.speakers.length" class="speaker-list">
-                      <div v-for="sp in d.speakers" :key="sp.speakerId" class="speaker-item">
-                        <strong>{{ sp.speaker_name }}</strong> — {{ sp.position }}, {{ sp.agency }}
-                      </div>
-                    </div>
-                    <span v-else class="assessment-empty">No speaker assigned</span>
+                    <span class="office-pill pill-nominees">
+                      <span class="pill-label">Nominees</span>
+                      <span class="pill-value">{{ o.nominees }}</span>
+                    </span>
                   </div>
                 </div>
-                <div v-if="!scheduleDates.length" class="table-empty">No schedule dates.</div>
               </div>
-
-
-
-              <template v-if="competencyGroups.length">
-                <div class="section-label">Competencies</div>
-                <div class="competency-groups">
-                  <div v-for="group in competencyGroups" :key="group.key" class="competency-group-block"
-                    :class="'competency-' + group.color">
-                    <div class="competency-group-title">{{ group.label }}</div>
-                    <div class="tag-row">
-                      <span v-for="(item, i) in group.items" :key="i" class="tag">
-                        {{ item }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </template>
             </div>
+            <div v-else class="empty-box">No offices tagged.</div>
 
-            <!-- ============ RIGHT: OFFICES ============ -->
-            <aside class="office-col">
-              <div class="office-head">
-                <div class="office-heading">
-                  <q-icon name="domain" class="section-icon" />
-                  <div>
-                    <div class="office-head-title">Offices</div>
-                    <div class="office-head-count">
-                      {{ officeList.length }} office{{ officeList.length === 1 ? "" : "s" }}
-                    </div>
-                  </div>
+            <div v-if="officeFilterOptions.length" class="office-hint">
+              <q-icon name="info_outline" size="15px" />
+              Select an office with nominees to filter the nominations table below.
+            </div>
+          </q-step>
+
+          <!-- ASSESSMENT -->
+          <q-step name="assessment" title="Assessment" caption="Pre and post test" icon="quiz">
+            <div class="assessment-grid">
+              <div v-for="item in assessmentItems" :key="item.assessmentId" class="assessment-item">
+                <div class="assessment-info">
+                  <span class="detail-label">{{ item.title }}</span>
+                  <span class="assessment-meta">Passing score: {{ show(item.passing_score) }}</span>
                 </div>
 
-                <q-btn outline dense no-caps icon="print" label="Print Nomination" class="print-btn"
-                  :loading="isNominationLoading('nomination')" :disable="isAnyNominationLoading()"
-                  @click="printNomination" />
+                <div class="assessment-actions">
+                  <q-btn outline dense no-caps icon="visibility" label="View" class="print-btn"
+                    :loading="isAssessmentLoading(item.assessmentId)" :disable="isAnyAssessmentLoading()"
+                    @click="viewAssessment(item)" />
 
-              </div>
-
-              <div v-if="officeList.length" class="office-list">
-                <div v-for="o in officeList" :key="o.id" class="office-item" :class="{
-                  'has-nominees': o.nominees > 0,
-                  'is-full': o.isFull,
-                  'is-clickable': o.nominees > 0,
-                  'is-active': selectedOffice === o.name,
-                }" @click="o.nominees > 0 && toggleOffice(o.name)">
-                  <span class="office-dot"></span>
-                  <div class="office-main">
-                    <span class="office-name">{{ o.name }}</span>
-                    <div class="office-stats">
-                      <span class="office-pill pill-attendees">
-                        <span class="pill-label">No. of Attendees</span>
-                        <span class="pill-value">{{ o.attendees ?? "—" }}</span>
-                      </span>
-                      <span class="office-pill pill-nominees">
-                        <span class="pill-label">Nominees</span>
-                        <span class="pill-value">{{ o.nominees }}</span>
-                      </span>
-                    </div>
-                  </div>
+                  <q-btn outline dense no-caps icon="print" label="Print" class="print-btn"
+                    :loading="isAssessmentPreviewLoading(item.assessmentId)"
+                    :disable="isAnyAssessmentPreviewLoading()" @click="printAssessment(item)" />
                 </div>
               </div>
-              <div v-else class="table-empty">No offices tagged.</div>
 
-              <!-- ============ assessment ============ -->
-              <div class="assessment-block">
-                <div class="office-heading">
-                  <q-icon name="quiz" class="section-icon" />
-                  <div class="office-head-title">Assessment</div>
-                </div>
+              <div v-if="!assessmentItems.length" class="empty-box">No assessment added.</div>
+            </div>
+          </q-step>
+        </q-stepper>
+        </q-expansion-item>
+      </q-card>
 
-                <div class="assessment-list">
-                  <div v-for="item in assessmentItems" :key="item.key" class="assessment-item">
-                    <div class="assessment-info">
-                      <span class="detail-label">{{ item.label }}</span>
-                      <a v-if="item.url" :href="item.url" target="_blank" rel="noopener noreferrer"
-                        class="assessment-link">
-                        {{ item.url }}
-                      </a>
-                      <span v-else class="assessment-empty">No link added</span>
-                    </div>
-
-                    <q-btn v-if="item.url" outline dense no-caps icon="open_in_new" label="Open" class="print-btn"
-                      :href="item.url" target="_blank" rel="noopener noreferrer" />
-                  </div>
-                </div>
-              </div>
-            </aside>
+      <!-- =====================================================
+           2. NOMINATION STATS
+      ====================================================== -->
+      <section class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-icon tone-green">
+            <q-icon name="groups" size="22px" />
+          </div>
+          <div>
+            <div class="stat-value">{{ stats.total }}</div>
+            <div class="stat-label">Total employees for nomination</div>
           </div>
         </div>
-      </q-card>
-    </template>
 
-    <!-- ===================================================
-         2. NOMINATION
-    ==================================================== -->
-    <section class="statistics-grid">
-      <!-- Total -->
-      <q-card flat class="stat-card">
-        <div class="stat-icon stat-icon-green">
-          <q-icon name="groups" size="26px" />
+        <div v-ripple class="stat-card stat-card-link" :class="{ 'is-active': selectedStatus === 'Pending' }"
+          @click="toggleStatus('Pending')">
+          <div class="stat-icon tone-amber">
+            <q-icon name="hourglass_empty" size="22px" />
+          </div>
+          <div>
+            <div class="stat-value">{{ stats.pending }}</div>
+            <div class="stat-label">Pending</div>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Total employees for nomination</div>
-          <div class="stat-value">{{ stats.total }}</div>
-        </div>
-      </q-card>
-      <!-- Pending -->
-      <q-card flat class="stat-card stat-card-link" :class="{ 'is-active': selectedStatus === 'Pending' }" v-ripple
-        @click="toggleStatus('Pending')">
-        <div class="stat-icon stat-icon-yellow">
-          <q-icon name="hourglass_empty" size="26px" />
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Pending</div>
-          <div class="stat-value">{{ stats.pending }}</div>
-        </div>
-      </q-card>
-      <!-- Approved -->
-      <q-card flat class="stat-card stat-card-link" :class="{ 'is-active': selectedStatus === 'Approved' }" v-ripple
-        @click="toggleStatus('Approved')">
-        <div class="stat-icon stat-icon-blue">
-          <q-icon name="task_alt" size="26px" />
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Approved</div>
-          <div class="stat-value">{{ stats.approved }}</div>
-        </div>
-      </q-card>
-      <!-- Disapproved -->
-      <q-card flat class="stat-card stat-card-link" :class="{ 'is-active': selectedStatus === 'Disapproved' }" v-ripple
-        @click="toggleStatus('Disapproved')">
-        <div class="stat-icon stat-icon-red">
-          <q-icon name="cancel" size="26px" />
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Disapproved</div>
-          <div class="stat-value">{{ stats.disapproved }}</div>
-        </div>
-      </q-card>
-    </section>
 
+        <div v-ripple class="stat-card stat-card-link" :class="{ 'is-active': selectedStatus === 'Approved' }"
+          @click="toggleStatus('Approved')">
+          <div class="stat-icon tone-blue">
+            <q-icon name="task_alt" size="22px" />
+          </div>
+          <div>
+            <div class="stat-value">{{ stats.approved }}</div>
+            <div class="stat-label">Approved</div>
+          </div>
+        </div>
 
-    <q-card flat bordered class="detail-card">
-      <div class="section-head">
-        <div class="section-head-text">
-          <div class="section-heading">
-            <q-icon name="groups" class="section-icon" />
+        <div v-ripple class="stat-card stat-card-link" :class="{ 'is-active': selectedStatus === 'Disapproved' }"
+          @click="toggleStatus('Disapproved')">
+          <div class="stat-icon tone-red">
+            <q-icon name="cancel" size="22px" />
+          </div>
+          <div>
+            <div class="stat-value">{{ stats.disapproved }}</div>
+            <div class="stat-label">Disapproved</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           3. NOMINATIONS TABLE
+      ====================================================== -->
+      <q-card flat bordered class="detail-card">
+        <div class="section-head section-head-wrap">
+          <q-icon name="groups" class="section-icon" />
+          <div class="section-head-text">
             <div class="section-title">Nominations</div>
+            <div class="section-sub">Review and update nominated employees for this schedule</div>
           </div>
-          <div class="section-sub">Select employees to nominate for this schedule</div>
+
+          <q-select :model-value="selectedStatus" :options="statusOptions" label="Filter by status" dense outlined
+            clearable class="filter-select" @update:model-value="applyStatusFilter" />
+          <q-select :model-value="selectedOffice" :options="officeFilterOptions" label="Filter by office" dense
+            outlined clearable class="filter-select" @update:model-value="applyOfficeFilter" />
         </div>
 
-        <q-select :model-value="selectedStatus" :options="statusOptions" label="Filter by status" dense outlined
-          clearable class="office-filter" @update:model-value="applyStatusFilter" />
-        <q-select :model-value="selectedOffice" :options="officeFilterOptions" label="Filter by office" dense outlined
-          clearable class="office-filter" @update:model-value="applyOfficeFilter" />
-      </div>
+        <q-table flat :rows="nominatedEmployees" :columns="nominatedColumns" row-key="nominated_employee_id"
+          v-model:pagination="pagination" :loading="tableLoading" :rows-per-page-options="[5, 10, 20, 50]"
+          no-data-label="No nominations found." class="detail-table" @request="onRequest">
+          <template #body="props">
+            <q-tr :props="props">
+              <q-td v-for="col in props.cols" :key="col.name" :props="props">
+                <template v-if="col.name === 'is_attended'">
+                  <q-badge :color="props.row.is_attended ? 'green' : 'grey-6'">
+                    {{ props.row.is_attended ? "Yes" : "No" }}
+                  </q-badge>
+                </template>
 
-      <!-- <div class="detail-body" v-if="!nominatedEmployees.length">
-        <div class="table-empty">No nominations yet for this schedule.</div>
-      </div> -->
+                <template v-else-if="col.name === 'nominate_status'">
+                  <q-badge class="badge-status" :class="{
+                    'status-approved': props.row.nominate_status === 'Approved',
+                    'status-disapproved': props.row.nominate_status === 'Disapproved',
+                    'status-pending': props.row.nominate_status === 'Pending',
+                  }">
+                    {{ props.row.nominate_status }}
+                  </q-badge>
+                </template>
 
-      <q-table flat :rows="nominatedEmployees" :columns="nominatedColumns" row-key="nominated_employee_id"
-        v-model:pagination="pagination" :loading="tableLoading" :rows-per-page-options="[5, 10, 20, 50]"
-        no-data-label="No nominations found." @request="onRequest" class="app-table detail-table">
-        <template #body="props">
-          <q-tr :props="props">
-            <q-td v-for="col in props.cols" :key="col.name" :props="props">
-              <template v-if="col.name === 'is_attended'">
-                <q-badge :color="props.row.is_attended ? 'green' : 'grey-6'">
-                  {{ props.row.is_attended ? "Yes" : "No" }}
-                </q-badge>
-              </template>
+                <template v-else-if="col.name === 'action'">
+                  <div class="row-actions">
+                    <q-btn flat dense round icon="visibility" color="primary"
+                      :loading="isViewLoading(props.row.nominated_employee_id)" :disable="isAnyViewLoading()"
+                      @click.stop="viewEmployeeInformation(props.row)">
+                      <q-tooltip>View Details</q-tooltip>
+                    </q-btn>
 
-              <template v-else-if="col.name === 'nominate_status'">
-                <q-badge class="status-badge" :class="{
-                  'status-approved': props.row.nominate_status === 'Approved',
-                  'status-disapproved': props.row.nominate_status === 'Disapproved',
-                  'status-pending': props.row.nominate_status === 'Pending',
-                }">
-                  {{ props.row.nominate_status }}
-                </q-badge>
-              </template>
+                    <q-toggle :model-value="statusToModel(props.row.nominate_status)"
+                      :class="'toggle-' + (props.row.nominate_status || 'Pending').toLowerCase()"
+                      :disable="isReviewLoading(props.row.nominated_employee_id) || isAnyReviewLoading()"
+                      toggle-indeterminate dense @update:model-value="reviewNomination(props.row)">
+                      <q-tooltip>Review nomination</q-tooltip>
+                    </q-toggle>
+                  </div>
+                </template>
 
-              <!-- <template v-else-if="col.name === 'action'">
-                <div class="row-actions">
-                  <q-btn flat dense round icon="visibility" color="primary"
-                    :loading="isViewLoading(props.row.nominated_employee_id)" :disable="isAnyViewLoading()"
-                    @click.stop="viewEmployeeInformation(props.row)">
-                    <q-tooltip>View Details</q-tooltip>
-                  </q-btn>
-
-                  <q-btn flat dense round icon="task_alt" color="positive"
-                    :loading="isApproveLoading(props.row.nominated_employee_id)" :disable="isAnyApproveLoading()"
-                    @click.stop="approveNomination(props.row)">
-                    <q-tooltip>Approve</q-tooltip>
-                  </q-btn>
-
-                  <q-btn flat dense round icon="cancel" color="negative"
-                    :loading="isDisapproveLoading(props.row.nominated_employee_id)" :disable="isAnyDisapproveLoading()"
-                    @click.stop="disapproveNomination(props.row)">
-                    <q-tooltip>Disapprove</q-tooltip>
-                  </q-btn>
-                </div>
-              </template> -->
-              <template v-else-if="col.name === 'action'">
-                <div class="row-actions">
-                  <q-btn flat dense round icon="visibility" color="primary"
-                    :loading="isViewLoading(props.row.nominated_employee_id)" :disable="isAnyViewLoading()"
-                    @click.stop="viewEmployeeInformation(props.row)">
-                    <q-tooltip>View Details</q-tooltip>
-                  </q-btn>
-
-                  <!-- <button type="button" class="tri-toggle"
-                    :class="'is-' + (props.row.nominate_status || 'Pending').toLowerCase()"
-                    :disabled="isReviewLoading(props.row.nominated_employee_id) || isAnyReviewLoading()"
-                    @click.stop="reviewNomination(props.row)">
-                    <span class="tri-knob">
-                      <q-spinner v-if="isReviewLoading(props.row.nominated_employee_id)" size="10px" color="white" />
-                    </span>
-                    <q-tooltip>Review nomination</q-tooltip>
-                  </button> -->
-                <q-toggle
-              :model-value="statusToModel(props.row.nominate_status)"
-                :class="'toggle-' + (props.row.nominate_status || 'Pending').toLowerCase()"
-                :disable="isReviewLoading(props.row.nominated_employee_id) || isAnyReviewLoading()"
-                toggle-indeterminate
-                dense
-                @update:model-value="reviewNomination(props.row)"
-              >
-                <q-tooltip>Review nomination</q-tooltip>
-              </q-toggle>
-                </div>
-              </template>
-
-              <template v-else>
-                {{ col.value }}
-              </template>
-            </q-td>
-          </q-tr>
-        </template>
-      </q-table>
-    </q-card>
+                <template v-else>
+                  {{ col.value }}
+                </template>
+              </q-td>
+            </q-tr>
+          </template>
+        </q-table>
+      </q-card>
+    </div>
 
     <!-- NOMINATION DETAILS DIALOG -->
     <q-dialog v-model="showNominationDetailsDialog">
@@ -388,12 +364,58 @@
               <span class="detail-label">Status</span>
               <span class="detail-value">{{ viewedNomination?.status }}</span>
             </div>
-            <div class="detail-item" style="grid-column: 1 / -1">
-
+            <div class="detail-item detail-item-wide">
               <span class="detail-label">Reason</span>
               <span class="detail-value">{{ viewedNomination?.nominate_reason || "—" }}</span>
             </div>
-            
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat no-caps label="Close" color="blue" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- ASSESSMENT QUESTIONS DIALOG -->
+    <q-dialog v-model="showAssessmentDialog">
+      <q-card style="width: 720px; max-width: 92vw">
+        <q-card-section class="dialog-header row items-center no-wrap">
+          <div class="col">
+            <div class="section-title">{{ viewedAssessment?.title }}</div>
+            <div class="section-sub">
+              Passing score: {{ show(viewedAssessment?.passing_score) }} ·
+              {{ (viewedAssessment?.questions || []).length }} questions ·
+              {{ assessmentTotalPoints }} points
+            </div>
+          </div>
+          <q-toggle v-model="showAnswers" dense label="Show correct answers" class="answer-toggle" />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="assessment-dialog-body">
+          <div v-for="(q, i) in viewedAssessment?.questions || []" :key="q.id" class="question-card">
+            <div class="question-text">
+              <span class="question-no">{{ i + 1 }}</span>
+              <span>{{ q.question }}</span>
+              <span class="question-points">({{ q.points }} {{ q.points > 1 ? "pts" : "pt" }})</span>
+            </div>
+
+            <div class="question-options">
+              <div v-for="opt in q.options" :key="opt.id" class="question-option"
+                :class="{ 'is-correct': showAnswers && opt.is_correct }">
+                <q-icon :name="showAnswers && opt.is_correct
+                  ? 'check_circle'
+                  : q.question_type === 'checkboxes' ? 'check_box_outline_blank' : 'radio_button_unchecked'"
+                  size="18px" />
+                <span>{{ opt.option_text }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="!(viewedAssessment?.questions || []).length" class="empty-box">
+            No questions added yet.
           </div>
         </q-card-section>
 
@@ -419,6 +441,7 @@ import { useEmployeeInformationStore } from "src/stores/administrator/employee/e
 import { useRowLoading } from "src/composables/useRowLoading";
 import { usePdfStore } from "src/stores/administrator/pdf/pdfStore";
 import EmployeeNominationModal from "src/components/employee/EmployeeNominationModal.vue";
+import { useAssessmentStore } from "src/stores/event/assessmentStore";
 
 export default defineComponent({
   name: "EventNominatedEmployeePage",
@@ -435,11 +458,19 @@ export default defineComponent({
     const errorMessage = ref("");
     const eventDetail = ref(null);
 
+    // active step ng Schedule Details stepper
+    const tab = ref("overview");
+
+    // Schedule Details dropdown: false = nakasara (nasa taas ang nominations table)
+    const detailsOpen = ref(false);
+
     const eventInfo = computed(() => eventDetail.value || {});
     const schedule = computed(() => eventInfo.value.schedule?.[0] || {});
 
     const offices = computed(() => (schedule.value.office || []).map((o) => o.office_name));
     const nominatedEmployees = computed(() => schedule.value.nominated_employee?.data || []);
+
+    const show = (value) => (value === null || value === undefined || value === "" ? "—" : value);
 
     function timeOrDefault(value, defaultValue = "00:00") {
       return value === null || value === undefined || value === "" ? defaultValue : value;
@@ -462,7 +493,8 @@ export default defineComponent({
       );
       return [...map.values()];
     });
-    // Offices for the right column (with nominee counts)
+
+    // Offices (with nominee counts)
     const officeList = computed(() =>
       (schedule.value.office || [])
         .map((o) => ({
@@ -481,14 +513,11 @@ export default defineComponent({
         .sort((a, b) => b.nominees - a.nominees || a.name.localeCompare(b.name))
     );
 
-
     const showEmployeeModal = ref(false);
     const EmployeeInformation = ref({});
     const loadingEmployeeInfo = ref(false);
 
     const { isLoading: isViewLoading, isAnyLoading: isAnyViewLoading, run: runView } = useRowLoading();
-    // const { isLoading: isApproveLoading, isAnyLoading: isAnyApproveLoading, run: runApprove } = useRowLoading();
-    // const { isLoading: isDisapproveLoading, isAnyLoading: isAnyDisapproveLoading, run: runDisapprove } = useRowLoading();
     const { isLoading: isNominationLoading, isAnyLoading: isAnyNominationLoading, run: runNomination } = useRowLoading();
     const { isLoading: isAttendanceLoading, isAnyLoading: isAnyAttendanceLoading, run: runAttendance } = useRowLoading();
     const { isLoading: isReviewLoading, isAnyLoading: isAnyReviewLoading, run: runReview } = useRowLoading();
@@ -563,8 +592,6 @@ export default defineComponent({
       showNominationDetailsDialog.value = true;
     }
 
-
-
     async function loadNominatedEmployees(
       page = pagination.value.page,
       { silent = false, perPage = pagination.value.rowsPerPage, office = selectedOffice.value, status = selectedStatus.value, } = {}
@@ -574,7 +601,6 @@ export default defineComponent({
       errorMessage.value = "";
 
       const result = await eventStore.fetchNominatedEmployee(eventId, scheduleId, page, perPage, office, status);
-
 
       if (result.success) {
         eventDetail.value = eventStore.nominated_employee;
@@ -609,99 +635,8 @@ export default defineComponent({
       await loadNominatedEmployees();
     });
 
-    // async function approveNomination(row) {
-    //   return runApprove(row.nominated_employee_id, async () => {
-    //     const result = await Swal.fire({
-    //       title: "Approve Nomination",
-    //       text: `Approve nomination for ${row.full_name}?`,
-    //       icon: "question",
-    //       showCancelButton: true,
-    //       confirmButtonText: "Approve",
-    //       cancelButtonText: "Cancel",
-    //       confirmButtonColor: "#18b64d",
-    //       cancelButtonColor: "#9e9e9e",
-    //       reverseButtons: true,
-    //       scrollbarPadding: false,
-    //       heightAuto: false,
-    //     });
-
-    //     if (!result.isConfirmed) return;
-
-    //     const res = await eventStore.approvalNominatedEmployee(row.nominated_employee_id, {
-    //       nominate_status: "Approved",
-    //     });
-
-    //     if (res.success) {
-    //       Swal.fire({
-    //         toast: true,
-    //         position: "top-end",
-    //         icon: "success",
-    //         title: "Nomination approved.",
-    //         showConfirmButton: false,
-    //         timer: 2000,
-    //         timerProgressBar: true,
-    //         scrollbarPadding: false,
-    //       });
-    //       await loadNominatedEmployees(pagination.value.page, { silent: true });
-    //     } else {
-    //       Swal.fire({
-    //         title: "Failed",
-    //         text: res.message || "Unable to approve nomination.",
-    //         icon: "error",
-    //         scrollbarPadding: false,
-    //       });
-    //     }
-    //   });
-    // }
-
-    // async function disapproveNomination(row) {
-    //   return runDisapprove(row.nominated_employee_id, async () => {
-    //     const result = await Swal.fire({
-    //       title: "Disapprove Nomination",
-    //       text: `Disapprove nomination for ${row.full_name}?`,
-    //       icon: "warning",
-    //       showCancelButton: true,
-    //       confirmButtonText: "Disapproved",
-    //       cancelButtonText: "Cancel",
-    //       confirmButtonColor: "#d83d3d",
-    //       cancelButtonColor: "#9e9e9e",
-    //       reverseButtons: true,
-    //       scrollbarPadding: false,
-    //       heightAuto: false,
-    //     });
-
-    //     if (!result.isConfirmed) return;
-
-    //     const res = await eventStore.approvalNominatedEmployee(row.nominated_employee_id, {
-    //       nominate_status: "Disapproved",
-    //     });
-
-    //     if (res.success) {
-    //       Swal.fire({
-    //         toast: true,
-    //         position: "top-end",
-    //         icon: "success",
-    //         title: "Nomination disapproved.",
-    //         showConfirmButton: false,
-    //         timer: 2000,
-    //         timerProgressBar: true,
-    //         scrollbarPadding: false,
-    //       });
-    //       await loadNominatedEmployees(pagination.value.page, { silent: true });
-    //     } else {
-    //       Swal.fire({
-    //         title: "Failed",
-    //         text: res.message || "Unable to disapprove nomination.",
-    //         icon: "error",
-    //         scrollbarPadding: false,
-    //       });
-    //     }
-    //   });
-    // }
-
     async function printAttendance(dateRow) {
       return runAttendance(dateRow.schedule_date_time_id, async () => {
-        //   const win = window.open("", "_blank");
         const result = await pdfStore.fetchAttendanceSheet(
           eventId,
           scheduleId,
@@ -722,7 +657,6 @@ export default defineComponent({
           });
         }
       });
-
     }
 
     const printingNomination = ref(false);
@@ -745,7 +679,26 @@ export default defineComponent({
           });
         }
       });
+    }
 
+    async function printAssessment(item) {
+      return runAssessmentPreview(item.assessmentId, async () => {
+        const result = await assessmentStore.preview_assessment(item.assessmentId);
+
+        if (result.success) {
+          const url = window.URL.createObjectURL(
+            new Blob([result.blob], { type: "application/pdf" })
+          );
+          window.open(url, "_blank");
+        } else {
+          Swal.fire({
+            title: "Failed",
+            text: result.message || "Unable to preview assessment.",
+            icon: "error",
+            scrollbarPadding: false,
+          });
+        }
+      });
     }
 
     const tableLoading = ref(false);
@@ -771,100 +724,126 @@ export default defineComponent({
       return applyOfficeFilter(selectedOffice.value === office ? null : office);
     }
 
-    const assessment = computed(() => schedule.value.event_assessment?.[0] || {});
+    // ASSESSMENT: listahan galing sa schedule.assessments (Pre-Test / Post-Test)
+    const assessmentStore = useAssessmentStore();
+    const assessmentItems = computed(() => schedule.value.assessments || []);
 
-    const assessmentItems = computed(() => [
-      { key: "pre", label: "Pre Test", url: assessment.value.pre_test_assessment || "" },
-      { key: "post", label: "Post Test", url: assessment.value.post_test_assessment || "" },
-    ]);
+    const showAssessmentDialog = ref(false);
+    const viewedAssessment = ref(null);
+    const showAnswers = ref(false);
 
+    const { isLoading: isAssessmentLoading, isAnyLoading: isAnyAssessmentLoading, run: runAssessment } = useRowLoading();
+    const { isLoading: isAssessmentPreviewLoading, isAnyLoading: isAnyAssessmentPreviewLoading, run: runAssessmentPreview } = useRowLoading();
 
+    const assessmentTotalPoints = computed(() =>
+      (viewedAssessment.value?.questions || []).reduce((sum, q) => sum + (Number(q.points) || 0), 0)
+    );
 
-  async function reviewNomination(row) {
-  // 1. Choose Approve / Disapprove
-  const result = await Swal.fire({
-    title: "Review Nomination",
-    text: `Update the nomination status of ${row.full_name}?`,
-    icon: "question",
-    showDenyButton: true,
-    showCancelButton: true,
-    confirmButtonText: "Approve",
-    denyButtonText: "Disapprove",
-    cancelButtonText: "Cancel",
-    confirmButtonColor: "#18b64d",
-    denyButtonColor: "#d83d3d",
-    cancelButtonColor: "#9e9e9e",
-    scrollbarPadding: false,
-    heightAuto: false,
-  });
+    // Kukunin ang buong assessment (questions + options) kapag na-click ang View questions
+    async function viewAssessment(item) {
+      return runAssessment(item.assessmentId, async () => {
+        const result = await assessmentStore.view_assessment(item.assessmentId);
 
-  let status = null;
-  let remarks = null;
-
-  if (result.isConfirmed) {
-    status = "Approved";
-  } else if (result.isDenied) {
-    status = "Disapproved";
-
-    // 2. Required remarks for disapproval
-    const remarksResult = await Swal.fire({
-      title: "Disapprove Nomination",
-      text: `Please provide the remarks for disapproving ${row.full_name}.`,
-      icon: "warning",
-      input: "textarea",
-      inputLabel: "Remarks",
-      inputPlaceholder: "Enter remarks...",
-      inputAttributes: { "aria-label": "Remarks" },
-      showCancelButton: true,
-      confirmButtonText: "Disapprove",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#d83d3d",
-      cancelButtonColor: "#9e9e9e",
-      reverseButtons: true,
-      scrollbarPadding: false,
-      heightAuto: false,
-      inputValidator: (value) => {
-        if (!value || !value.trim()) {
-          return "Remarks are required when disapproving a nomination.";
+        if (result.success) {
+          viewedAssessment.value = result.data;
+          showAnswers.value = false;
+          showAssessmentDialog.value = true;
+        } else {
+          Swal.fire({
+            title: "Failed",
+            text: result.message || "Unable to fetch assessment.",
+            icon: "error",
+            scrollbarPadding: false,
+          });
         }
-      },
-    });
-
-    if (!remarksResult.isConfirmed) return; // Cancel / close
-    remarks = remarksResult.value.trim();
-  } else {
-    return; // Cancel / close
-  }
-
-  // 3. Loading while saving
-  return runReview(row.nominated_employee_id, async () => {
-    const payload = { nominate_status: status };
-    if (status === "Disapproved") payload.nomination_remarks = remarks;
-
-    const res = await eventStore.approvalNominatedEmployee(row.nominated_employee_id, payload);
-
-    if (res.success) {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: `Nomination ${status.toLowerCase()}.`,
-        showConfirmButton: false,
-        timer: 2000,
-        timerProgressBar: true,
-        scrollbarPadding: false,
-      });
-      await loadNominatedEmployees(pagination.value.page, { silent: true });
-    } else {
-      Swal.fire({
-        title: "Failed",
-        text: res.message || "Unable to update nomination.",
-        icon: "error",
-        scrollbarPadding: false,
       });
     }
-  });
-}
+
+    async function reviewNomination(row) {
+      // 1. Choose Approve / Disapprove
+      const result = await Swal.fire({
+        title: "Review Nomination",
+        text: `Update the nomination status of ${row.full_name}?`,
+        icon: "question",
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: "Approve",
+        denyButtonText: "Disapprove",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#18b64d",
+        denyButtonColor: "#d83d3d",
+        cancelButtonColor: "#9e9e9e",
+        scrollbarPadding: false,
+        heightAuto: false,
+      });
+
+      let status = null;
+      let remarks = null;
+
+      if (result.isConfirmed) {
+        status = "Approved";
+      } else if (result.isDenied) {
+        status = "Disapproved";
+
+        // 2. Required remarks for disapproval
+        const remarksResult = await Swal.fire({
+          title: "Disapprove Nomination",
+          text: `Please provide the remarks for disapproving ${row.full_name}.`,
+          icon: "warning",
+          input: "textarea",
+          inputLabel: "Remarks",
+          inputPlaceholder: "Enter remarks...",
+          inputAttributes: { "aria-label": "Remarks" },
+          showCancelButton: true,
+          confirmButtonText: "Disapprove",
+          cancelButtonText: "Cancel",
+          confirmButtonColor: "#d83d3d",
+          cancelButtonColor: "#9e9e9e",
+          reverseButtons: true,
+          scrollbarPadding: false,
+          heightAuto: false,
+          inputValidator: (value) => {
+            if (!value || !value.trim()) {
+              return "Remarks are required when disapproving a nomination.";
+            }
+          },
+        });
+
+        if (!remarksResult.isConfirmed) return; // Cancel / close
+        remarks = remarksResult.value.trim();
+      } else {
+        return; // Cancel / close
+      }
+
+      // 3. Loading while saving
+      return runReview(row.nominated_employee_id, async () => {
+        const payload = { nominate_status: status };
+        if (status === "Disapproved") payload.nomination_remarks = remarks;
+
+        const res = await eventStore.approvalNominatedEmployee(row.nominated_employee_id, payload);
+
+        if (res.success) {
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: "success",
+            title: `Nomination ${status.toLowerCase()}.`,
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            scrollbarPadding: false,
+          });
+          await loadNominatedEmployees(pagination.value.page, { silent: true });
+        } else {
+          Swal.fire({
+            title: "Failed",
+            text: res.message || "Unable to update nomination.",
+            icon: "error",
+            scrollbarPadding: false,
+          });
+        }
+      });
+    }
 
     const selectedStatus = ref(null);
     const statusOptions = ["Pending", "Approved", "Disapproved"];
@@ -882,7 +861,11 @@ export default defineComponent({
     function toggleStatus(status) {
       return applyStatusFilter(selectedStatus.value === status ? null : status);
     }
+
     return {
+      tab,
+      detailsOpen,
+      show,
       loading,
       errorMessage,
       eventInfo,
@@ -898,8 +881,6 @@ export default defineComponent({
       showNominationDetailsDialog,
       viewedNomination,
       viewNominationDetails,
-      // approveNomination,
-      // disapproveNomination,
       viewEmployeeInformation,
 
       showEmployeeModal,
@@ -909,15 +890,9 @@ export default defineComponent({
       isViewLoading,
       isAnyViewLoading,
 
-      // isApproveLoading,
-      // isAnyApproveLoading,
-
       reviewNomination,
       isReviewLoading,
       isAnyReviewLoading,
-
-      // isDisapproveLoading,
-      // isAnyDisapproveLoading,
 
       isNominationLoading,
       isAnyNominationLoading,
@@ -940,8 +915,17 @@ export default defineComponent({
       printNomination,
       printingNomination,
 
-      assessment,
       assessmentItems,
+      showAssessmentDialog,
+      viewedAssessment,
+      showAnswers,
+      assessmentTotalPoints,
+      viewAssessment,
+      isAssessmentLoading,
+      isAnyAssessmentLoading,
+      printAssessment,
+      isAssessmentPreviewLoading,
+      isAnyAssessmentPreviewLoading,
       statusToModel,
       statusColor,
 
@@ -950,10 +934,10 @@ export default defineComponent({
       statusOptions,
       applyStatusFilter,
       toggleStatus,
-
     };
   },
 });
+
 function statusToModel(status) {
   if (status === "Approved") return true;
   if (status === "Disapproved") return false;
@@ -980,515 +964,16 @@ function statusColor(status) {
   gap: 16px;
 }
 
-/* =========================================================
-   PAGE HEADER
-========================================================= */
-.page-header {
-  margin-bottom: 4px;
-}
-
-.back-btn {
-  padding: 0;
-  margin-bottom: 6px;
-  color: #060707;
-  font-size: 14px;
-  font-weight: 410;
-}
-
-.page-header h5 {
-  margin: 5px 0 3px;
-  color: #19354a;
-  font-size: 18px;
-  font-weight: 750;
-}
-
-.page-header p {
-  margin: 0;
-  color: #718089;
-  font-size: 12px;
-}
-
-/* =========================================================
-   LOADING / ERROR
-========================================================= */
-.loading-state,
-.table-empty {
-  padding: 30px 0;
-  text-align: center;
-  color: #8a989e;
-  font-size: 12px;
-}
-
-.error-state {
-  padding: 20px;
-  border-radius: 10px;
-  background: #fbe9e9;
-  color: #c73f3f;
-  font-size: 12px;
-}
-
-/* =========================================================
-   DETAIL CARD (shared shell)
-========================================================= */
-.detail-card {
-  overflow: hidden;
-  border-radius: 13px;
-  background: #ffffff;
-  box-shadow: 0 3px 12px rgba(30, 70, 42, 0.055);
-}
-
-.section-head {
+.details-col {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
-  border-bottom: 1px solid #edf1ef;
-  background: #fcfdfc;
-}
-
-.section-head-text {
-  flex: 1;
-}
-
-.section-title {
-  color: #19354a;
-  font-size: 13.5px;
-  font-weight: 750;
-}
-
-.section-sub {
-  margin-top: 2px;
-  color: #8a989e;
-  font-size: 10.5px;
-}
-
-/* =========================================================
-   SCHEDULE DETAILS — TWO COLUMN LAYOUT
-========================================================= */
-.detail-body {
-  padding: 20px 22px;
-}
-
-.schedule-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
-  gap: 28px;
-  align-items: start;
-}
-
-.info-col {
+  flex-direction: column;
+  gap: 16px;
   min-width: 0;
 }
 
-.event-title-lg {
-  margin: 0;
-  color: #172431;
-  font-size: 17px;
-  font-weight: 750;
-  line-height: 1.4;
-}
-
-.detail-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px 24px;
-  margin-top: 20px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid #eef2f1;
-}
-
-.detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.detail-label {
-  color: #94a3ab;
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-}
-
-.detail-value {
-  color: #2c3e4a;
-  font-size: 13px;
-  font-weight: 550;
-}
-
-.section-label {
-  margin: 22px 0 10px;
-  color: #94a3ab;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
 /* =========================================================
-   OFFICES (right column)
+   HEADER
 ========================================================= */
-.office-col {
-  position: sticky;
-  top: 16px;
-  padding: 14px;
-  border: 1px solid #edf1ef;
-  border-radius: 12px;
-  background: #fcfdfc;
-  margin-top: 71px;
-}
-
-.office-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-
-}
-
-.office-head-title {
-  color: #19354a;
-  font-size: 13px;
-  font-weight: 750;
-}
-
-.office-head-count {
-  color: #94a3ab;
-  font-size: 10.5px;
-  margin-left: 10px;
-}
-
-.office-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 560px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.office-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid #e8eceb;
-  border-radius: 10px;
-  background: #ffffff;
-  box-shadow: 0 1px 3px rgba(30, 70, 42, 0.04);
-}
-
-.office-dot {
-  flex-shrink: 0;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #cfd6d9;
-}
-
-.office-main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.office-name {
-  color: #2c3e4a;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.35;
-  text-transform: uppercase;
-}
-
-.office-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.office-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 4px 3px 10px;
-  border-radius: 20px;
-  background: #eef1f2;
-  color: #94a3ab;
-  font-size: 10px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.pill-value {
-  min-width: 20px;
-  padding: 1px 7px;
-  border-radius: 20px;
-  background: #ffffff;
-  color: #5c6b73;
-  text-align: center;
-}
-
-/* attendees — neutral blue */
-.pill-attendees {
-  background: #e7f0fb;
-  color: #2b6cb0;
-}
-
-.pill-attendees .pill-value {
-  color: #2b6cb0;
-}
-
-/* office na may nominees */
-.office-item.has-nominees {
-  border-color: #cdeedb;
-}
-
-.office-item.has-nominees .office-dot {
-  background: #18b64d;
-}
-
-.office-item.has-nominees .pill-nominees {
-  background: #e1f7e7;
-  color: #087c42;
-}
-
-.office-item.has-nominees .pill-nominees .pill-value {
-  color: #087c42;
-}
-
-/* office na puno na ang slots */
-.office-item.is-full {
-  border-color: #f3dcb0;
-}
-
-.office-item.is-full .office-dot {
-  background: #d97706;
-}
-
-.office-item.is-full .pill-nominees {
-  background: #fdf3e0;
-  color: #b45f06;
-}
-
-.office-item.is-full .pill-nominees .pill-value {
-  color: #b45f06;
-}
-
-/* =========================================================
-   COMPETENCY GROUPS
-========================================================= */
-.competency-groups {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.competency-group-block {
-  padding: 12px 16px;
-  border-radius: 10px;
-  border-left: 3px solid transparent;
-  background: #fafcfb;
-}
-
-.competency-group-title {
-  margin-bottom: 9px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-}
-
-.competency-group-block .tag-row {
-  margin-top: 0;
-}
-
-/* CORE — blue */
-.competency-core {
-  border-left-color: #2b6cb0;
-}
-
-.competency-core .competency-group-title {
-  color: #2b6cb0;
-}
-
-.competency-core .tag {
-  background: #e7f0fb;
-  color: #2b6cb0;
-}
-
-/* TECHNICAL — purple */
-.competency-technical {
-  border-left-color: #7c3aed;
-}
-
-.competency-technical .competency-group-title {
-  color: #7c3aed;
-}
-
-.competency-technical .tag {
-  background: #f1e9fd;
-  color: #7c3aed;
-}
-
-/* LEADERSHIP — amber */
-.competency-leadership {
-  border-left-color: #d97706;
-}
-
-.competency-leadership .competency-group-title {
-  color: #d97706;
-}
-
-.competency-leadership .tag {
-  background: #fdf3e0;
-  color: #d97706;
-}
-
-/* =========================================================
-   DATES / SPEAKERS / TAGS
-========================================================= */
-.date-list,
-.speaker-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.date-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid #eef2f1;
-  background: #fafcfb;
-  color: #2c3e4a;
-  font-size: 12px;
-}
-
-.date-item strong {
-  color: #172431;
-}
-
-.speaker-item {
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid #eef2f1;
-  background: #fafcfb;
-  color: #2c3e4a;
-  font-size: 12px;
-}
-
-.tag-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.tag {
-  padding: 4px 10px;
-  border-radius: 6px;
-  background: #f1f4f2;
-  color: #121414;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.date-right {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.print-btn {
-  padding: 4px 14px;
-  border: 1px solid #d5d5d5;
-  border-radius: 9px;
-  background: #ffffff;
-  color: #207fc9;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.print-btn :deep(.q-icon) {
-  font-size: 16px;
-  margin-right: 6px;
-}
-
-.print-btn:hover {
-  background: #f5f7f6;
-}
-
-/* =========================================================
-   NOMINATION TABLE
-========================================================= */
-.detail-table {
-  box-shadow: none;
-  padding: 0 12px;
-}
-
-.dialog-header {
-  padding: 16px 20px;
-}
-
-.row-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  white-space: nowrap;
-}
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-@media (max-width: 900px) {
-  .schedule-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .office-col {
-    position: static;
-  }
-}
-
-@media (max-width: 650px) {
-  .event-page {
-    padding: 14px;
-  }
-
-  .detail-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.office-filter {
-  min-width: 260px;
-  max-width: 360px;
-}
-
-.office-item.is-clickable {
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.office-item.is-clickable:hover {
-  box-shadow: 0 2px 8px rgba(30, 70, 42, 0.12);
-}
-
-.office-item.is-active {
-  border-color: #2b6cb0;
-  background: #f3f8fd;
-  box-shadow: 0 0 0 1px #2b6cb0;
-}
-
 .page-heading {
   display: flex;
   align-items: center;
@@ -1509,38 +994,43 @@ function statusColor(status) {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: green;
-  font-size: 12px;
+  color: #16a84a;
+  font-size: 11px;
   font-weight: 750;
   letter-spacing: 0.8px;
   text-transform: uppercase;
 }
 
-.page-eyebrow .q-icon {
-  font-size: 15px;
-}
-
-.page-header h5 {
+.page-heading h5 {
   margin: 6px 0 5px;
+  color: #19354a;
   font-size: 23px;
+  font-weight: 750;
   line-height: 1.25;
 }
 
-.page-header p {
-  max-width: 620px;
+.page-heading p {
+  margin: 0;
+  color: #718089;
   font-size: 13px;
-  line-height: 1.5;
+}
+
+.heading-actions {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 10px;
 }
 
 .back-btn {
   flex: 0 0 auto;
   min-height: 38px;
   padding: 0 12px;
-  margin: 0;
   border: 1px solid #dfe7ed;
   border-radius: 9px;
   background: #ffffff;
   color: #31546b;
+  font-size: 12px;
   font-weight: 650;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
@@ -1550,66 +1040,176 @@ function statusColor(status) {
   background: #f4f8fb;
 }
 
+.pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.pill-status {
+  color: #2b6cb0;
+  background: #e7f0fb;
+}
+
+.pill-status.status-ongoing {
+  color: #087c42;
+  background: #e1f7e7;
+}
+
+.pill-status.status-completed {
+  color: #5c6b73;
+  background: #eef1f2;
+}
+
+.pill-status.status-cancelled {
+  color: #c73f3f;
+  background: #fbe9e9;
+}
+
+.error-state {
+  padding: 20px;
+  border-radius: 10px;
+  background: #fbe9e9;
+  color: #c73f3f;
+  font-size: 13px;
+}
+
+/* =========================================================
+   CARD + SECTION HEAD
+========================================================= */
 .detail-card {
-  border-color: #e3eaf0;
+  overflow: hidden;
+  border: 1px solid #e3eaf0;
   border-radius: 16px;
+  background: #ffffff;
   box-shadow: 0 5px 18px rgba(25, 53, 74, 0.05);
 }
 
 .section-head {
-  padding: 18px 22px;
-  background: linear-gradient(110deg, #fbfdff 0%, #f6f9fb 100%);
-}
-
-.section-heading,
-.office-heading {
   display: flex;
   align-items: center;
   gap: 9px;
+  padding: 16px 22px;
+  border-bottom: 1px solid #edf1ef;
+  background: linear-gradient(110deg, #fbfdff 0%, #f6f9fb 100%);
+}
+
+.section-head-text {
+  flex: 1;
+  min-width: 0;
 }
 
 .section-icon {
-  flex: 0 0 auto;
-  color: green;
-  font-size: 19px;
+  color: #16a84a;
+  font-size: 20px;
 }
 
 .section-title {
+  color: #19354a;
   font-size: 15px;
+  font-weight: 750;
 }
 
 .section-sub {
-  margin-top: 3px;
-  margin-left: 28px;
-  font-size: 14px;
-  color: #585c5e;
- flex-wrap: wrap;
+  margin-top: 2px;
+  color: #8a989e;
+  font-size: 11.5px;
 }
 
-.detail-body {
-  padding: 22px;
+.filter-select {
+  min-width: 220px;
+  max-width: 320px;
 }
 
-.schedule-layout {
-  grid-template-columns: minmax(0, 1.65fr) minmax(290px, 1fr);
-  gap: 24px;
+/* =========================================================
+   SCHEDULE DETAILS DROPDOWN
+========================================================= */
+.details-expansion :deep(.details-header) {
+  padding: 14px 22px;
+  background: linear-gradient(110deg, #fbfdff 0%, #f6f9fb 100%);
+}
+
+.details-expansion :deep(.details-header:hover) {
+  background: #f3f7fa;
+}
+
+.details-expansion.q-expansion-item--expanded :deep(.details-header) {
+  border-bottom: 1px solid #edf1ef;
+}
+
+.details-avatar {
+  min-width: 0;
+  padding-right: 4px;
+}
+
+.details-hint {
+  color: #607987;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.details-expansion :deep(.details-expand-icon) {
+  color: #607987;
+}
+
+/* =========================================================
+   STEPPER
+========================================================= */
+.schedule-stepper {
+  background: transparent;
+  box-shadow: none;
+}
+
+.schedule-stepper :deep(.q-stepper__header) {
+  border-bottom: 1px solid #edf1f4;
+}
+
+.schedule-stepper :deep(.q-stepper__tab) {
+  padding: 14px 18px;
+}
+
+.schedule-stepper :deep(.q-stepper__step-inner) {
+  padding: 20px 22px 22px;
+}
+
+/* =========================================================
+   OVERVIEW
+========================================================= */
+.field-label {
+  color: #8193a0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.field-label-spaced {
+  margin: 22px 0 10px;
 }
 
 .event-title-lg {
-  margin-top: 4px;
-  font-size: 20px;
+  margin: 4px 0 0;
+  color: #172431;
+  font-size: 19px;
+  font-weight: 750;
+  line-height: 1.4;
   letter-spacing: -0.2px;
 }
 
 .detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
-  margin-top: 18px;
-  padding-bottom: 20px;
+  margin-top: 16px;
 }
 
 .detail-item {
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
   gap: 5px;
+  min-width: 0;
   padding: 11px 13px;
   border: 1px solid #e9eef2;
   border-radius: 10px;
@@ -1622,57 +1222,336 @@ function statusColor(status) {
 
 .detail-label {
   color: #8193a0;
-  font-size: 9px;
-  letter-spacing: 0.65px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .detail-value {
-  overflow-wrap: anywhere;
   color: #263d4c;
-  font-size: 13px;
+  font-size: 13.5px;
+  font-weight: 550;
   line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
-.section-label {
-  margin-top: 24px;
-  color: #607987;
+/* COMPETENCIES */
+.competency-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.office-col {
-  top: 20px;
-  padding: 16px;
-  border-color: #e3eaf0;
-  border-radius: 14px;
-  background: #f9fbfc;
+.competency-group-block {
+  padding: 12px 16px;
+  border-left: 3px solid transparent;
+  border-radius: 10px;
+  background: #fbfcfd;
 }
 
-.office-heading {
+.competency-group-title {
+  margin-bottom: 9px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.competency-core {
+  border-left-color: #2b6cb0;
+}
+
+.competency-core .competency-group-title {
+  color: #2b6cb0;
+}
+
+.competency-core .tag {
+  background: #e7f0fb;
+  color: #2b6cb0;
+}
+
+.competency-technical {
+  border-left-color: #7c3aed;
+}
+
+.competency-technical .competency-group-title {
+  color: #7c3aed;
+}
+
+.competency-technical .tag {
+  background: #f1e9fd;
+  color: #7c3aed;
+}
+
+.competency-leadership {
+  border-left-color: #d97706;
+}
+
+.competency-leadership .competency-group-title {
+  color: #d97706;
+}
+
+.competency-leadership .tag {
+  background: #fdf3e0;
+  color: #d97706;
+}
+
+/* =========================================================
+   SESSIONS (DATES + SPEAKERS)
+========================================================= */
+.date-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.date-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e9eef2;
+  border-radius: 12px;
+  background: #fbfcfd;
+}
+
+.date-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.date-main {
+  display: flex;
+  align-items: center;
   gap: 8px;
-}
-
-.office-head-title {
+  color: #172431;
   font-size: 14px;
 }
 
-.office-head-count {
-  display: block;
-  margin: 2px 0 0;
-  font-size: 10px;
+.date-icon {
+  color: #16a84a;
+  font-size: 18px;
 }
 
-.office-list {
-  max-height: 620px;
-  gap: 9px;
+.time-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.time-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  background: #e7f0fb;
+  color: #2b6cb0;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.speaker-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed #e1e8ec;
+}
+
+.speaker-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.speaker-item {
+  padding: 10px 13px;
+  border: 1px solid #e9eef2;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #2c3e4a;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.muted-text {
+  color: #aab5bb;
+  font-size: 12px;
+}
+
+.empty-box {
+  padding: 16px;
+  border: 1px dashed #dde5ea;
+  border-radius: 10px;
+  color: #aab5bb;
+  font-size: 12.5px;
+  text-align: center;
+}
+
+/* =========================================================
+   OFFICES
+========================================================= */
+.step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.step-title {
+  color: #19354a;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.step-sub {
+  margin-top: 2px;
+  color: #8a989e;
+  font-size: 11.5px;
+}
+
+.office-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding: 2px 4px 2px 0;
 }
 
 .office-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   padding: 12px;
-  border-color: #e4ebef;
+  border: 1px solid #e4ebef;
   border-radius: 11px;
+  background: #ffffff;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
+.office-dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: #cfd6d9;
+}
+
+.office-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.office-name {
+  color: #2c3e4a;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+
+.office-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.office-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 5px 4px 10px;
+  border-radius: 20px;
+  background: #eef1f2;
+  color: #94a3ab;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pill-value {
+  min-width: 20px;
+  padding: 1px 7px;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #5c6b73;
+  text-align: center;
+}
+
+.pill-attendees {
+  background: #e7f0fb;
+  color: #2b6cb0;
+}
+
+.pill-attendees .pill-value {
+  color: #2b6cb0;
+}
+
+.office-item.has-nominees {
+  border-color: #cdeedb;
+}
+
+.office-item.has-nominees .office-dot {
+  background: #18b64d;
+}
+
+.office-item.has-nominees .pill-nominees {
+  background: #e1f7e7;
+  color: #087c42;
+}
+
+.office-item.has-nominees .pill-nominees .pill-value {
+  color: #087c42;
+}
+
+.office-item.is-full {
+  border-color: #f3dcb0;
+}
+
+.office-item.is-full .office-dot {
+  background: #d97706;
+}
+
+.office-item.is-full .pill-nominees {
+  background: #fdf3e0;
+  color: #b45f06;
+}
+
+.office-item.is-full .pill-nominees .pill-value {
+  color: #b45f06;
+}
+
+.office-item.is-clickable {
+  cursor: pointer;
+}
+
 .office-item.is-clickable:hover {
+  box-shadow: 0 2px 8px rgba(30, 70, 42, 0.12);
   transform: translateY(-1px);
 }
 
@@ -1682,36 +1561,172 @@ function statusColor(status) {
   box-shadow: 0 0 0 2px rgba(43, 108, 176, 0.12);
 }
 
-.office-name {
+.office-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  color: #8a989e;
   font-size: 11.5px;
-  line-height: 1.45;
 }
 
-.office-pill {
-  padding: 4px 5px 4px 9px;
+/* =========================================================
+   ASSESSMENT
+========================================================= */
+.assessment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
-.date-list,
-.speaker-list {
-  margin-top: 10px;
-}
-
-.date-item,
-.speaker-item {
+.assessment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   padding: 12px 14px;
-  border-color: #e5ebef;
-  border-radius: 10px;
+  border: 1px solid #e9eef2;
+  border-radius: 11px;
   background: #fbfcfd;
 }
 
-.date-right {
-  justify-content: flex-end;
+.assessment-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
+.assessment-link {
+  overflow: hidden;
+  color: #24699b;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.assessment-link:hover {
+  text-decoration: underline;
+}
+
+.assessment-meta {
+  color: #263d4c;
+  font-size: 13px;
+  font-weight: 550;
+}
+
+.assessment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.assessment-grid .empty-box {
+  grid-column: 1 / -1;
+}
+
+/* ASSESSMENT DIALOG */
+.assessment-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: #fbfcfd;
+}
+
+.answer-toggle {
+  color: #607987;
+  font-size: 12px;
+}
+
+.question-card {
+  padding: 12px 14px;
+  border: 1px solid #e9eef2;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+.question-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #19354a;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.question-no {
+  flex: 0 0 auto;
+  min-width: 22px;
+  padding: 1px 0;
+  border-radius: 6px;
+  background: #e7f0fb;
+  color: #2b6cb0;
+  font-size: 11px;
+  text-align: center;
+}
+
+.question-points {
+  margin-left: auto;
+  flex: 0 0 auto;
+  color: #8a989e;
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+.question-options {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 10px 0 0 30px;
+}
+
+.question-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: #344b5a;
+  font-size: 12.5px;
+}
+
+.question-option .q-icon {
+  color: #aab5bb;
+}
+
+.question-option.is-correct {
+  background: #e1f7e7;
+  color: #087c42;
+  font-weight: 600;
+}
+
+.question-option.is-correct .q-icon {
+  color: #18b64d;
+}
+
+/* =========================================================
+   BUTTONS
+========================================================= */
 .print-btn {
   min-height: 34px;
-  border-color: #d5e1e9;
+  padding: 4px 14px;
+  border: 1px solid #d5e1e9;
+  border-radius: 9px;
+  background: #ffffff;
   color: #24699b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.print-btn :deep(.q-icon) {
+  font-size: 16px;
+  margin-right: 6px;
 }
 
 .print-btn:hover {
@@ -1719,11 +1734,88 @@ function statusColor(status) {
   background: #f2f8fc;
 }
 
-.office-filter {
-  min-width: 240px;
+/* =========================================================
+   STAT CARDS
+========================================================= */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
 }
 
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid #e3eaf0;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgba(25, 53, 74, 0.04);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.stat-card-link {
+  cursor: pointer;
+}
+
+.stat-card-link:hover {
+  box-shadow: 0 6px 16px rgba(25, 53, 74, 0.09);
+}
+
+.stat-card.is-active {
+  border-color: #8db8dc;
+  box-shadow: 0 0 0 2px rgba(43, 108, 176, 0.15);
+}
+
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+.tone-blue {
+  color: #2b6cb0;
+  background: #e7f0fb;
+}
+
+.tone-green {
+  color: #087c42;
+  background: #e1f7e7;
+}
+
+.tone-amber {
+  color: #b7791f;
+  background: #fdf3dc;
+}
+
+.tone-red {
+  color: #c73f3f;
+  background: #fbe9e9;
+}
+
+.stat-value {
+  color: #19354a;
+  font-size: 22px;
+  font-weight: 750;
+  line-height: 1.1;
+}
+
+.stat-label {
+  margin-top: 3px;
+  color: #718089;
+  font-size: 11.5px;
+}
+
+/* =========================================================
+   NOMINATIONS TABLE
+========================================================= */
 .detail-table {
+  box-shadow: none;
   padding: 0 18px 12px;
 }
 
@@ -1753,14 +1845,85 @@ function statusColor(status) {
   background: #f8fbfd;
 }
 
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
 
+.badge-status {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.badge-status.status-pending {
+  color: #b7791f;
+  background: #fdf3dc;
+}
+
+.badge-status.status-approved {
+  color: #087c42;
+  background: #e1f7e7;
+}
+
+.badge-status.status-disapproved {
+  color: #c73f3f;
+  background: #fbe9e9;
+}
+
+.toggle-approved :deep(.q-toggle__track) {
+  background: #18b64d;
+  opacity: 0.5;
+}
+
+.toggle-approved :deep(.q-toggle__thumb:after) {
+  background: #18b64d;
+}
+
+.toggle-disapproved :deep(.q-toggle__track) {
+  background: #d83d3d;
+  opacity: 0.5;
+}
+
+.toggle-disapproved :deep(.q-toggle__thumb:after) {
+  background: #d83d3d;
+}
+
+.dialog-header {
+  padding: 16px 20px;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
 @media (max-width: 900px) {
-  .schedule-layout {
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+
+  .office-grid,
+  .assessment-grid,
+  .speaker-list {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .office-col {
-    top: auto;
+  .schedule-stepper :deep(.q-stepper__tab) {
+    padding: 12px 10px;
+  }
+
+  .schedule-stepper :deep(.q-stepper__caption) {
+    display: none;
   }
 }
 
@@ -1771,51 +1934,31 @@ function statusColor(status) {
   }
 
   .page-heading {
-    align-items: flex-start;
     flex-direction: column-reverse;
+    align-items: flex-start;
     gap: 14px;
     padding: 18px;
   }
 
-  .page-header h5 {
+  .heading-actions {
+    flex-wrap: wrap;
+  }
+
+  .page-heading h5 {
     font-size: 20px;
   }
 
-  .back-btn {
-    min-height: 34px;
-  }
-
-  .section-head {
-    align-items: flex-start;
+  .section-head-wrap {
     flex-wrap: wrap;
-    padding: 16px;
   }
 
-  .section-sub {
-    margin-left: 28px;
-  }
-
-  .detail-body {
-    padding: 16px;
-  }
-
-  .detail-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-  }
-
-  .detail-item {
-    padding: 10px;
-  }
-
-  .office-head {
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .office-filter {
+  .filter-select {
     width: 100%;
     max-width: none;
+  }
+
+  .schedule-stepper :deep(.q-stepper__step-inner) {
+    padding: 16px;
   }
 
   .detail-table {
@@ -1823,285 +1966,11 @@ function statusColor(status) {
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 560px) {
+
+  .stat-grid,
   .detail-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .detail-item-wide {
-    grid-column: auto;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
-
-.assessment-block {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #e4ebef;
-}
-
-.assessment-list {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  margin-top: 12px;
-}
-
-.assessment-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid #e4ebef;
-  border-radius: 11px;
-  background: #ffffff;
-}
-
-.assessment-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.assessment-link {
-  overflow: hidden;
-  color: #24699b;
-  font-size: 11.5px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-decoration: none;
-}
-
-.assessment-link:hover {
-  text-decoration: underline;
-}
-
-.assessment-empty {
-  color: #aab5bb;
-  font-size: 11.5px;
-}
-
-.date-speakers {
-  flex-basis: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-top: 10px;
-  border-top: 1px dashed #e5ebef;
-}
-
-.date-speakers .speaker-list {
-  margin-top: 0;
-}
-
-.date-speakers .speaker-item {
-  background: #ffffff;
-}
-
-.statistics-grid {
-  display: grid;
-
-  grid-template-columns: repeat(4, 1fr);
-
-  gap: 16px;
-
-  margin-top: 18px;
-}
-
-.stat-card {
-  position: relative;
-
-  min-height: 116px;
-
-  display: flex;
-
-  align-items: center;
-
-  padding: 18px;
-
-  border-radius: 13px;
-
-  background: #ffffff;
-
-  box-shadow: 0 3px 12px rgba(30, 70, 42, 0.055);
-
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-
-  box-shadow: 0 7px 18px rgba(30, 70, 42, 0.09);
-}
-
-.stat-icon {
-  width: 62px;
-  height: 62px;
-
-  min-width: 62px;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 13px;
-
-  color: #ffffff;
-}
-
-.stat-icon-green {
-  background: linear-gradient(135deg, #11998E, #38EF7D);
-}
-
-.stat-icon-blue {
-  background: linear-gradient(135deg, #159bf0, #0879d8);
-}
-
-.stat-icon-yellow {
-  background: linear-gradient(135deg, #ffbe35, #f4a900);
-}
-
-.stat-icon-purple {
-  background: linear-gradient(135deg, #12a34a, #12a34a);
-}
-
-/* color: #12a34a; */
-.stat-content {
-  margin-left: 15px;
-}
-
-.stat-label {
-  color: #687a83;
-
-  font-size: 12px;
-}
-
-.stat-value {
-  margin-top: 2px;
-
-  color: #14283b;
-
-  font-size: 27px;
-
-  line-height: 1.1;
-
-  font-weight: 750;
-}
-
-.stat-change {
-  display: flex;
-
-  align-items: center;
-
-  gap: 2px;
-
-  margin-top: 5px;
-
-  font-size: 10px;
-}
-
-.stat-change-green {
-  color: #12a34a;
-}
-
-.stat-change-blue {
-  color: #087ed8;
-}
-
-.stat-change-yellow {
-  color: #e9a400;
-}
-
-.stat-change-purple {
-  color: #8149d4;
-}
-
-.stat-arrow {
-  position: absolute;
-
-  right: 15px;
-  bottom: 15px;
-
-  width: 29px;
-  height: 29px;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  color: #15a64b;
-
-  background: #effaf1;
-}
-
-.stat-arrow-blue {
-  color: #158de0;
-  background: #eef8ff;
-}
-
-.stat-arrow-yellow {
-  color: #e5a000;
-  background: #fff8e8;
-}
-
-.stat-arrow-purple {
-  color: #8248d5;
-  background: #f6f0ff;
-}
-
-
-.stat-icon-red {
-  background: linear-gradient(135deg, #ef5350, #d83d3d);
-}
-
-@media (max-width: 900px) {
-  .statistics-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 650px) {
-  .statistics-grid {
-    grid-template-columns: 1fr;
-    padding: 14px 16px 4px;
-  }
-}
-
-.filter-group {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.stat-card-link {
-  cursor: pointer;
-}
-
-.stat-card.is-active {
-  box-shadow: 0 0 0 2px #8db8dc;
-}
-.toggle-approved :deep(.q-toggle__track) {
-  background: #18b64d;
-  opacity: 0.5;
-}
-.toggle-approved :deep(.q-toggle__thumb:after) {
-  background: #18b64d;
-}
-
-/* Disapproved = red */
-.toggle-disapproved :deep(.q-toggle__track) {
-  background: #d83d3d;
-  opacity: 0.5;
-}
-.toggle-disapproved :deep(.q-toggle__thumb:after) {
-  background: #d83d3d;
-}
-
-
 </style>
