@@ -32,24 +32,6 @@
 
         <div class="section-divider"></div>
 
-        <!-- <div class="section-title forms-title">Forms</div>
-        <div class="competency-group">
-          <div class="forms-list">
-            <q-checkbox v-for="option in formsOptions" :key="option.value" v-model="eventForm.forms" :val="option.value"
-              :label="option.label" color="green" keep-color dense disable class="competency-checkbox" />
-          </div>
-        </div>
-
-        <div class="section-divider"></div>
-
-        <div class="section-title forms-title">Evaluation</div>
-        <div class="competency-group">
-          <div class="forms-list">
-            <q-checkbox v-for="option in evaluationOptions" :key="option.value" v-model="eventForm.evaluations"
-              :val="option.value" :label="option.label" color="green" keep-color disable dense
-              class="competency-checkbox" />
-          </div>
-        </div> -->
         <!-- FORM SCHEDULE -->
         <div class="form-schedule">
           <LabeledField label="Form Open Time">
@@ -102,8 +84,6 @@
           </div>
         </div>
 
-
-
         <div class="section-divider"></div>
 
         <div class="section-title forms-title">Evaluation</div>
@@ -135,38 +115,48 @@
         </div>
         <div class="section-divider"></div>
 
-        <div class="assessment-header">
-          <div class="section-title forms-title">Assessment</div>
-          <q-btn outline no-caps icon="open_in_new" label="Create Google Form" class="create-assessment-btn"
-            @click="openGoogleForms" />
-        </div>
-        <div class="arms-card" :class="eventForm.is_assessment_open ? 'arms-card--on' : 'arms-card--off'">
-          <div class="arms-card-info">
-            <q-icon :name="eventForm.is_assessment_open ? 'lock_open' : 'lock'"
-              :color="eventForm.is_assessment_open ? 'green-7' : 'red-7'" size="20px" class="arms-card-icon" />
-            <div>
-              <!-- <div class="arms-card-title">Open Assessment</div> -->
-              <div class="arms-card-desc">
-                {{ eventForm.is_assessment_open
-                  ? 'The assessment is open. Employees can now answer the Pre Test and Post Test.'
-                  : 'The assessment is closed. Turn this on to make it available to employees.' }}
-              </div>
-            </div>
-          </div>
-          <q-toggle v-model="eventForm.is_assessment_open" :color="eventForm.is_assessment_open ? 'green' : 'red'"
-            keep-color />
-        </div>
+        <!-- =====================================================
+             ASSESSMENT (summary lang dito, ang setup ay nasa modal)
+        ====================================================== -->
+       <div class="assessment-header">
+  <div class="section-title forms-title">Assessment</div>
 
-        <LabeledField label="Pre Test">
-          <q-input v-model="eventForm.pre_test_assessment" type="url" outlined dense
-            placeholder="e.g. https://forms.gle/abc123XYZ" class="custom-input" />
-        </LabeledField>
+  <div class="assessment-header-actions">
+    <q-btn v-if="assessmentCount === 0" outline no-caps icon="add" label="Create Assessment"
+      class="create-assessment-btn" @click="openAssessmentDialog" />
+    <template v-else>
+      <q-btn outline no-caps dense icon="edit" label="Edit Assessment" class="create-assessment-btn"
+        @click="openAssessmentDialog" />
+      <q-btn flat no-caps dense icon="close" label="Remove" class="remove-assessment-btn"
+        @click="removeAllAssessments" />
+    </template>
+  </div>
+</div>
 
-        <LabeledField label="Post Test">
-          <q-input v-model="eventForm.post_test_assessment" type="url" outlined dense
-            placeholder="e.g. https://forms.gle/xyz789ABC" class="custom-input" />
-        </LabeledField>
+<!-- OPEN / CLOSE TOGGLE (labas ng header at ng modal) -->
+<div v-if="assessmentCount > 0" class="arms-card assessment-toggle-card"
+  :class="eventForm.is_assessment_open ? 'arms-card--on' : 'arms-card--off'">
+  <div class="arms-card-info">
+    <q-icon :name="eventForm.is_assessment_open ? 'lock_open' : 'lock'"
+      :color="eventForm.is_assessment_open ? 'green-7' : 'red-7'" size="20px" class="arms-card-icon" />
+    <div class="arms-card-desc">
+      {{ eventForm.is_assessment_open
+        ? 'The assessment is open. Employees can now answer the tests.'
+        : 'The assessment is closed. Turn this on to make it available to employees.' }}
+    </div>
+  </div>
+  <q-toggle v-model="eventForm.is_assessment_open" :color="eventForm.is_assessment_open ? 'green' : 'red'"
+    keep-color />
+</div>
 
+<div v-if="assessmentCount > 0" class="assessment-summary">
+  <div v-for="test in assessmentTests" :key="test.key" class="assessment-summary-row">
+    <q-icon :name="eventForm[test.formKey] || eventForm[test.linkKey] ? 'check_circle' : 'radio_button_unchecked'"
+      :color="eventForm[test.formKey] || eventForm[test.linkKey] ? 'green-7' : 'grey-5'" size="18px" />
+    <span class="assessment-summary-label">{{ test.label }}</span>
+    <span class="assessment-summary-meta">{{ testStatus(test) }}</span>
+  </div>
+</div>
       </template>
 
       <!-- =======================================================
@@ -230,7 +220,6 @@
             <q-input v-model="eventForm.fee" outlined dense placeholder="e.g Php 4000" class="custom-input" />
           </LabeledField>
 
-          <!-- Full width, nasa labas ng two-column grid cell -->
           <!-- Full width, nasa labas ng two-column grid cell -->
           <div class="qualifications-field">
             <!-- SALARY GRADE ROW -->
@@ -890,6 +879,7 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
     <!-- SALARY GRADE DIALOG -->
     <q-dialog v-model="showSgDialog">
       <q-card class="sg-dialog">
@@ -907,7 +897,6 @@
           </div>
 
           <div v-if="sgError" class="sg-error">{{ sgError }}</div>
-          <!-- <div class="sg-hint">Pwedeng pareho ang From at To kung isang SG lang (e.g. SG 15 - 15).</div> -->
         </q-card-section>
 
         <q-card-actions align="right" class="dialog-actions">
@@ -917,6 +906,129 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- =========================================================
+         ASSESSMENT DIALOG (left: setup, right: preview)
+    ========================================================== -->
+    <q-dialog v-model="showAssessmentDialog">
+      <q-card class="assessment-dialog">
+        <EventDialogHeader title="Create Assessment"
+          subtitle="Set up the Pre Test and Post Test. Click a test to preview it on the right." />
+
+        <q-separator />
+
+        <q-card-section class="assessment-dialog-body">
+          <div class="assessment-modal-grid">
+            <!-- ================= LEFT: SETUP ================= -->
+            <div class="assessment-modal-left">
+              <!-- <div class="arms-card" :class="eventForm.is_assessment_open ? 'arms-card--on' : 'arms-card--off'">
+                <div class="arms-card-info">
+                  <q-icon :name="eventForm.is_assessment_open ? 'lock_open' : 'lock'"
+                    :color="eventForm.is_assessment_open ? 'green-7' : 'red-7'" size="20px" class="arms-card-icon" />
+                  <div class="arms-card-desc">
+                    {{ eventForm.is_assessment_open
+                      ? 'The assessment is open. Employees can now answer the tests.'
+                      : 'The assessment is closed. Turn this on to make it available to employees.' }}
+                  </div>
+                </div>
+                <q-toggle v-model="eventForm.is_assessment_open" :color="eventForm.is_assessment_open ? 'green' : 'red'"
+                  keep-color />
+              </div> -->
+
+              <div v-for="test in assessmentTests" :key="test.key" class="test-card test-card--clickable"
+                :class="{ 'test-card--active': previewTest && previewTest.key === test.key }"
+                @click="previewTestKey = test.key">
+           <div class="test-card-header">
+              <div class="test-card-title">{{ test.label }}</div>
+
+              <div class="row items-center q-gutter-xs">
+                <q-btn v-if="canCopyFromPre(test)" flat no-caps dense icon="content_copy"
+                  label="Copy from Pre-Test" class="copy-pre-btn" @click.stop="copyFromPreTest(test)" />
+
+                <q-btn outline no-caps dense :icon="eventForm[test.formKey] ? 'edit' : 'add'"
+                  :label="eventForm[test.formKey] ? 'Edit Form' : 'Create Form'" class="create-assessment-btn"
+                  @click.stop="openFormBuilder(test.key)" />
+              </div>
+            </div>
+
+                <div v-if="eventForm[test.formKey]" class="test-form-summary">
+                  <q-icon name="description" size="18px" color="green-7" />
+                  <div class="test-form-summary-text">
+                    <div class="test-form-summary-title">{{ eventForm[test.formKey].title }}</div>
+                    <div class="test-form-summary-meta">
+                      {{ eventForm[test.formKey].questions.length }} question(s)
+                    </div>
+                  </div>
+                  <q-btn flat round dense icon="delete_outline" class="delete-btn" @click.stop="removeTestForm(test)">
+                    <q-tooltip>Remove Form</q-tooltip>
+                  </q-btn>
+                </div>
+
+             <LabeledField label="Passing Score">
+            <q-input :model-value="getPassingScore(test)" type="number" min="0" outlined dense
+              :disable="!eventForm[test.formKey]" placeholder="eg. 20" class="custom-input" @click.stop
+              @update:model-value="setPassingScore(test, $event)" />
+          </LabeledField>
+              </div>
+
+              <div v-if="assessmentCount < MAX_ASSESSMENTS" class="add-more-assessment">
+                <q-btn outline no-caps icon="add" :label="`Add Assessment ${assessmentCount + 1}`"
+                  class="create-assessment-btn" @click="addAssessment" />
+              </div>
+              <div v-else-if="assessmentCount > 1" class="add-more-assessment">
+                <q-btn flat no-caps dense icon="close" label="Remove Last Assessment" class="remove-assessment-btn"
+                  @click="removeAssessment" />
+              </div>
+            </div>
+
+            <!-- ================= RIGHT: PREVIEW ================= -->
+            <div class="assessment-modal-right">
+              <div class="preview-label">Preview</div>
+
+              <div class="preview-card">
+          <div class="preview-event">{{ previewTest ? previewTest.label : '' }}</div>
+            <div class="preview-test">{{ eventForm.title_name || 'Untitled Event' }}</div>
+
+                <q-separator class="preview-separator" />
+
+                <template v-if="previewForm">
+                  <!-- <div class="preview-form-title">{{ previewForm.title }}</div>
+                  <div v-if="previewForm.description" class="preview-form-desc">{{ previewForm.description }}</div> -->
+
+                  <div v-for="(q, qi) in previewForm.questions" :key="qi" class="preview-question">
+                    <div class="preview-question-text">{{ qi + 1 }}. {{ questionText(q) }}</div>
+                    <ul v-if="questionOptions(q).length" class="preview-options">
+                      <li v-for="(opt, oi) in questionOptions(q)" :key="oi">{{ opt }}</li>
+                    </ul>
+                    <div v-else class="preview-answer-line">Short answer</div>
+                  </div>
+                </template>
+
+                <div v-else-if="previewTest && eventForm[previewTest.linkKey]" class="preview-empty">
+                  <q-icon name="link" size="28px" />
+                  <span>Using Google Form link:</span>
+                  <span class="preview-link">{{ eventForm[previewTest.linkKey] }}</span>
+                </div>
+
+                <div v-else class="preview-empty">
+                  <q-icon name="description" size="28px" />
+                  <span>No form yet. Click "Create Form" to build the {{ previewTest ? previewTest.label : 'test'
+                    }}.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right" class="dialog-actions">
+          <q-btn unelevated no-caps label="Done" class="save-dialog-btn" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- GOOGLE FORM BUILDER (Pre Test / Post Test) -->
+<GoogleFormBuilderDialog v-model="showGoogleFormDialog" :event-title="eventForm.title_name || ''"
+  :test-label="builderLabel" :initial-form="builderInitialForm" @save="onSaveGoogleForm" />
   </q-page>
 </template>
 
@@ -931,6 +1043,8 @@ import EventPageHeader from "components/events/EventPageHeader.vue";
 import EventTwoColumnLayout from "components/events/EventTwoColumnLayout.vue";
 import EventDialogHeader from "components/events/EventDialogHeader.vue";
 import LabeledField from "components/events/LabeledField.vue";
+import GoogleFormBuilderDialog from "components/events/GoogleFormBuilderDialog.vue";
+import { useAssessmentStore } from "src/stores/event/assessmentStore";
 
 import { useModeStore } from "src/stores/library/event/modeStore";
 import { useTitleStore } from "src/stores/library/event/titleStore";
@@ -939,12 +1053,11 @@ import { useCategoryStore } from "src/stores/library/event/categoryStore";
 import { useTypeStore } from "src/stores/library/event/typeStore";
 import { coreOptions, technicalOptions, leadershipOptions } from "src/constants/competency";
 import { sourceOptions } from "src/constants/source";
-
 import { buildCompetenciesPayload, buildFormsPayload } from "src/composables/event/useCreateEventPayload";
-
 import { formsOptions, evaluationOptions } from "src/constants/form";
 
 import Swal from "sweetalert2";
+
 
 export default defineComponent({
   name: "CreateEventPage",
@@ -954,6 +1067,7 @@ export default defineComponent({
     EventTwoColumnLayout,
     EventDialogHeader,
     LabeledField,
+    GoogleFormBuilderDialog,
   },
 
   setup() {
@@ -988,6 +1102,7 @@ export default defineComponent({
     const router = useRouter();
 
     const officeStore = useOfficeStore();
+    const assessmentStore = useAssessmentStore();
 
     const eventForm = ref({
       title_name: "",
@@ -1005,15 +1120,11 @@ export default defineComponent({
       schedules: [],
       departments: [],
       employees: [],
-      // forms: formsOptions.map((o) => o.value),            // naka-check lahat by default
-      // evaluations: evaluationOptions.map((o) => o.value),
       forms: [],
       evaluations: [],
-      pre_test_assessment: null,
-      post_test_assessment: null,
       is_assessment_open: false,
       form_open_date: null,
-      form_open_date: null,
+      form_due_date: null,
       sg_from: null,
       sg_to: null,
     });
@@ -1440,13 +1551,13 @@ export default defineComponent({
         };
       });
 
-      applyDefaultFormTimes();   // ← idagdag
+      applyDefaultFormTimes();
       showDateDialog.value = false;
     }
 
     function removeSchedule(index) {
       eventForm.value.schedules.splice(index, 1);
-      applyDefaultFormTimes();   // ← idagdag
+      applyDefaultFormTimes();
     }
 
     // =========================================================
@@ -1764,6 +1875,16 @@ export default defineComponent({
         }
       }
 
+   const assessment = assessmentTests.value
+  .map((test) => ({ test, form: eventForm.value[test.formKey] }))
+  .filter(({ form }) => form)
+  .map(({ test, form }) => ({
+    type: test.key.startsWith("pre") ? "pre_test" : "post_test",
+    title: `${eventForm.value.title_name} - ${test.label.trim()}`,
+    passing_score: form.passing_score,
+    questions: form.questions,
+  }));
+
       // Build payload according to API expectations
       const payload = {
         title_name: eventForm.value.title_name,
@@ -1805,14 +1926,19 @@ export default defineComponent({
 
         ...buildFormsPayload(eventForm.value.forms, eventForm.value.evaluations),
         ...buildCompetenciesPayload(eventForm.value.competencies), // ← spread, hindi nested key
-        post_test_assessment: eventForm.value.post_test_assessment,
-        pre_test_assessment: eventForm.value.pre_test_assessment,
+
+
+
         form_open_date: formatFormDate(eventForm.value.form_open_date) || null,
         form_due_date: formatFormDate(eventForm.value.form_due_date) || null,
+
+        is_assessment_open: eventForm.value.is_assessment_open,
+        assessment,
       };
 
       eventStore.clearError();
       saving.value = true;
+      let eventCreated = false;
 
       try {
         const result = await eventStore.createEvent(payload);
@@ -1820,6 +1946,7 @@ export default defineComponent({
         if (!result.success) {
           throw new Error(result.message || "Unable to create event.");
         }
+        eventCreated = true;
 
         Notify.create({
           type: "positive",
@@ -1831,10 +1958,14 @@ export default defineComponent({
       } catch (error) {
         console.error(error);
         Notify.create({
-          type: "negative",
-          message: error?.message || "Unable to create event.",
+          type: eventCreated ? "warning" : "negative",
+          message: eventCreated
+            ? `Event was created, but assessment saving failed: ${error?.message || "Please contact support."}`
+            : error?.message || "Unable to create event.",
           position: "top",
+          timeout: eventCreated ? 8000 : 5000,
         });
+        if (eventCreated) router.back();
       } finally {
         saving.value = false;
       }
@@ -1942,9 +2073,6 @@ export default defineComponent({
       }
     }
 
-    function openGoogleForms() {
-      window.open("https://docs.google.com/forms/u/0/", "_blank", "noopener");
-    }
     // =========================================================
     // ARMS AUTO-ENABLE (Source = In-house / internal)
     // =========================================================
@@ -2087,6 +2215,228 @@ export default defineComponent({
       const display = formatTimeDisplay(time);
       return display ? `${date} ${display}` : "";
     }
+
+    // =========================================================
+    // ASSESSMENT (Pre Test / Post Test, hanggang MAX_ASSESSMENTS)
+    // Assessment 1 -> Pre Test, Post Test
+    // Assessment 2 -> Pre Test 2, Post Test 2
+    // =========================================================
+    const MAX_ASSESSMENTS = 2; // dagdagan kung gusto mo pa ng Pre Test 3, etc.
+    const assessmentCount = ref(0);
+
+    function buildTests(n) {
+      const suffix = n === 1 ? "" : `_${n}`;
+      const num = n === 1 ? "" : ` ${n}`;
+      return [
+        {
+          key: `pre${n}`,
+          label: `Pre-Test Assessment${num}`,
+          formKey: `pre_test_form${suffix}`,
+          linkKey: `pre_test_assessment${suffix}`,
+          placeholder: "e.g. https://forms.gle/abc123XYZ",
+        },
+        {
+          key: `post${n}`,
+          label: `  Post-Test Assessment${num}`,
+          formKey: `post_test_form${suffix}`,
+          linkKey: `post_test_assessment${suffix}`,
+          placeholder: "e.g. https://forms.gle/xyz789ABC",
+        },
+      ];
+    }
+
+    const assessmentTests = computed(() =>
+      Array.from({ length: assessmentCount.value }, (_, i) => buildTests(i + 1)).flat()
+    );
+
+    function addAssessment() {
+      if (assessmentCount.value < MAX_ASSESSMENTS) assessmentCount.value++;
+    }
+
+    // Tinatanggal ang pinaka-huling assessment set
+    function removeAssessment() {
+      const n = assessmentCount.value;
+      if (!n) return;
+
+      buildTests(n).forEach((t) => {
+        eventForm.value[t.formKey] = null;
+        eventForm.value[t.linkKey] = null;
+      });
+
+      assessmentCount.value--;
+      if (assessmentCount.value === 0) {
+        eventForm.value.is_assessment_open = false;
+      }
+    }
+
+    const showGoogleFormDialog = ref(false);
+    const activeTest = ref(null); // "pre1" | "post1" | "pre2" | "post2"
+
+    const activeTestConfig = computed(
+      () => assessmentTests.value.find((t) => t.key === activeTest.value) || null
+    );
+
+    // laman ng dialog kapag ine-edit ang dating nagawang form
+    const builderInitialForm = computed(() =>
+      activeTestConfig.value ? eventForm.value[activeTestConfig.value.formKey] : null
+    );
+
+    // default title ng form: "<Event Title> - Pre Test"
+    // const builderTitle = computed(() => {
+    //   const base = eventForm.value.title_name || "";
+    //   const label = activeTestConfig.value?.label || "";
+    //   return base ? `${base} - ${label}` : label;
+    // });
+
+    const builderLabel = computed(() => activeTestConfig.value?.label?.trim() || "");
+
+
+    function onSaveGoogleForm(form) {
+      const test = activeTestConfig.value;
+      if (!test) return;
+
+      eventForm.value[test.formKey] = form;
+
+      Notify.create({
+        type: "positive",
+        message: `${test.label} form saved with ${form.questions.length} question(s).`,
+        position: "top",
+      });
+    }
+
+    function collectScheduleIds(data) {
+      const ids = new Set();
+      const visit = (value) => {
+        if (!value || typeof value !== "object") return;
+        if (Array.isArray(value)) {
+          value.forEach(visit);
+          return;
+        }
+        const id = value.event_schedule_id ?? value.schedule_id;
+        if (id !== undefined && id !== null) ids.add(id);
+        Object.values(value).forEach(visit);
+      };
+      visit(data);
+      return [...ids];
+    }
+
+    function removeTestForm(test) {
+      eventForm.value[test.formKey] = null;
+    }
+    // Pre-test na kapares ng post-test (post1 -> pre1, post2 -> pre2)
+function getPairedPreTest(test) {
+  if (!test.key.startsWith("post")) return null;
+  const n = test.key.replace("post", "");
+  return assessmentTests.value.find((t) => t.key === `pre${n}`) || null;
+}
+
+// Lalabas lang ang button kung post-test ito, may laman ang pre-test, at wala pang form ang post-test
+function canCopyFromPre(test) {
+  const pre = getPairedPreTest(test);
+  return !!(pre && eventForm.value[pre.formKey] && !eventForm.value[test.formKey]);
+}
+
+function copyFromPreTest(test) {
+  const pre = getPairedPreTest(test);
+  const source = pre && eventForm.value[pre.formKey];
+  if (!source) return;
+
+  const copy = JSON.parse(JSON.stringify(source)); // deep copy
+
+  // bagong record ito, kaya alisin ang mga id ng pre-test
+  delete copy.assessmentId;
+  copy.title = test.label.trim();
+  copy.questions.forEach((q) => {
+    delete q.id;
+    (q.options || []).forEach((o) => delete o.id);
+  });
+
+  eventForm.value[test.formKey] = copy;
+
+  // EventCreatePage: gamitin ang Notify.create
+  // EventViewPage: gamitin ang $q.notify
+  Notify.create({
+    type: "positive",
+    message: `Copied ${copy.questions.length} question(s) from ${pre.label.trim()}.`,
+    position: "top",
+  });
+}
+
+    // =========================================================
+    // ASSESSMENT MODAL (left: setup, right: preview)
+    // =========================================================
+    const showAssessmentDialog = ref(false);
+    const previewTestKey = ref(null);
+
+    const previewTest = computed(
+      () =>
+        assessmentTests.value.find((t) => t.key === previewTestKey.value) ||
+        assessmentTests.value[0] ||
+        null
+    );
+
+    const previewForm = computed(() =>
+      previewTest.value ? eventForm.value[previewTest.value.formKey] : null
+    );
+
+ function requireEventTitle() {
+  if (eventForm.value.title_name?.trim()) return true;
+
+  Notify.create({
+    type: "warning",
+    message: "Please enter an event title first before creating an assessment.",
+    position: "top",
+  });
+  return false;
+}
+
+function openAssessmentDialog() {
+  if (!requireEventTitle()) return;
+
+  if (assessmentCount.value === 0) addAssessment();
+  if (!previewTestKey.value) previewTestKey.value = assessmentTests.value[0]?.key || null;
+  showAssessmentDialog.value = true;
+}
+
+function openFormBuilder(testKey) {
+  if (!requireEventTitle()) return;
+
+  activeTest.value = testKey;
+  showGoogleFormDialog.value = true;
+}
+    function removeAllAssessments() {
+      while (assessmentCount.value > 0) removeAssessment();
+      previewTestKey.value = null;
+    }
+
+    function testStatus(test) {
+      const form = eventForm.value[test.formKey];
+      if (form) return `${form.title} · ${form.questions.length} question(s)`;
+      if (eventForm.value[test.linkKey]) return "Google Form link added";
+      return "Not set";
+    }
+
+    // Defensive: hindi ko alam eksaktong shape ng questions galing GoogleFormBuilderDialog
+    function questionText(q) {
+      return q?.question ?? q?.title ?? q?.text ?? q?.label ?? "";
+    }
+
+function questionOptions(q) {
+  return (q?.options || []).map((o) =>
+    typeof o === "string" ? o : o?.option_text ?? o?.label ?? o?.text ?? o?.value ?? ""
+  );
+}
+
+    function getPassingScore(test) {
+  return eventForm.value[test.formKey]?.passing_score ?? "";
+}
+
+function setPassingScore(test, value) {
+  const form = eventForm.value[test.formKey];
+  if (!form) return;
+  form.passing_score = value === "" || value === null ? null : Number(value);
+}
+
     watch(
       () => eventForm.value.source_name,
       (source) => {
@@ -2236,7 +2586,7 @@ export default defineComponent({
       // forms
       formsOptions,
       evaluationOptions,
-      openGoogleForms,
+
       // time restrict
       amOnly,
       pmOnly,
@@ -2252,6 +2602,36 @@ export default defineComponent({
       clearSgFromDialog,
       formatTimeDisplay,
       formatFormDate,
+
+      // assessment (pre test / post test)
+      MAX_ASSESSMENTS,
+      assessmentCount,
+      addAssessment,
+      assessmentTests,
+      showGoogleFormDialog,
+      builderInitialForm,
+      // builderTitle,
+      openFormBuilder,
+      onSaveGoogleForm,
+      removeTestForm,
+      removeAssessment,
+
+      // assessment modal
+      showAssessmentDialog,
+      previewTestKey,
+      previewTest,
+      previewForm,
+      openAssessmentDialog,
+      removeAllAssessments,
+      testStatus,
+      questionText,
+      questionOptions,
+
+      builderLabel,
+      getPassingScore,
+      setPassingScore,
+      canCopyFromPre,
+      copyFromPreTest,
     };
   },
 });
@@ -2411,8 +2791,6 @@ export default defineComponent({
 
 .schedule-speakers {
   padding: 4px 12px 12px 12px;
-  /* background: #fafafa; */
-
 }
 
 .schedule-speakers-label {
@@ -2451,6 +2829,72 @@ export default defineComponent({
   border-color: #18bd4f;
   border-radius: 8px;
   color: #18bd4f;
+  font-size: 11px;
+}
+
+.remove-assessment-btn {
+  color: #d83d3d;
+  font-size: 11px;
+}
+
+.add-more-assessment {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+/* =========================================================
+   PRE TEST / POST TEST CARDS
+========================================================= */
+.test-card {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.test-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.test-card-title {
+  color: #222222;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.test-form-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border: 1px solid #18bd4f;
+  border-radius: 8px;
+  background: #f0fbf4;
+}
+
+.test-form-summary-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.test-form-summary-title {
+  color: #222222;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.test-form-summary-meta {
+  color: #777777;
   font-size: 11px;
 }
 
@@ -3561,6 +4005,220 @@ export default defineComponent({
 .sg-hint {
   margin-top: 10px;
   color: #888888;
+  font-size: 11px;
+}
+
+/* =========================================================
+   ASSESSMENT SUMMARY (page) + MODAL
+========================================================= */
+.assessment-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.assessment-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.assessment-summary-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.assessment-summary-status--open {
+  background: #e6f7ec;
+  color: #1b7f3b;
+}
+
+.assessment-summary-status--closed {
+  background: #fdecea;
+  color: #c62828;
+}
+
+.assessment-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.assessment-summary-label {
+  color: #222222;
+  font-weight: 600;
+  min-width: 80px;
+}
+
+.assessment-summary-meta {
+  color: #777777;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assessment-dialog {
+  width: 1100px;
+  max-width: 95vw;
+  max-height: 90vh;
+  border-radius: 13px;
+  display: flex;
+  flex-direction: column;
+}
+
+.assessment-dialog-body {
+  flex: 1;
+  padding: 18px;
+  overflow-y: auto;
+}
+
+.assessment-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.assessment-modal-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.assessment-modal-right {
+  position: sticky;
+  top: 0;
+}
+
+.test-card--clickable {
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.test-card--active {
+  border-color: #18bd4f;
+  box-shadow: 0 0 0 2px rgba(24, 189, 79, 0.15);
+}
+
+.preview-label {
+  margin-bottom: 8px;
+  color: #555555;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.preview-card {
+  min-height: 320px;
+  padding: 18px 20px;
+  border: 1px solid #e0e0e0;
+  border-top: 8px solid #18bd4f;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.preview-event {
+  color: #222222;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.preview-test {
+  margin-top: 2px;
+     font-size: 14px;
+  color: #555;
+
+}
+
+.preview-separator {
+  margin: 12px 0;
+}
+
+.preview-form-title {
+  color: #222222;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.preview-form-desc {
+  margin-top: 4px;
+  color: #777777;
+  font-size: 12px;
+}
+
+.preview-question {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid #eeeeee;
+  border-radius: 8px;
+}
+
+.preview-question-text {
+  color: #222222;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.preview-options {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: #555555;
+  font-size: 12px;
+}
+
+.preview-answer-line {
+  margin-top: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed #cccccc;
+  color: #aaaaaa;
+  font-size: 11px;
+}
+
+.preview-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 200px;
+  color: #aaaaaa;
+  font-size: 12px;
+  text-align: center;
+}
+
+.preview-link {
+  max-width: 100%;
+  color: #18bd4f;
+  word-break: break-all;
+}
+
+@media (max-width: 900px) {
+  .assessment-modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .assessment-modal-right {
+    position: static;
+  }
+}
+.assessment-toggle-card {
+  margin-bottom: 10px;
+}
+.copy-pre-btn {
+  color: #555555;
   font-size: 11px;
 }
 </style>

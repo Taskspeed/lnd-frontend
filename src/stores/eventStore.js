@@ -56,7 +56,7 @@ export const useEventStore = defineStore("event", {
         const response = await api.post("/event/store", eventData);
         if (response.data.success) {
           await this.fetchEvents();
-          return { success: true, message: response.data.message };
+          return { success: true, message: response.data.message, data: response.data.data };
         } else {
           this.error = response.data.message;
           return { success: false, message: response.data.message };

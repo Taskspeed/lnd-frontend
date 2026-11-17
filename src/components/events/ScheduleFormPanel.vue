@@ -827,14 +827,13 @@ export default defineComponent({
     forms: { type: Array, default: () => [] },
     evaluations: { type: Array, default: () => [] },
     isAssessmentOpen: { type: Boolean, default: false },
+       assessment: { type: Array, default: () => [] },
   },
 
   emits: [
     "saved",
     "cancel",
     "update:syncToArms",
-    "update:preTestAssessment",
-    "update:postTestAssessment",
     "update:formOpenDate",
     "update:formDueDate",
   ],
@@ -1796,10 +1795,10 @@ export default defineComponent({
 
         sync_to_arms: props.syncToArms,
         is_assessment_open: props.isAssessmentOpen,
+        ...(props.assessment.length ? { assessment: props.assessment } : {}),
         form_open_date: formatFormDate(props.formOpenDate) || null,   // Y-m-d h:i A
         form_due_date: formatFormDate(props.formDueDate) || null,     // Y-m-d h:i A
-        pre_test_assessment: props.preTestAssessment?.trim() || null,
-        post_test_assessment: props.postTestAssessment?.trim() || null,
+ 
       };
 
       saving.value = true;
