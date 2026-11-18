@@ -6,6 +6,8 @@ import {
   update_speaker,
   delete_speaker,
   view_speaker,
+  fetch_speaker,
+  history_speaker,
 } from "src/service/library/event/speakerService";
 
 // Kapag 422 (validation), ipakita ang mismong dahilan,
@@ -21,6 +23,12 @@ function getErrorMessage(err, fallback) {
   return err.response?.data?.message || fallback;
 }
 
+// walang laman na history (para sa initial state at reset)
+const emptyHistory = () => ({
+  stats: { total_events: 0, by_type: {} },
+  events: { data: [], current_page: 1, per_page: 5, total: 0 },
+});
+
 export const useSpeakerStore = defineStore("speaker", () => {
   // ---------------------------------------------------------------
   // STATE
@@ -28,6 +36,13 @@ export const useSpeakerStore = defineStore("speaker", () => {
   const Speakers = ref([]);
   const loading = ref(false);
   const error = ref(null);
+  const speakerOptions = ref([]); // para sa dropdown lookup
+
+  // history ng speaker (hiwalay na loading/error para hindi
+  // maapektuhan ang main loading ng page)
+  const speakerHistory = ref(emptyHistory());
+  const historyLoading = ref(false);
+  const historyError = ref(null);
 
   // ---------------------------------------------------------------
   // ACTIONS
@@ -135,6 +150,50 @@ export const useSpeakerStore = defineStore("speaker", () => {
     }
   }
 
+  async function eventSpeaker(search = "") {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await fetch_speaker(search);
+      speakerOptions.value = response.data.data || [];
+    } catch (err) {
+      error.value = getErrorMessage(err, "Failed to load speaker.");
+      throw err; // para mag-abort() ang filter sa component kapag nabigo
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // Kinukuha ang history (stats + paginated events) ng isang speaker.
+  // `search` = pangalan ng event lang.
+  async function historySpeaker(speakerId, search = "", page = 1, perPage = 5) {
+    historyLoading.value = true;
+    historyError.value = null;
+
+    try {
+      const response = await history_speaker(speakerId, search, page, perPage);
+      const data = response.data.data || {};
+
+      speakerHistory.value = {
+        stats: data.stats || emptyHistory().stats,
+        events: data.events || emptyHistory().events,
+      };
+
+      return { success: true };
+    } catch (err) {
+      historyError.value = getErrorMessage(err, "Failed to load speaker history.");
+      return { success: false, message: historyError.value };
+    } finally {
+      historyLoading.value = false;
+    }
+  }
+
+  function clearHistory() {
+    speakerHistory.value = emptyHistory();
+    historyError.value = null;
+  }
+
   return {
     Speakers,
     loading,
@@ -146,5 +205,14 @@ export const useSpeakerStore = defineStore("speaker", () => {
     deleteSpeaker,
     viewSpeaker,
     speaker,
+    eventSpeaker,
+    speakerOptions,
+
+    // history
+    speakerHistory,
+    historyLoading,
+    historyError,
+    historySpeaker,
+    clearHistory,
   };
 });

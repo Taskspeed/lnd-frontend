@@ -59,14 +59,14 @@
                         <q-td :props="props">
                             <div class="action-buttons">
                                 <q-btn flat round dense icon="visibility" class="action-view"
-                                    @click="viewSpeaker(props.row.speakerId)">
+                                    @click="viewSpeaker(props.row.speaker_id)">
                                     <q-tooltip>View Speaker</q-tooltip>
                                 </q-btn>
 
                           
 
                                 <q-btn flat round dense icon="delete" class="action-delete"
-                                    @click="confirmDeleteSpeaker(props.row.speakerId)">
+                                    @click="confirmDeleteSpeaker(props.row.speaker_id)">
                                     <q-tooltip>Delete Speaker</q-tooltip>
                                 </q-btn>
                             </div>
@@ -178,7 +178,7 @@ export default defineComponent({
         // Table
         // ---------------------------------------------------------------
         const columns = [
-            { name: "speakerId", label: "id", field: "speakerId", align: "left" },
+            { name: "speaker_id", label: "id", field: "speaker_id", align: "left" },
             { name: "speaker", label: "Speaker Name", field: "speaker_name", align: "left", sortable: true },
             { name: "agency", label: "Agency", field: "agency", align: "left", format: (val) => val || "—" },
             { name: "position", label: "Position", field: "position", align: "left", format: (val) => val || "—" },
@@ -188,7 +188,7 @@ export default defineComponent({
         // Flattens each Speaker into a row the table can use
         const tableRows = computed(() =>
             SpeakerStore.Speakers.map((speaker) => ({
-                speakerId: speaker.speakerId,
+                speaker_id: speaker.speaker_id,
                 speaker_name: speaker.speaker_name,
                 agency: speaker.employment?.agency ?? null,
                 position: speaker.employment?.position ?? null,
@@ -217,9 +217,9 @@ export default defineComponent({
             });
         }
 
-        // heplper function speakerId
-        function findSpeakerById(speakerId) {
-            return SpeakerStore.Speakers.find((t) => t.speakerId === speakerId);
+        // heplper function speaker_id
+        function findSpeakerById(speaker_id) {
+            return SpeakerStore.Speakers.find((t) => t.speaker_id === speaker_id);
         }
 
         // ---------------------------------------------------------------
@@ -228,8 +228,8 @@ export default defineComponent({
         const showViewDialog = ref(false);
         const viewingSpeaker = ref(null);
 
-        function viewSpeaker(speakerId) {
-            router.push({ name: "speaker-view", params: { speakerId } });
+        function viewSpeaker(speaker_id) {
+            router.push({ name: "speaker-view", params: { speaker_id } });
         }
         // ---------------------------------------------------------------
         // ADD / EDIT Speaker
@@ -264,15 +264,15 @@ export default defineComponent({
         const showDeleteDialog = ref(false);
         const SpeakerToDelete = ref(null);
 
-        function confirmDeleteSpeaker(speakerId) {
-            SpeakerToDelete.value = findSpeakerById(speakerId);
+        function confirmDeleteSpeaker(speaker_id) {
+            SpeakerToDelete.value = findSpeakerById(speaker_id);
             showDeleteDialog.value = true;
         }
 
         async function deleteSpeaker() {
             if (!SpeakerToDelete.value) return;
 
-            const result = await SpeakerStore.deleteSpeaker(SpeakerToDelete.value.speakerId);
+            const result = await SpeakerStore.deleteSpeaker(SpeakerToDelete.value.speaker_id);
 
             if (result.success) {
                 showDeleteDialog.value = false;

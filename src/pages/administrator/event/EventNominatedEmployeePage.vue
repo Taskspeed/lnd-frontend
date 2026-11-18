@@ -142,12 +142,22 @@
 
                 <div class="speaker-block">
                   <span class="detail-label">Speakers</span>
-                  <div v-if="d.speakers.length" class="speaker-list">
-                    <div v-for="sp in d.speakers" :key="sp.speakerId" class="speaker-item">
-                      <strong>{{ sp.speaker_name }}</strong> — {{ sp.position }}, {{ sp.agency }}
-                    </div>
-                  </div>
-                  <span v-else class="muted-text">No speaker assigned</span>
+                 <div v-if="d.speakers.length" class="speaker-list">
+  <div v-for="sp in d.speakers" :key="`${d.schedule_date_time_id}-${sp.speaker_id}`" class="speaker-item">
+    <div class="speaker-info">
+      <strong>{{ sp.speaker_name }}</strong>
+      <span class="speaker-meta">
+        {{ [sp.position, sp.agency].filter(Boolean).join(", ") || "—" }}
+      </span>
+    </div>
+
+    <q-btn flat round dense icon="visibility" class="action-view"
+      @click="viewSpeaker(sp.speaker_id)">
+      <q-tooltip>View Speaker</q-tooltip>
+    </q-btn>
+  </div>
+</div>
+<span v-else class="muted-text">No speaker assigned</span>
                 </div>
               </div>
 
@@ -442,7 +452,7 @@ import { useRowLoading } from "src/composables/useRowLoading";
 import { usePdfStore } from "src/stores/administrator/pdf/pdfStore";
 import EmployeeNominationModal from "src/components/employee/EmployeeNominationModal.vue";
 import { useAssessmentStore } from "src/stores/event/assessmentStore";
-
+import { useRouter } from "vue-router";
 export default defineComponent({
   name: "EventNominatedEmployeePage",
   components: { LoadingState, EmployeeNominationModal },
@@ -453,7 +463,7 @@ export default defineComponent({
     const route = useRoute();
     const eventId = route.params.eventId;
     const scheduleId = route.params.scheduleId;
-
+    const router = useRouter();
     const loading = ref(true);
     const errorMessage = ref("");
     const eventDetail = ref(null);
@@ -489,7 +499,7 @@ export default defineComponent({
     const speakers = computed(() => {
       const map = new Map();
       scheduleDates.value.forEach((d) =>
-        d.speakers.forEach((sp) => map.set(sp.speakerId, sp))
+        d.speakers.forEach((sp) => map.set(sp.speaker_id, sp))
       );
       return [...map.values()];
     });
@@ -862,6 +872,13 @@ export default defineComponent({
       return applyStatusFilter(selectedStatus.value === status ? null : status);
     }
 
+
+       
+
+      function viewSpeaker(speaker_id) {
+  router.push({ name: "speaker-view", params: { speaker_id } });
+}
+
     return {
       tab,
       detailsOpen,
@@ -934,6 +951,7 @@ export default defineComponent({
       statusOptions,
       applyStatusFilter,
       toggleStatus,
+    viewSpeaker
     };
   },
 });
@@ -1383,6 +1401,10 @@ function statusColor(status) {
 }
 
 .speaker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   padding: 10px 13px;
   border: 1px solid #e9eef2;
   border-radius: 10px;
@@ -1390,6 +1412,17 @@ function statusColor(status) {
   color: #2c3e4a;
   font-size: 12.5px;
   line-height: 1.45;
+}
+
+.speaker-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.speaker-meta {
+  color: #718089;
+  font-size: 11.5px;
 }
 
 .muted-text {
@@ -1973,4 +2006,8 @@ function statusColor(status) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+.action-view {
+  color: #587080;
+}
+
 </style>

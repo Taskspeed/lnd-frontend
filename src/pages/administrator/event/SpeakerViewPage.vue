@@ -156,9 +156,7 @@
                             <q-input v-model.number="editForm.salary_grade" outlined dense type="number" min="1"
                                 max="33" label="Salary grade" hint="1 to 33" lazy-rules :rules="[validSg]"
                                 class="span-2" />
-
-                            <q-input :model-value="show(speaker.employment?.agency)" outlined dense readonly
-                                label="Agency (read-only)" class="span-6" />
+                            <q-input v-model="editForm.agency" outlined dense label="Agency" class="span-6" />
                         </div>
 
                         <!-- VIEW -->
@@ -256,7 +254,7 @@
             </q-card>
 
             <!-- =====================================================
-           EVENT ACTIVITY (DUMMY DATA)
+           EVENT ACTIVITY (HISTORY)
       ====================================================== -->
             <q-card flat bordered class="detail-card">
                 <div class="section-head">
@@ -279,20 +277,35 @@
                     </div>
 
                     <!-- HISTORY -->
-                    <div class="bio-label">Event History</div>
+                    <div class="history-head">
+                        <div class="bio-label history-label">Event History</div>
+                        <q-input v-model="historySearch" outlined dense clearable debounce="400"
+                            placeholder="Search event name..." class="history-search"
+                            @update:model-value="loadHistory(1)">
+                            <template #prepend><q-icon name="search" size="18px" /></template>
+                        </q-input>
+                    </div>
+
+                    <div v-if="SpeakerStore.historyError" class="history-error">
+                        {{ SpeakerStore.historyError }}
+                    </div>
+
                     <div class="history-wrapper">
-                        <q-table flat :rows="eventHistory" :columns="historyColumns" row-key="id" hide-pagination
-                            :rows-per-page-options="[0]" class="history-table">
-                            <template #body-cell-type="props">
+                        <q-table flat :rows="historyRows" :columns="historyColumns" row-key="schedule_id"
+                            v-model:pagination="historyPagination" :loading="SpeakerStore.historyLoading"
+                            :rows-per-page-options="[10,15,20]" class="history-table" @request="onHistoryRequest">
+                            <template #body-cell-type_name="props">
                                 <q-td :props="props">
-                                    <span class="type-badge" :class="`type-${props.row.type.toLowerCase()}`">
-                                        {{ props.row.type }}
+                                    <span class="type-badge" :class="`type-${String(props.row.type_name).toLowerCase()}`">
+                                        {{ props.row.type_name }}
                                     </span>
                                 </q-td>
                             </template>
 
                             <template #no-data>
-                                <div class="bio-empty history-empty">No event history yet.</div>
+                                <div class="bio-empty history-empty">
+                                    {{ historySearch ? "No events match your search." : "No event history yet." }}
+                                </div>
                             </template>
                         </q-table>
                     </div>
@@ -323,6 +336,12 @@ const photoFailed = ref(false);
 const tabOrder = ["personal", "employment", "professional"];
 const tab = ref("personal");
 const editing = ref(false);   // <- dapat nandito, bago ang watch
+
+// history state: dapat din nandito, bago ang watch (immediate ang watch,
+// kaya tumatakbo agad at kailangan nang naka-declare ang mga ito)
+const historySearch = ref("");
+const historyPagination = ref({ page: 1, rowsPerPage: 5, rowsNumber: 0 });
+
 function nextTab() {
     const i = tabOrder.indexOf(tab.value);
     if (i < tabOrder.length - 1) tab.value = tabOrder[i + 1];
@@ -333,16 +352,20 @@ function prevTab() {
     if (i > 0) tab.value = tabOrder[i - 1];
 }
 
-// Maglo-load ulit kapag nagbago ang speakerId sa URL
+// Maglo-load ulit kapag nagbago ang speaker_id sa URL
 watch(
-    () => route.params.speakerId,
-    async (speakerId) => {
-        if (!speakerId) return;
+    () => route.params.speaker_id,
+    async (speaker_id) => {
+        if (!speaker_id) return;
         photoFailed.value = false;
         tab.value = "personal";
         editing.value = false;
+        historySearch.value = "";
         SpeakerStore.clearError();
-        await SpeakerStore.viewSpeaker(speakerId);
+        SpeakerStore.clearHistory();
+
+        // sabay na kinukuha ang profile at ang history
+        await Promise.all([SpeakerStore.viewSpeaker(speaker_id), loadHistory(1)]);
     },
     { immediate: true }
 );
@@ -362,7 +385,6 @@ function notify(type, message) {
 /* ---------------------------------------------------------
    EDIT MODE
 --------------------------------------------------------- */
-// const editing = ref(false);
 const fileRef = ref(null);
 
 const emptyForm = () => ({
@@ -379,6 +401,7 @@ const emptyForm = () => ({
     office: "",
     employment_type: null,
     salary_grade: null,
+    agency: "",
 
     professional_title: "",
     specialization: "",
@@ -418,7 +441,7 @@ function fillForm() {
         office: s.employment?.office ?? "",
         employment_type: s.employment?.employment_type || null,
         salary_grade: s.employment?.salary_grade ?? null,
-
+        agency: s.employment?.agency ?? "",
         professional_title: s.professional_info?.professional_title ?? "",
         specialization: s.professional_info?.specialization ?? "",
         biography: s.professional_info?.biography ?? "",
@@ -571,7 +594,7 @@ function buildPayload() {
         office: clean(editForm.office),
         employment_type: clean(editForm.employment_type),
         salary_grade: clean(editForm.salary_grade),
-
+        agency: clean(editForm.agency),
         professional_title: clean(editForm.professional_title),
         specialization: clean(editForm.specialization),
         biography: clean(editForm.biography),
@@ -589,9 +612,9 @@ async function saveChanges() {
 
     SpeakerStore.clearError();
 
-    const speakerId = route.params.speakerId;
+    const speaker_id = route.params.speaker_id;
     const result = await SpeakerStore.updateSpeaker(
-        speakerId,
+        speaker_id,
         buildPayload(),
         photoFile.value,
         removePhoto.value
@@ -604,7 +627,7 @@ async function saveChanges() {
 
     // i-refresh ang data ng view page nang walang loading flash
     photoFailed.value = false;
-    await SpeakerStore.viewSpeaker(speakerId, true);
+    await SpeakerStore.viewSpeaker(speaker_id, true);
 
     photoFile.value = null;
     removePhoto.value = false;
@@ -613,47 +636,70 @@ async function saveChanges() {
 }
 
 /* ---------------------------------------------------------
-   DUMMY EVENT DATA (palitan ng totoong data mula sa store)
+   EVENT HISTORY (galing sa API)
 --------------------------------------------------------- */
-const eventHistory = ref([
-    { id: 1, title: "Leadership and Management Training", type: "Training", date: "2026-10-14", venue: "Davao City Hall Conference Room" },
-    { id: 2, title: "Public Service Ethics Seminar", type: "Seminar", date: "2026-09-02", venue: "Tagum City Convention Center" },
-    { id: 3, title: "Regional Learning and Development Summit", type: "Event", date: "2026-07-21", venue: "SMX Convention Center, Davao" },
-    { id: 4, title: "Records Management Seminar", type: "Seminar", date: "2026-05-18", venue: "Online (Zoom)" },
-    { id: 5, title: "Customer Service Excellence Training", type: "Training", date: "2026-03-09", venue: "Provincial Capitol, Mati" },
-    { id: 6, title: "Digital Workplace Seminar", type: "Seminar", date: "2026-01-27", venue: "Online (Zoom)" },
-]);
+const historyRows = computed(() => SpeakerStore.speakerHistory.events?.data || []);
+
+async function loadHistory(page = 1, perPage = historyPagination.value.rowsPerPage) {
+    const result = await SpeakerStore.historySpeaker(
+        route.params.speaker_id,
+        (historySearch.value || "").trim(),
+        page,
+        perPage
+    );
+
+    if (!result.success) return;
+
+    const events = SpeakerStore.speakerHistory.events || {};
+    historyPagination.value = {
+        page: events.current_page ?? page,
+        rowsPerPage: Number(events.per_page) || perPage,
+        rowsNumber: events.total ?? 0,
+    };
+}
+
+function onHistoryRequest({ pagination }) {
+    // kapag nagpalit ng rows per page, bumalik sa page 1
+    const perPageChanged = pagination.rowsPerPage !== historyPagination.value.rowsPerPage;
+    return loadHistory(perPageChanged ? 1 : pagination.page, pagination.rowsPerPage);
+}
 
 const historyColumns = [
-    { name: "title", label: "Title", field: "title", align: "left", sortable: true },
-    { name: "type", label: "Type", field: "type", align: "left" },
+    { name: "title_name", label: "Title", field: "title_name", align: "left" },
+    { name: "type_name", label: "Type", field: "type_name", align: "left" },
+    { name: "date_range", label: "Date", field: "date_range", align: "left" },
+    { name: "venue_name", label: "Venue", field: "venue_name", align: "left" },
     {
-        name: "date",
-        label: "Date",
-        field: "date",
-        align: "left",
-        sortable: true,
-        format: (val) =>
-            new Date(val).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        name: "days",
+        label: "Days",
+        field: "days",
+        align: "center",
+        format: (val) => (val === null || val === undefined ? "—" : val),
     },
-    { name: "venue", label: "Venue", field: "venue", align: "left" },
 ];
 
-const eventStats = computed(() => [
-    { label: "Number of Events", value: eventHistory.value.length, icon: "event", tone: "tone-blue" },
-    {
-        label: "Number of Trainings",
-        value: eventHistory.value.filter((e) => e.type === "Training").length,
-        icon: "model_training",
-        tone: "tone-green",
-    },
-    {
-        label: "Number of Seminars",
-        value: eventHistory.value.filter((e) => e.type === "Seminar").length,
-        icon: "co_present",
-        tone: "tone-amber",
-    },
-]);
+// icon at kulay kada type; may default para sa ibang type
+const typeMeta = {
+    Training: { icon: "model_training", tone: "tone-green" },
+    Seminar: { icon: "co_present", tone: "tone-amber" },
+    Event: { icon: "event_note", tone: "tone-blue" },
+};
+
+// "Number of Events" + isang card kada type na nasa by_type
+const eventStats = computed(() => {
+    const stats = SpeakerStore.speakerHistory.stats || {};
+
+    const cards = [
+        { label: "Events", value: stats.total_events ?? 0, icon: "event", tone: "tone-blue" },
+    ];
+
+    Object.entries(stats.by_type || {}).forEach(([type, count]) => {
+        const meta = typeMeta[type] || { icon: "label", tone: "tone-purple" };
+        cards.push({ label: `${type}s`, value: count, icon: meta.icon, tone: meta.tone });
+    });
+
+    return cards;
+});
 
 /* ---------------------------------------------------------
    DISPLAY HELPERS
@@ -1131,7 +1177,7 @@ const experienceLabel = computed(() => {
 /* EVENT STATS */
 .stat-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: 12px;
 }
 
@@ -1170,6 +1216,11 @@ const experienceLabel = computed(() => {
     background: #fdf3dc;
 }
 
+.tone-purple {
+    color: #7c3aed;
+    background: #f1e9fd;
+}
+
 .stat-value {
     color: #19354a;
     font-size: 22px;
@@ -1183,7 +1234,39 @@ const experienceLabel = computed(() => {
     font-size: 11.5px;
 }
 
-/* EVENT HISTORY TABLE */
+/* EVENT HISTORY */
+.history-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+    margin-bottom: 8px;
+}
+
+.history-label {
+    margin: 0;
+}
+
+.history-search {
+    width: 280px;
+    max-width: 100%;
+}
+
+.history-search :deep(.q-field__control) {
+    border-radius: 9px;
+}
+
+.history-error {
+    margin-bottom: 8px;
+    padding: 10px 14px;
+    border-radius: 9px;
+    background: #fbe9e9;
+    color: #c73f3f;
+    font-size: 12px;
+}
+
 .history-wrapper {
     overflow-x: auto;
     border: 1px solid #e9eef2;
@@ -1191,7 +1274,7 @@ const experienceLabel = computed(() => {
 }
 
 .history-table {
-    min-width: 560px;
+    min-width: 640px;
     font-size: 12.5px;
 }
 
@@ -1220,6 +1303,8 @@ const experienceLabel = computed(() => {
     font-weight: 700;
     letter-spacing: 0.2px;
     text-transform: uppercase;
+    color: #7c3aed;
+    background: #f1e9fd;
 }
 
 .type-training {
@@ -1299,6 +1384,10 @@ const experienceLabel = computed(() => {
     .detail-body,
     .speaker-stepper :deep(.q-stepper__step-inner) {
         padding: 16px;
+    }
+
+    .history-search {
+        width: 100%;
     }
 }
 </style>

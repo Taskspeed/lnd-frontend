@@ -555,7 +555,8 @@ export default defineComponent({
         .filter(({ form }) => form)
         .map(({ test, form }) => ({
           type: test.key.startsWith("pre") ? "pre_test" : "post_test",
-          title: `${event.value?.title_name || ""} - ${test.label.trim()}`,
+          event_name: event.value?.title_name || "",
+          title: `${test.label.trim()}`,
           passing_score: form.passing_score,
           questions: form.questions,
         }))
@@ -918,7 +919,8 @@ function copyFromPreTest(test) {
             afternoon_in: to24HourTime(schedule.afternoon_in),
             afternoon_out: to24HourTime(schedule.afternoon_out),
             speakers: (schedule.speakers || []).map((speaker) => ({
-              id: speaker.speakerId ?? `${schedule.schedule_date_time_id}-${speaker.speaker_name}`,
+        id: speaker.speaker_id ?? `${schedule.schedule_date_time_id}-${speaker.speaker_name}`,
+          speaker_id: speaker.speaker_id ?? null,   // 👈 idagdag
               name: speaker.speaker_name || "",
               position: speaker.position || "",
               agency: speaker.agency || "",

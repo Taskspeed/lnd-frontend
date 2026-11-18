@@ -118,45 +118,46 @@
         <!-- =====================================================
              ASSESSMENT (summary lang dito, ang setup ay nasa modal)
         ====================================================== -->
-       <div class="assessment-header">
-  <div class="section-title forms-title">Assessment</div>
+        <div class="assessment-header">
+          <div class="section-title forms-title">Assessment</div>
 
-  <div class="assessment-header-actions">
-    <q-btn v-if="assessmentCount === 0" outline no-caps icon="add" label="Create Assessment"
-      class="create-assessment-btn" @click="openAssessmentDialog" />
-    <template v-else>
-      <q-btn outline no-caps dense icon="edit" label="Edit Assessment" class="create-assessment-btn"
-        @click="openAssessmentDialog" />
-      <q-btn flat no-caps dense icon="close" label="Remove" class="remove-assessment-btn"
-        @click="removeAllAssessments" />
-    </template>
-  </div>
-</div>
+          <div class="assessment-header-actions">
+            <q-btn v-if="assessmentCount === 0" outline no-caps icon="add" label="Create Assessment"
+              class="create-assessment-btn" @click="openAssessmentDialog" />
+            <template v-else>
+              <q-btn outline no-caps dense icon="edit" label="Edit Assessment" class="create-assessment-btn"
+                @click="openAssessmentDialog" />
+              <q-btn flat no-caps dense icon="close" label="Remove" class="remove-assessment-btn"
+                @click="removeAllAssessments" />
+            </template>
+          </div>
+        </div>
 
-<!-- OPEN / CLOSE TOGGLE (labas ng header at ng modal) -->
-<div v-if="assessmentCount > 0" class="arms-card assessment-toggle-card"
-  :class="eventForm.is_assessment_open ? 'arms-card--on' : 'arms-card--off'">
-  <div class="arms-card-info">
-    <q-icon :name="eventForm.is_assessment_open ? 'lock_open' : 'lock'"
-      :color="eventForm.is_assessment_open ? 'green-7' : 'red-7'" size="20px" class="arms-card-icon" />
-    <div class="arms-card-desc">
-      {{ eventForm.is_assessment_open
-        ? 'The assessment is open. Employees can now answer the tests.'
-        : 'The assessment is closed. Turn this on to make it available to employees.' }}
-    </div>
-  </div>
-  <q-toggle v-model="eventForm.is_assessment_open" :color="eventForm.is_assessment_open ? 'green' : 'red'"
-    keep-color />
-</div>
+        <!-- OPEN / CLOSE TOGGLE (labas ng header at ng modal) -->
+        <div v-if="assessmentCount > 0" class="arms-card assessment-toggle-card"
+          :class="eventForm.is_assessment_open ? 'arms-card--on' : 'arms-card--off'">
+          <div class="arms-card-info">
+            <q-icon :name="eventForm.is_assessment_open ? 'lock_open' : 'lock'"
+              :color="eventForm.is_assessment_open ? 'green-7' : 'red-7'" size="20px" class="arms-card-icon" />
+            <div class="arms-card-desc">
+              {{ eventForm.is_assessment_open
+                ? 'The assessment is open. Employees can now answer the tests.'
+                : 'The assessment is closed. Turn this on to make it available to employees.' }}
+            </div>
+          </div>
+          <q-toggle v-model="eventForm.is_assessment_open" :color="eventForm.is_assessment_open ? 'green' : 'red'"
+            keep-color />
+        </div>
 
-<div v-if="assessmentCount > 0" class="assessment-summary">
-  <div v-for="test in assessmentTests" :key="test.key" class="assessment-summary-row">
-    <q-icon :name="eventForm[test.formKey] || eventForm[test.linkKey] ? 'check_circle' : 'radio_button_unchecked'"
-      :color="eventForm[test.formKey] || eventForm[test.linkKey] ? 'green-7' : 'grey-5'" size="18px" />
-    <span class="assessment-summary-label">{{ test.label }}</span>
-    <span class="assessment-summary-meta">{{ testStatus(test) }}</span>
-  </div>
-</div>
+        <div v-if="assessmentCount > 0" class="assessment-summary">
+          <div v-for="test in assessmentTests" :key="test.key" class="assessment-summary-row">
+            <q-icon
+              :name="eventForm[test.formKey] || eventForm[test.linkKey] ? 'check_circle' : 'radio_button_unchecked'"
+              :color="eventForm[test.formKey] || eventForm[test.linkKey] ? 'green-7' : 'grey-5'" size="18px" />
+            <span class="assessment-summary-label">{{ test.label }}</span>
+            <span class="assessment-summary-meta">{{ testStatus(test) }}</span>
+          </div>
+        </div>
       </template>
 
       <!-- =======================================================
@@ -405,12 +406,44 @@
                   <div class="schedule-speakers-label">Resource Speaker/s</div>
 
                   <div v-for="(speaker, sIndex) in schedule.speakers" :key="speaker.id" class="speaker-row">
-                    <q-input v-model="speaker.name" outlined dense placeholder="Enter resource speaker"
-                      class="custom-input speaker-input" />
+                    <q-select
+                      :model-value="speaker.name || null"
+                      outlined dense use-input
+                      input-debounce="400"
+                      :options="speakerOptions"
+                      :loading="speakerLoading"
+                      :placeholder="speaker.name ? '' : 'Select resource speaker'"
+                      popup-content-class="title-dropdown-scroll"
+                      class="custom-input speaker-input"
+                      @filter="filterSpeakers"
+                      @update:model-value="(val) => onSpeakerSelect(speaker, val)"
+                    >
+                      <template #selected>
+                        <span v-if="speaker.name">{{ speaker.name }}</span>
+                      </template>
+
+                      <template #option="scope">
+                        <q-item v-bind="scope.itemProps">
+                          <q-item-section>
+                            <q-item-label>{{ scope.opt.label }}</q-item-label>
+                            <q-item-label caption>
+                              {{ [scope.opt.position, scope.opt.agency].filter(Boolean).join(" • ") || "—" }}
+                            </q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </template>
+
+                      <template #no-option>
+                        <q-item>
+                          <q-item-section class="text-grey">No speaker found</q-item-section>
+                        </q-item>
+                      </template>
+                    </q-select>
+
                     <q-input v-model="speaker.position" outlined dense placeholder="Position"
-                      class="custom-input speaker-agency-input" />
+                      class="custom-input speaker-agency-input" readonly />
                     <q-input v-model="speaker.agency" outlined dense placeholder="Agency"
-                      class="custom-input speaker-agency-input" />
+                      class="custom-input speaker-agency-input" readonly />
 
                     <q-btn v-if="schedule.speakers.length > 1" flat round dense icon="close" class="remove-speaker-btn"
                       @click="removeScheduleSpeaker(schedule, sIndex)">
@@ -921,35 +954,21 @@
           <div class="assessment-modal-grid">
             <!-- ================= LEFT: SETUP ================= -->
             <div class="assessment-modal-left">
-              <!-- <div class="arms-card" :class="eventForm.is_assessment_open ? 'arms-card--on' : 'arms-card--off'">
-                <div class="arms-card-info">
-                  <q-icon :name="eventForm.is_assessment_open ? 'lock_open' : 'lock'"
-                    :color="eventForm.is_assessment_open ? 'green-7' : 'red-7'" size="20px" class="arms-card-icon" />
-                  <div class="arms-card-desc">
-                    {{ eventForm.is_assessment_open
-                      ? 'The assessment is open. Employees can now answer the tests.'
-                      : 'The assessment is closed. Turn this on to make it available to employees.' }}
-                  </div>
-                </div>
-                <q-toggle v-model="eventForm.is_assessment_open" :color="eventForm.is_assessment_open ? 'green' : 'red'"
-                  keep-color />
-              </div> -->
-
               <div v-for="test in assessmentTests" :key="test.key" class="test-card test-card--clickable"
                 :class="{ 'test-card--active': previewTest && previewTest.key === test.key }"
                 @click="previewTestKey = test.key">
-           <div class="test-card-header">
-              <div class="test-card-title">{{ test.label }}</div>
+                <div class="test-card-header">
+                  <div class="test-card-title">{{ test.label }}</div>
 
-              <div class="row items-center q-gutter-xs">
-                <q-btn v-if="canCopyFromPre(test)" flat no-caps dense icon="content_copy"
-                  label="Copy from Pre-Test" class="copy-pre-btn" @click.stop="copyFromPreTest(test)" />
+                  <div class="row items-center q-gutter-xs">
+                    <q-btn v-if="canCopyFromPre(test)" flat no-caps dense icon="content_copy"
+                      label="Copy from Pre-Test" class="copy-pre-btn" @click.stop="copyFromPreTest(test)" />
 
-                <q-btn outline no-caps dense :icon="eventForm[test.formKey] ? 'edit' : 'add'"
-                  :label="eventForm[test.formKey] ? 'Edit Form' : 'Create Form'" class="create-assessment-btn"
-                  @click.stop="openFormBuilder(test.key)" />
-              </div>
-            </div>
+                    <q-btn outline no-caps dense :icon="eventForm[test.formKey] ? 'edit' : 'add'"
+                      :label="eventForm[test.formKey] ? 'Edit Form' : 'Create Form'" class="create-assessment-btn"
+                      @click.stop="openFormBuilder(test.key)" />
+                  </div>
+                </div>
 
                 <div v-if="eventForm[test.formKey]" class="test-form-summary">
                   <q-icon name="description" size="18px" color="green-7" />
@@ -964,11 +983,11 @@
                   </q-btn>
                 </div>
 
-             <LabeledField label="Passing Score">
-            <q-input :model-value="getPassingScore(test)" type="number" min="0" outlined dense
-              :disable="!eventForm[test.formKey]" placeholder="eg. 20" class="custom-input" @click.stop
-              @update:model-value="setPassingScore(test, $event)" />
-          </LabeledField>
+                <LabeledField label="Passing Score">
+                  <q-input :model-value="getPassingScore(test)" type="number" min="0" outlined dense
+                    :disable="!eventForm[test.formKey]" placeholder="eg. 20" class="custom-input" @click.stop
+                    @update:model-value="setPassingScore(test, $event)" />
+                </LabeledField>
               </div>
 
               <div v-if="assessmentCount < MAX_ASSESSMENTS" class="add-more-assessment">
@@ -986,15 +1005,12 @@
               <div class="preview-label">Preview</div>
 
               <div class="preview-card">
-          <div class="preview-event">{{ previewTest ? previewTest.label : '' }}</div>
-            <div class="preview-test">{{ eventForm.title_name || 'Untitled Event' }}</div>
+                <div class="preview-event">{{ previewTest ? previewTest.label : '' }}</div>
+                <div class="preview-test">{{ eventForm.title_name || 'Untitled Event' }}</div>
 
                 <q-separator class="preview-separator" />
 
                 <template v-if="previewForm">
-                  <!-- <div class="preview-form-title">{{ previewForm.title }}</div>
-                  <div v-if="previewForm.description" class="preview-form-desc">{{ previewForm.description }}</div> -->
-
                   <div v-for="(q, qi) in previewForm.questions" :key="qi" class="preview-question">
                     <div class="preview-question-text">{{ qi + 1 }}. {{ questionText(q) }}</div>
                     <ul v-if="questionOptions(q).length" class="preview-options">
@@ -1027,8 +1043,8 @@
     </q-dialog>
 
     <!-- GOOGLE FORM BUILDER (Pre Test / Post Test) -->
-<GoogleFormBuilderDialog v-model="showGoogleFormDialog" :event-title="eventForm.title_name || ''"
-  :test-label="builderLabel" :initial-form="builderInitialForm" @save="onSaveGoogleForm" />
+    <GoogleFormBuilderDialog v-model="showGoogleFormDialog" :event-title="eventForm.title_name || ''"
+      :test-label="builderLabel" :initial-form="builderInitialForm" @save="onSaveGoogleForm" />
   </q-page>
 </template>
 
@@ -1051,6 +1067,7 @@ import { useTitleStore } from "src/stores/library/event/titleStore";
 import { useVenueStore } from "src/stores/library/event/venueStore";
 import { useCategoryStore } from "src/stores/library/event/categoryStore";
 import { useTypeStore } from "src/stores/library/event/typeStore";
+import { useSpeakerStore } from "src/stores/library/event/speakerStore";
 import { coreOptions, technicalOptions, leadershipOptions } from "src/constants/competency";
 import { sourceOptions } from "src/constants/source";
 import { buildCompetenciesPayload, buildFormsPayload } from "src/composables/event/useCreateEventPayload";
@@ -1096,6 +1113,11 @@ export default defineComponent({
     const typeStore = useTypeStore();
     const typeOptions = ref([])
     const typeLoading = ref(false)
+
+    // speaker
+    const speakerStore = useSpeakerStore();
+    const speakerOptions = ref([])
+    const speakerLoading = ref(false)
     // event component  end
 
 
@@ -1485,7 +1507,7 @@ export default defineComponent({
     // SPEAKERS (per schedule date)
     // =========================================================
     function createSpeaker() {
-      return { id: Date.now() + Math.random(), name: "", agency: "", position: "" };
+      return { id: Date.now() + Math.random(), speaker_id: null, name: "", agency: "", position: "" };
     }
 
     function addScheduleSpeaker(schedule) {
@@ -1503,6 +1525,44 @@ export default defineComponent({
         if (i === sourceIndex) return;
         s.speakers = source.map((sp) => ({ ...sp, id: Date.now() + Math.random() }));
       });
+    }
+
+    // =========================================================
+    // SPEAKER LOOKUP (per row) — pili lang sa listahan ng API
+    // =========================================================
+    async function filterSpeakers(val, update, abort) {
+      speakerLoading.value = true;
+      try {
+        await speakerStore.eventSpeaker(val);
+        update(() => {
+          speakerOptions.value = speakerStore.speakerOptions.map((s) => ({
+            label: s.speaker_name,
+            value: s.speakerId ?? s.speaker_id,   // 👈 ayusin
+            position: s.employment?.position || "",
+            agency: s.employment?.agency || "",
+          }));
+        });
+      } catch (err) {
+        abort();
+        console.error(err);
+      } finally {
+        speakerLoading.value = false;
+      }
+    }
+
+    // Pwede lang pumili sa listahan; auto-fill ang position at agency
+    function onSpeakerSelect(speaker, val) {
+      if (val && typeof val === "object") {
+        speaker.name = val.label;
+        speaker.position = val.position;
+        speaker.agency = val.agency;
+        speaker.speaker_id = val.value;
+      } else {
+        speaker.name = "";
+        speaker.position = "";
+        speaker.agency = "";
+        speaker.speaker_id = null;
+      }
     }
 
     // =========================================================
@@ -1875,15 +1935,16 @@ export default defineComponent({
         }
       }
 
-   const assessment = assessmentTests.value
-  .map((test) => ({ test, form: eventForm.value[test.formKey] }))
-  .filter(({ form }) => form)
-  .map(({ test, form }) => ({
-    type: test.key.startsWith("pre") ? "pre_test" : "post_test",
-    title: `${eventForm.value.title_name} - ${test.label.trim()}`,
-    passing_score: form.passing_score,
-    questions: form.questions,
-  }));
+      const assessment = assessmentTests.value
+        .map((test) => ({ test, form: eventForm.value[test.formKey] }))
+        .filter(({ form }) => form)
+        .map(({ test, form }) => ({
+          type: test.key.startsWith("pre") ? "pre_test" : "post_test",
+          event_name: `${eventForm.value.title_name}`,
+          title: `${test.label.trim()}`,
+          passing_score: form.passing_score,
+          questions: form.questions,
+        }));
 
       // Build payload according to API expectations
       const payload = {
@@ -1918,6 +1979,7 @@ export default defineComponent({
           speakers: (schedule.speakers || [])
             .filter((sp) => sp.name.trim())
             .map((sp) => ({
+              speaker_id: sp.speaker_id ?? null,
               speaker_name: sp.name,
               position: sp.position,
               agency: sp.agency,
@@ -2324,43 +2386,43 @@ export default defineComponent({
       eventForm.value[test.formKey] = null;
     }
     // Pre-test na kapares ng post-test (post1 -> pre1, post2 -> pre2)
-function getPairedPreTest(test) {
-  if (!test.key.startsWith("post")) return null;
-  const n = test.key.replace("post", "");
-  return assessmentTests.value.find((t) => t.key === `pre${n}`) || null;
-}
+    function getPairedPreTest(test) {
+      if (!test.key.startsWith("post")) return null;
+      const n = test.key.replace("post", "");
+      return assessmentTests.value.find((t) => t.key === `pre${n}`) || null;
+    }
 
-// Lalabas lang ang button kung post-test ito, may laman ang pre-test, at wala pang form ang post-test
-function canCopyFromPre(test) {
-  const pre = getPairedPreTest(test);
-  return !!(pre && eventForm.value[pre.formKey] && !eventForm.value[test.formKey]);
-}
+    // Lalabas lang ang button kung post-test ito, may laman ang pre-test, at wala pang form ang post-test
+    function canCopyFromPre(test) {
+      const pre = getPairedPreTest(test);
+      return !!(pre && eventForm.value[pre.formKey] && !eventForm.value[test.formKey]);
+    }
 
-function copyFromPreTest(test) {
-  const pre = getPairedPreTest(test);
-  const source = pre && eventForm.value[pre.formKey];
-  if (!source) return;
+    function copyFromPreTest(test) {
+      const pre = getPairedPreTest(test);
+      const source = pre && eventForm.value[pre.formKey];
+      if (!source) return;
 
-  const copy = JSON.parse(JSON.stringify(source)); // deep copy
+      const copy = JSON.parse(JSON.stringify(source)); // deep copy
 
-  // bagong record ito, kaya alisin ang mga id ng pre-test
-  delete copy.assessmentId;
-  copy.title = test.label.trim();
-  copy.questions.forEach((q) => {
-    delete q.id;
-    (q.options || []).forEach((o) => delete o.id);
-  });
+      // bagong record ito, kaya alisin ang mga id ng pre-test
+      delete copy.assessmentId;
+      copy.title = test.label.trim();
+      copy.questions.forEach((q) => {
+        delete q.id;
+        (q.options || []).forEach((o) => delete o.id);
+      });
 
-  eventForm.value[test.formKey] = copy;
+      eventForm.value[test.formKey] = copy;
 
-  // EventCreatePage: gamitin ang Notify.create
-  // EventViewPage: gamitin ang $q.notify
-  Notify.create({
-    type: "positive",
-    message: `Copied ${copy.questions.length} question(s) from ${pre.label.trim()}.`,
-    position: "top",
-  });
-}
+      // EventCreatePage: gamitin ang Notify.create
+      // EventViewPage: gamitin ang $q.notify
+      Notify.create({
+        type: "positive",
+        message: `Copied ${copy.questions.length} question(s) from ${pre.label.trim()}.`,
+        position: "top",
+      });
+    }
 
     // =========================================================
     // ASSESSMENT MODAL (left: setup, right: preview)
@@ -2379,31 +2441,31 @@ function copyFromPreTest(test) {
       previewTest.value ? eventForm.value[previewTest.value.formKey] : null
     );
 
- function requireEventTitle() {
-  if (eventForm.value.title_name?.trim()) return true;
+    function requireEventTitle() {
+      if (eventForm.value.title_name?.trim()) return true;
 
-  Notify.create({
-    type: "warning",
-    message: "Please enter an event title first before creating an assessment.",
-    position: "top",
-  });
-  return false;
-}
+      Notify.create({
+        type: "warning",
+        message: "Please enter an event title first before creating an assessment.",
+        position: "top",
+      });
+      return false;
+    }
 
-function openAssessmentDialog() {
-  if (!requireEventTitle()) return;
+    function openAssessmentDialog() {
+      if (!requireEventTitle()) return;
 
-  if (assessmentCount.value === 0) addAssessment();
-  if (!previewTestKey.value) previewTestKey.value = assessmentTests.value[0]?.key || null;
-  showAssessmentDialog.value = true;
-}
+      if (assessmentCount.value === 0) addAssessment();
+      if (!previewTestKey.value) previewTestKey.value = assessmentTests.value[0]?.key || null;
+      showAssessmentDialog.value = true;
+    }
 
-function openFormBuilder(testKey) {
-  if (!requireEventTitle()) return;
+    function openFormBuilder(testKey) {
+      if (!requireEventTitle()) return;
 
-  activeTest.value = testKey;
-  showGoogleFormDialog.value = true;
-}
+      activeTest.value = testKey;
+      showGoogleFormDialog.value = true;
+    }
     function removeAllAssessments() {
       while (assessmentCount.value > 0) removeAssessment();
       previewTestKey.value = null;
@@ -2421,21 +2483,21 @@ function openFormBuilder(testKey) {
       return q?.question ?? q?.title ?? q?.text ?? q?.label ?? "";
     }
 
-function questionOptions(q) {
-  return (q?.options || []).map((o) =>
-    typeof o === "string" ? o : o?.option_text ?? o?.label ?? o?.text ?? o?.value ?? ""
-  );
-}
+    function questionOptions(q) {
+      return (q?.options || []).map((o) =>
+        typeof o === "string" ? o : o?.option_text ?? o?.label ?? o?.text ?? o?.value ?? ""
+      );
+    }
 
     function getPassingScore(test) {
-  return eventForm.value[test.formKey]?.passing_score ?? "";
-}
+      return eventForm.value[test.formKey]?.passing_score ?? "";
+    }
 
-function setPassingScore(test, value) {
-  const form = eventForm.value[test.formKey];
-  if (!form) return;
-  form.passing_score = value === "" || value === null ? null : Number(value);
-}
+    function setPassingScore(test, value) {
+      const form = eventForm.value[test.formKey];
+      if (!form) return;
+      form.passing_score = value === "" || value === null ? null : Number(value);
+    }
 
     watch(
       () => eventForm.value.source_name,
@@ -2553,6 +2615,12 @@ function setPassingScore(test, value) {
       typeOptions,
       onTypeInput,
       filterType,
+
+      // speaker lookup
+      speakerOptions,
+      speakerLoading,
+      filterSpeakers,
+      onSpeakerSelect,
 
       dialogTab,
 
@@ -4138,7 +4206,7 @@ function setPassingScore(test, value) {
 
 .preview-test {
   margin-top: 2px;
-     font-size: 14px;
+  font-size: 14px;
   color: #555;
 
 }
@@ -4214,9 +4282,11 @@ function setPassingScore(test, value) {
     position: static;
   }
 }
+
 .assessment-toggle-card {
   margin-bottom: 10px;
 }
+
 .copy-pre-btn {
   color: #555555;
   font-size: 11px;

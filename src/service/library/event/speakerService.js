@@ -54,3 +54,16 @@ export const delete_speaker = (speakerId) => {
 export const view_speaker = (speakerId) => {
   return api.get(`speaker/show/${speakerId}`);
 };
+
+export const fetch_speaker = (search = '') => {
+  return api.get(`speaker/fetch`,{
+      params: { search } ,
+  });
+};
+
+// History ng speaker: search = pangalan ng event, page at per_page para sa pagination
+export const history_speaker = (speakerId, search = '', page = 1, perPage = 5) => {
+  return api.get(`speaker/history/${speakerId}`, {
+    params: { search, page, per_page: perPage },
+  });
+};

@@ -260,12 +260,37 @@
               <div class="schedule-speakers-label">Resource Speaker/s</div>
 
               <div v-for="(speaker, sIndex) in schedule.speakers" :key="speaker.id" class="speaker-row">
-                <q-input v-model="speaker.name" outlined dense placeholder="Enter resource speaker"
-                  class="custom-input speaker-input" />
+                <q-select :model-value="speaker.name || null" outlined dense use-input input-debounce="400"
+                  :options="speakerOptions" :loading="speakerLoading"
+                  :placeholder="speaker.name ? '' : 'Select resource speaker'"
+                  popup-content-class="title-dropdown-scroll" class="custom-input speaker-input"
+                  @filter="filterSpeakers" @update:model-value="(val) => onSpeakerSelect(speaker, val)">
+                  <template #selected>
+                    <span v-if="speaker.name">{{ speaker.name }}</span>
+                  </template>
+
+                  <template #option="scope">
+                    <q-item v-bind="scope.itemProps">
+                      <q-item-section>
+                        <q-item-label>{{ scope.opt.label }}</q-item-label>
+                        <q-item-label caption>
+                          {{ [scope.opt.position, scope.opt.agency].filter(Boolean).join(" • ") || "—" }}
+                        </q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </template>
+
+                  <template #no-option>
+                    <q-item>
+                      <q-item-section class="text-grey">No speaker found</q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+
                 <q-input v-model="speaker.position" outlined dense placeholder="Position"
-                  class="custom-input speaker-agency-input" />
+                  class="custom-input speaker-agency-input" readonly />
                 <q-input v-model="speaker.agency" outlined dense placeholder="Agency"
-                  class="custom-input speaker-agency-input" />
+                  class="custom-input speaker-agency-input" readonly />
 
                 <q-btn v-if="schedule.speakers.length > 1" flat round dense icon="close" color="red"
                   class="remove-speaker-btn" @click="removeScheduleSpeaker(schedule, sIndex)">
@@ -791,6 +816,7 @@ import LabeledField from "components/events/LabeledField.vue";
 
 import { useScheduleStore } from "src/stores/event/schedule/scheduleStore";
 import Swal from "sweetalert2";
+import { useSpeakerStore } from "src/stores/library/event/speakerStore";
 
 export default defineComponent({
   name: "ScheduleFormPanel",
@@ -827,7 +853,7 @@ export default defineComponent({
     forms: { type: Array, default: () => [] },
     evaluations: { type: Array, default: () => [] },
     isAssessmentOpen: { type: Boolean, default: false },
-       assessment: { type: Array, default: () => [] },
+    assessment: { type: Array, default: () => [] },
   },
 
   emits: [
@@ -843,6 +869,7 @@ export default defineComponent({
     const eventStore = useEventStore();
     const officeStore = useOfficeStore();
     const scheduleStore = useScheduleStore()
+
 
     // library stores (same as EventCreatePage)
     const modeStore = useModeStore();
@@ -860,6 +887,10 @@ export default defineComponent({
     const typeStore = useTypeStore();
     const typeOptions = ref([]);
     const typeLoading = ref(false);
+
+    const speakerStore = useSpeakerStore();
+    const speakerOptions = ref([]);
+    const speakerLoading = ref(false);
 
     const isEditing = computed(() => !!props.schedule);
     const saving = ref(false);
@@ -890,13 +921,15 @@ export default defineComponent({
     // SPEAKERS (per schedule date)
     // =========================================================
     function createSpeaker() {
-      return { id: Date.now() + Math.random(), name: "", position: "", agency: "" };
+      return { id: Date.now() + Math.random(), speaker_id: null, name: "", position: "", agency: "" };
     }
 
     // API shape: { speaker_name, position, agency, speakerId }
     function mapSpeakers(list) {
       const mapped = (list || []).map((s, i) => ({
-        id: s.speakerId ?? `${Date.now()}-${i}`,
+        id: s.id ?? s.speaker_id ?? `${Date.now()}-${i}`,   // 👈 ibalik
+        // Preserve the identifier across the API's different response shapes.
+        speaker_id: s.speaker_id ?? s.speakerId ?? s.id ?? null,
         name: s.name || s.speaker_name || "",
         position: s.position || "",
         agency: s.agency || s.agency_name || "",
@@ -1784,6 +1817,7 @@ export default defineComponent({
           speakers: (schedule.speakers || [])
             .filter((sp) => sp.name.trim())
             .map((sp) => ({
+              speaker_id: sp.speaker_id ?? null,
               speaker_name: sp.name,
               position: sp.position,
               agency: sp.agency,
@@ -1798,7 +1832,7 @@ export default defineComponent({
         ...(props.assessment.length ? { assessment: props.assessment } : {}),
         form_open_date: formatFormDate(props.formOpenDate) || null,   // Y-m-d h:i A
         form_due_date: formatFormDate(props.formDueDate) || null,     // Y-m-d h:i A
- 
+
       };
 
       saving.value = true;
@@ -1934,6 +1968,58 @@ export default defineComponent({
       return hr >= 12;
     }
 
+    // =========================================================
+    // SPEAKER LOOKUP (per row)
+    // =========================================================
+    async function filterSpeakers(val, update, abort) {
+      speakerLoading.value = true;
+      try {
+        await speakerStore.eventSpeaker(val);
+        update(() => {
+          speakerOptions.value = speakerStore.speakerOptions.map((s) => ({
+            label: s.speaker_name,
+            value: s.speakerId ?? s.speaker_id ?? s.id,
+            position: s.employment?.position || "",
+            agency: s.employment?.agency || "",
+          }));
+        });
+      } catch (err) {
+        abort();
+        console.error(err);
+      } finally {
+        speakerLoading.value = false;
+      }
+    }
+
+    // Habang nagta-type (manual entry)
+    // function onSpeakerInput(speaker, val) {
+    //   speaker.name = val;
+    // }
+
+    // Kapag may pinili sa listahan, auto-fill position at agency
+    // Pwede lang pumili sa listahan; auto-fill ang position at agency
+    function onSpeakerSelect(speaker, val) {
+      if (val && typeof val === "object") {
+        const speakerId = val.value ?? val.speakerId ?? val.speaker_id ?? val.id;
+        if (speakerId == null || speakerId === "") {
+          speaker.speaker_id = null;
+          speaker.name = "";
+          speaker.position = "";
+          speaker.agency = "";
+          return;
+        }
+        speaker.speaker_id = speakerId;
+        speaker.name = val.label;
+        speaker.position = val.position;
+        speaker.agency = val.agency;
+      } else {
+        speaker.name = "";
+        speaker.position = "";
+        speaker.agency = "";
+        speaker.speaker_id = null;
+      }
+    }
+
     return {
       officeStore,
       isEditing,
@@ -2051,6 +2137,14 @@ export default defineComponent({
       // time restrict
       amOnly,
       pmOnly,
+
+      // Speaker lookup
+      speakerOptions,
+      speakerLoading,
+      filterSpeakers,
+      // onSpeakerInput,
+      onSpeakerSelect,
+
     };
   },
 });
