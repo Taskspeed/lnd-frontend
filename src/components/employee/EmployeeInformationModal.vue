@@ -117,17 +117,20 @@
                       @click="openSubmission(props.row)">
                       <q-tooltip>View Submission</q-tooltip>
                     </q-btn>
-                    <q-btn flat dense round icon="task_alt" color="positive"
-                      :loading="isApproveLoading(props.row.employee_form_submission_id)"
-                      :disable="isAnyApproveLoading()" @click.stop="approved(props.row)">
-                      <q-tooltip>Approved</q-tooltip>
-                    </q-btn>
 
-                    <q-btn flat dense round icon="cancel" color="negative"
-                      :loading="isReturnedLoading(props.row.employee_form_submission_id)"
-                      :disable="isAnyReturnedLoading()" @click.stop="returned(props.row)">
-                      <q-tooltip>Returned</q-tooltip>
-                    </q-btn>
+                    <template v-if="props.row.status !== 'Approved'">
+                      <q-btn flat dense round icon="task_alt" color="positive"
+                        :loading="isApproveLoading(props.row.employee_form_submission_id)"
+                        :disable="isAnyApproveLoading()" @click.stop="approved(props.row)">
+                        <q-tooltip>Approved</q-tooltip>
+                      </q-btn>
+
+                      <q-btn flat dense round icon="cancel" color="negative"
+                        :loading="isReturnedLoading(props.row.employee_form_submission_id)"
+                        :disable="isAnyReturnedLoading()" @click.stop="returned(props.row)">
+                        <q-tooltip>Returned</q-tooltip>
+                      </q-btn>
+                    </template>
                   </q-td>
                 </template>
 
@@ -295,8 +298,8 @@
 
                 <!-- PAGINATION (para sa card at list) -->
                 <div v-if="docLastPage > 1" class="qs-doc-pagination">
-                  <q-pagination :model-value="docPage" :max="docLastPage" :max-pages="6" direction-links
-                    boundary-links dense color="primary" @update:model-value="loadDocuments" />
+                  <q-pagination :model-value="docPage" :max="docLastPage" :max-pages="6" direction-links boundary-links
+                    dense color="primary" @update:model-value="loadDocuments" />
                 </div>
               </template>
 
@@ -389,6 +392,19 @@ const submissionColumns = [
   { name: 'form_name', label: 'Form', field: 'form_name', align: 'left' },
   { name: 'status', label: 'Status', field: 'status', align: 'left' },
   { name: 'submitted_at', label: 'Submitted', field: 'submitted_at', align: 'center' },
+  {
+    name: 'submitted_time_diff',
+    label: 'Timeliness',
+    field: 'submitted_time_diff',
+    align: 'left',
+    format: (val, row) => (val ? `${val} ${row.submitted_time_status}` : '—'),
+    classes: (row) =>
+      row.submitted_time_status === 'late'
+        ? 'text-negative text-weight-medium'
+        : row.submitted_time_status === 'early'
+          ? 'text-positive text-weight-medium'
+          : 'text-grey-5',
+  },
   { name: 'action', label: 'Action', field: 'action', align: 'center' },
 ]
 
