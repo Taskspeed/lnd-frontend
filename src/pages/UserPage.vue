@@ -356,11 +356,12 @@ export default defineComponent({
 
     // Walang sortable dahil hindi pa sinusuportahan ng backend ang sort
     const columns = [
-      { name: "user", label: "User", field: "name", align: "left" },
+      
       { name: "control_no", label: "Control no", field: "control_no", align: "left" },
+           { name: "user", label: "Name", field: "name", align: "left" },
       { name: "office", label: "Office", field: "office_abbr", align: "left" },
       { name: "isActive", label: "Status", field: "isActive", align: "left" },
-      { name: "role", label: "Role", field: "role", align: "left" },
+      { name: "role", label: "Role", field: "role", align: "center" },
       { name: "actions", label: "Action", field: "actions", align: "center" },
     ];
 

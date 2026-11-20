@@ -116,7 +116,7 @@ const routes = [
         meta: { requiresAuth: true, roles: ["hr_admin"] },
       },
       {
-        path: "speakers/:speakerId",
+        path: "speakers/:speaker_id",
         name: "speaker-view",
         component: () =>
           import("pages/administrator/event/SpeakerViewPage.vue"),

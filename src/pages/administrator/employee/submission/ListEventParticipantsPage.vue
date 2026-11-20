@@ -18,9 +18,17 @@
                     </template>
                 </q-input>
 
+                <q-select v-model="filters.year" :options="yearOptions" emit-value map-options outlined dense
+                    label="Year" class="filter-select" @update:model-value="onFilterChange" />
+
+                <q-select v-model="filters.month" :options="monthOptions" emit-value map-options outlined dense
+                    label="Month" class="filter-select" @update:model-value="onFilterChange" />
+
+                <q-select v-model="filters.status" :options="statusOptions" emit-value map-options outlined dense
+                    label="Status" class="filter-select" @update:model-value="onFilterChange" />
+
                 <q-btn flat no-caps icon="filter_alt_off" label="Clear" class="clear-btn" @click="clearFilters" />
             </div>
-
             <!-- TABLE -->
             <div class="table-wrapper">
                 <q-table flat :rows="rows" :columns="columns" row-key="scheduleId" v-model:pagination="pagination"
@@ -36,12 +44,12 @@
                     <!-- EVENT STATUS -->
                     <template #body-cell-computedStatus="props">
                         <q-td :props="props">
-                            <span class="status-badge" :class="'status-' +(props.row.computedStatus)">
+                            <span class="status-badge" :class="'status-' + (props.row.computedStatus)">
                                 {{ props.row.computedStatus }}
                             </span>
                         </q-td>
                     </template>
-                       <!-- <template #body-cell-status="props">
+                    <!-- <template #body-cell-status="props">
             <q-td :props="props">
               <span class="status-badge" :class="'status-' + props.row.computedStatus">
                 {{ props.row.computedStatus }}
@@ -54,13 +62,13 @@
                         <q-td :props="props">
                             <div class="action-buttons">
                                 <!-- placeholder only, no function yet -->
-                                 <q-btn flat round dense icon="visibility" color="green" class="action-btn"
-                                        @click="viewSchedule(props.row)">
-                                      
-                                    </q-btn>
-                                    
-                                    <q-tooltip>View</q-tooltip>
-                            
+                                <q-btn flat round dense icon="visibility" color="green" class="action-btn"
+                                    @click="viewSchedule(props.row)">
+
+                                </q-btn>
+
+                                <q-tooltip>View</q-tooltip>
+
                             </div>
                         </q-td>
                     </template>
@@ -79,7 +87,7 @@
 import { defineComponent, computed, onMounted, ref } from "vue";
 import Swal from "sweetalert2";
 import { useEmployeeSubmissionStore } from "src/stores/administrator/employee/employeeSubmissionStore";
-import { useRouter} from "vue-router";
+import { useRouter } from "vue-router";
 
 export default defineComponent({
     name: "EmployeeSubmissionPage",
@@ -121,6 +129,9 @@ export default defineComponent({
                 page: pagination.value.page,
                 per_page: pagination.value.rowsPerPage,
                 search: search.value || undefined,
+                year: filters.value.year || undefined,
+                month: filters.value.month || undefined,
+                schedule_status: filters.value.status || undefined,
             });
 
             if (result.success) {
@@ -133,6 +144,17 @@ export default defineComponent({
                     scrollbarPadding: false,
                 });
             }
+        }
+        function onFilterChange() {
+            pagination.value.page = 1;
+            loadEvents();
+        }
+
+        function clearFilters() {
+            search.value = "";
+            filters.value = { year: currentYear, month: null, status: null };
+            pagination.value.page = 1;
+            loadEvents();
         }
 
         function onRequest(requestProp) {
@@ -150,21 +172,56 @@ export default defineComponent({
             }, 400);
         }
 
-        function clearFilters() {
-            search.value = "";
-            pagination.value.page = 1;
-            loadEvents();
+        // function clearFilters() {
+        //     search.value = "";
+        //     pagination.value.page = 1;
+        //     loadEvents();
+        // }
+
+        function viewSchedule(row) {
+            router.push({
+                name: "event-participant-submission", // palitan ng actual route name mo sa router/routes.js
+                params: {
+                    eventId: row.event_id,
+                    scheduleId: row.scheduleId,
+                },
+            });
         }
 
-            function viewSchedule(row) {
-        router.push({
-            name: "event-participant-submission", // palitan ng actual route name mo sa router/routes.js
-            params: {
-            eventId: row.event_id,
-            scheduleId: row.scheduleId,
-            },
+        const currentYear = new Date().getFullYear();
+
+        // year defaults to the current year
+        const filters = ref({
+            year: currentYear,
+            month: null,
+            status: null,
         });
-        }
+
+        // next year down to 5 years back, plus "All Years"
+        const START_YEAR = 2026;
+
+        const yearOptions = [
+            { label: "All Years", value: null },
+            ...Array.from({ length: currentYear + 1 - START_YEAR + 1 }, (_, i) => {
+                const y = currentYear + 1 - i;
+                return { label: String(y), value: y };
+            }),
+        ];
+        const monthOptions = [
+            { label: "All Months", value: null },
+            ...[
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December",
+            ].map((name, i) => ({ label: name, value: i + 1 })),
+        ];
+
+        const statusOptions = [
+            { label: "All Status", value: null },
+            { label: "Up-coming", value: "up-coming" },
+            { label: "Ongoing", value: "ongoing" },
+            { label: "Complete", value: "complete" },
+        ];
+
 
         onMounted(() => {
             loadEvents();
@@ -179,8 +236,13 @@ export default defineComponent({
             onRequest,
             onSearchInput,
             clearFilters,
-            viewSchedule
-            
+            viewSchedule,
+            filters,
+            yearOptions,
+            monthOptions,
+            statusOptions,
+            onFilterChange,
+
         };
     },
 });
@@ -295,6 +357,11 @@ export default defineComponent({
         width: 100%;
         flex-basis: 100%;
     }
+
+    .filter-select {
+        flex: 1 1 30%;
+        width: auto;
+    }
 }
 
 @media (max-width: 650px) {
@@ -315,5 +382,19 @@ export default defineComponent({
     .submission-table {
         min-width: 700px;
     }
+}
+
+.filter-select {
+    width: 150px;
+}
+
+.filter-select :deep(.q-field__control) {
+    min-height: 38px;
+    border-radius: 8px;
+}
+
+.filter-select :deep(.q-field__native),
+.filter-select :deep(.q-field__label) {
+    font-size: 11px;
 }
 </style>
