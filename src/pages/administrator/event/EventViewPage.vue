@@ -122,7 +122,6 @@
 
             <div class="section-divider"></div>
 
-            <!-- ASSESSMENT (summary lang dito, ang setup ay nasa modal) -->
             <!-- ASSESSMENT -->
             <div class="assessment-header">
               <div class="section-title forms-title">Assessment</div>
@@ -139,7 +138,7 @@
               </div>
             </div>
 
-            <!-- OPEN / CLOSE TOGGLE (labas ng header at ng modal) -->
+            <!-- OPEN / CLOSE TOGGLE -->
             <div v-if="assessmentCount > 0" class="arms-card assessment-toggle-card"
               :class="eventForm.is_assessment_open ? 'arms-card--on' : 'arms-card--off'">
               <div class="arms-card-info">
@@ -157,27 +156,12 @@
 
             <div v-if="assessmentCount > 0" class="assessment-summary">
               <div v-for="test in assessmentTests" :key="test.key" class="assessment-summary-row">
-                <q-icon :name="eventForm[test.formKey] ? 'check_circle' : 'radio_button_unchecked'"
-                  :color="eventForm[test.formKey] ? 'green-7' : 'grey-5'" size="18px" />
+                <q-icon :name="test.form ? 'check_circle' : 'radio_button_unchecked'"
+                  :color="test.form ? 'green-7' : 'grey-5'" size="18px" />
                 <span class="assessment-summary-label">{{ test.label }}</span>
                 <span class="assessment-summary-meta">{{ testStatus(test) }}</span>
               </div>
             </div>
-            <!-- <div v-if="assessmentCount > 0" class="assessment-summary">
-              <div class="assessment-summary-status"
-                :class="eventForm.is_assessment_open ? 'assessment-summary-status--open' : 'assessment-summary-status--closed'">
-                <q-icon :name="eventForm.is_assessment_open ? 'lock_open' : 'lock'" size="16px" />
-                <span>{{ eventForm.is_assessment_open ? 'Open to employees' : 'Closed' }}</span>
-              </div>
-
-              <div v-for="test in assessmentTests" :key="test.key" class="assessment-summary-row">
-                <q-icon
-                  :name="eventForm[test.formKey] || eventForm[test.linkKey] ? 'check_circle' : 'radio_button_unchecked'"
-                  :color="eventForm[test.formKey] || eventForm[test.linkKey] ? 'green-7' : 'grey-5'" size="18px" />
-                <span class="assessment-summary-label">{{ test.label }}</span>
-                <span class="assessment-summary-meta">{{ testStatus(test) }}</span>
-              </div>
-            </div> -->
           </template>
         </template>
 
@@ -269,9 +253,7 @@
           <ScheduleFormPanel v-else :event-id="eventId" :event-title="event.title_name" :schedule="editingScheduleData"
             v-model:sync-to-arms="syncToArms" v-model:form-open-date="formOpenDate" v-model:form-due-date="formDueDate"
             :forms="forms" :evaluations="evaluations" :is-assessment-open="eventForm.is_assessment_open"
-            :pre-test-assessment="eventForm.pre_test_assessment || ''"
-            :post-test-assessment="eventForm.post_test_assessment || ''" :assessment="assessmentPayload"
-            @saved="onScheduleSaved" @cancel="backToScheduleList" />
+            :assessment="assessmentPayload" @saved="onScheduleSaved" @cancel="backToScheduleList" />
         </template>
       </EventTwoColumnLayout>
 
@@ -281,7 +263,7 @@
       <q-dialog v-model="showAssessmentDialog">
         <q-card class="assessment-dialog">
           <EventDialogHeader title="Create Assessment"
-            subtitle="Set up the Pre Test and Post Test. Click a test to preview it on the right." />
+            subtitle="Add as many assessments as you need (Pre-Test, Quiz, Post-Test, etc.). Name each one when you create its form." />
 
           <q-separator />
 
@@ -289,51 +271,54 @@
             <div class="assessment-modal-grid">
               <!-- LEFT: SETUP -->
               <div class="assessment-modal-left">
-
-
                 <div v-for="test in assessmentTests" :key="test.key" class="test-card test-card--clickable"
                   :class="{ 'test-card--active': previewTest && previewTest.key === test.key }"
                   @click="previewTestKey = test.key">
-                <div class="test-card-header">
-  <div class="test-card-title">{{ test.label }}</div>
+                  <div class="test-card-header">
+                    <div class="test-card-title">{{ test.label }}</div>
 
-  <div class="row items-center q-gutter-xs">
-    <q-btn v-if="canCopyFromPre(test)" flat no-caps dense icon="content_copy"
-      label="Copy from Pre-Test" class="copy-pre-btn" @click.stop="copyFromPreTest(test)" />
+                    <div class="row items-center q-gutter-xs">
+                      <q-btn-dropdown v-if="copySources(test).length" flat no-caps dense icon="content_copy"
+                        label="Copy from..." class="copy-pre-btn" @click.stop>
+                        <q-list dense>
+                          <q-item v-for="src in copySources(test)" :key="src.key" clickable v-close-popup
+                            @click.stop="copyFromAssessment(test, src)">
+                            <q-item-section>{{ src.label }}</q-item-section>
+                          </q-item>
+                        </q-list>
+                      </q-btn-dropdown>
 
-    <q-btn outline no-caps dense :icon="eventForm[test.formKey] ? 'edit' : 'add'"
-      :label="eventForm[test.formKey] ? 'Edit Form' : 'Create Form'" class="create-assessment-btn"
-      @click.stop="openFormBuilder(test.key)" />
-  </div>
-</div>
+                      <q-btn outline no-caps dense :icon="test.form ? 'edit' : 'add'"
+                        :label="test.form ? 'Edit Form' : 'Create Form'" class="create-assessment-btn"
+                        @click.stop="openFormBuilder(test.key)" />
 
-                  <div v-if="eventForm[test.formKey]" class="test-form-summary">
+                      <q-btn flat round dense icon="delete" class="delete-btn" @click.stop="removeAssessment(test)">
+                        <q-tooltip>Remove Assessment</q-tooltip>
+                      </q-btn>
+                    </div>
+                  </div>
+
+                  <div v-if="test.form" class="test-form-summary">
                     <q-icon name="description" size="18px" color="green-7" />
                     <div class="test-form-summary-text">
-                      <div class="test-form-summary-title">{{ eventForm[test.formKey].title }}</div>
-                      <div class="test-form-summary-meta">
-                        {{ eventForm[test.formKey].questions.length }} question(s)
-                      </div>
+                      <div class="test-form-summary-title">{{ test.form.title }}</div>
+                      <div class="test-form-summary-meta">{{ test.form.questions.length }} question(s)</div>
                     </div>
-                    <q-btn flat round dense icon="delete" class="delete-btn" @click.stop="removeTestForm(test)">
-                      <q-tooltip>Remove Form</q-tooltip>
+                    <q-btn flat round dense icon="close" class="delete-btn" @click.stop="removeTestForm(test)">
+                      <q-tooltip>Clear Form</q-tooltip>
                     </q-btn>
                   </div>
 
                   <LabeledField label="Passing Score">
                     <q-input :model-value="getPassingScore(test)" type="number" min="0" outlined dense
-                      :disable="!eventForm[test.formKey]" placeholder="eg. 20" class="custom-input" @click.stop
+                      :disable="!test.form" placeholder="eg. 20" class="custom-input" @click.stop
                       @update:model-value="setPassingScore(test, $event)" />
                   </LabeledField>
                 </div>
 
                 <div v-if="assessmentCount < MAX_ASSESSMENTS" class="add-more-assessment">
-                  <q-btn outline no-caps icon="add" :label="`Add Assessment ${assessmentCount + 1}`"
-                    class="create-assessment-btn" @click="addAssessment" />
-                </div>
-                <div v-else-if="assessmentCount > 1" class="add-more-assessment">
-                  <q-btn flat no-caps dense icon="close" label="Remove Last Assessment" class="remove-assessment-btn"
-                    @click="removeAssessment" />
+                  <q-btn outline no-caps icon="add" label="Add Assessment" class="create-assessment-btn"
+                    @click="addAssessment" />
                 </div>
               </div>
 
@@ -342,17 +327,12 @@
                 <div class="preview-label">Preview</div>
 
                 <div class="preview-card">
-                  <!-- <div class="preview-event">{{ event.title_name || 'Untitled Event' }}</div>
-                  <div class="preview-test">{{ previewTest ? previewTest.label : '' }}</div> -->
                   <div class="preview-event">{{ previewTest ? previewTest.label : '' }}</div>
                   <div class="preview-test">{{ event.title_name || 'Untitled Event' }}</div>
 
                   <q-separator class="preview-separator" />
 
                   <template v-if="previewForm">
-                    <!-- <div class="preview-form-title">{{ previewForm.title }}</div>
-                    <div v-if="previewForm.description" class="preview-form-desc">{{ previewForm.description }}</div> -->
-
                     <div v-for="(q, qi) in previewForm.questions" :key="qi" class="preview-question">
                       <div class="preview-question-text">{{ qi + 1 }}. {{ questionText(q) }}</div>
                       <ul v-if="questionOptions(q).length" class="preview-options">
@@ -362,17 +342,9 @@
                     </div>
                   </template>
 
-                  <div v-else-if="previewTest && eventForm[previewTest.linkKey]" class="preview-empty">
-                    <q-icon name="link" size="28px" />
-                    <span>Using Google Form link:</span>
-                    <span class="preview-link">{{ eventForm[previewTest.linkKey] }}</span>
-                  </div>
-
                   <div v-else class="preview-empty">
                     <q-icon name="description" size="28px" />
-                    <span>No form yet. Click "Create Form" to build the {{ previewTest ? previewTest.label.trim() :
-                      'test'
-                    }}.</span>
+                    <span>No form yet. Click "Create Form" to build this assessment.</span>
                   </div>
                 </div>
               </div>
@@ -385,9 +357,10 @@
         </q-card>
       </q-dialog>
 
-      <!-- GOOGLE FORM BUILDER (Pre Test / Post Test) -->
+      <!-- FORM BUILDER -->
       <GoogleFormBuilderDialog v-model="showGoogleFormDialog" :event-title="event.title_name || ''"
-        :test-label="builderLabel" :initial-form="builderInitialForm" @save="onSaveGoogleForm" />
+        :test-label="builderLabel" :initial-form="builderInitialForm" :taken-titles="builderTakenTitles"
+        @save="onSaveGoogleForm" />
     </template>
   </q-page>
 </template>
@@ -416,7 +389,6 @@ import { useRowLoading } from "src/composables/useRowLoading";
 import { formatFormDate, parseFormDate } from "src/composables/event/useFormDate";
 import { useAssessmentStore } from "src/stores/event/assessmentStore";
 
-
 export default defineComponent({
   name: "EventViewPage",
 
@@ -444,6 +416,7 @@ export default defineComponent({
     const officeStore = useOfficeStore();
     const scheduleStore = useScheduleStore();
     const assessmentStore = useAssessmentStore();
+
     // =========================================================
     // EVENT ID
     // =========================================================
@@ -462,7 +435,6 @@ export default defineComponent({
     const { isLoading: isEditLoading, isAnyLoading: isAnyEditLoading, run: runEdit } = useRowLoading();
     const { isLoading: isDeleteLoading, isAnyLoading: isAnyDeleteLoading, run: runDelete } = useRowLoading();
 
-
     const scheduleView = ref("list");
     // null = Add mode. Row object = Edit mode.
     const editingScheduleData = ref(null);
@@ -470,112 +442,95 @@ export default defineComponent({
     const selectedIntervention = ref("Formal Learning");
 
     // form schedule / forms (shared with ScheduleFormPanel)
-    const formOpenDate = ref(null);   // "YYYY-MM-DD HH:mm" (24h) internally
+    const formOpenDate = ref(null); // "YYYY-MM-DD HH:mm" (24h) internally
     const formDueDate = ref(null);
     const forms = ref([]);
     const evaluations = ref([]);
 
     // =========================================================
-    // ASSESSMENT STATE (same shape as EventCreatePage)
+    // ASSESSMENT STATE (dynamic list, user-defined title)
     // =========================================================
-    function defaultAssessmentForm() {
-      return {
-        // // Assessment 1
-        // pre_test_assessment: null,
-        // post_test_assessment: null,
-        // pre_test_form: null,
-        // post_test_form: null,
-        // // Assessment 2
-        // pre_test_assessment_2: null,
-        // post_test_assessment_2: null,
-        // pre_test_form_2: null,
-        // post_test_form_2: null,
-        is_assessment_open: false,
-      };
-    }
+    const eventForm = ref({ is_assessment_open: false });
 
-    const eventForm = ref(defaultAssessmentForm());
+    const MAX_ASSESSMENTS = 10;
 
-    const MAX_ASSESSMENTS = 2;
-    const assessmentCount = ref(0);
+    // [{ key, form }]  form = { title, passing_score, questions, assessmentId? } | null
+    const assessmentItems = ref([]);
+    let itemSeq = 0;
+    const newItem = (form = null) => ({ key: `a${++itemSeq}`, form });
 
-    function buildTests(n) {
-      const suffix = n === 1 ? "" : `_${n}`;
-      const num = n === 1 ? "" : ` ${n}`;
-      return [
-        {
-          key: `pre${n}`,
-          label: `Pre-Test Assessment${num}`,
-          formKey: `pre_test_form${suffix}`,
-          linkKey: `pre_test_assessment${suffix}`,
-        },
-        {
-          key: `post${n}`,
-          label: `Post-Test Assessment${num}`,
-          formKey: `post_test_form${suffix}`,
-          linkKey: `post_test_assessment${suffix}`,
-        },
-      ];
-    }
+    const assessmentCount = computed(() => assessmentItems.value.length);
 
+    // ginagamit ng template: { key, label, form, index }
     const assessmentTests = computed(() =>
-      Array.from({ length: assessmentCount.value }, (_, i) => buildTests(i + 1)).flat()
+      assessmentItems.value.map((item, index) => ({
+        key: item.key,
+        index,
+        form: item.form,
+        label: item.form?.title?.trim() || `Untitled Assessment ${index + 1}`,
+      }))
     );
 
+    const findItem = (key) => assessmentItems.value.find((i) => i.key === key) || null;
+
+    // Assessment modal state
+    const showAssessmentDialog = ref(false);
+    const previewTestKey = ref(null);
+
     function addAssessment() {
-      if (assessmentCount.value < MAX_ASSESSMENTS) assessmentCount.value++;
+      if (assessmentCount.value >= MAX_ASSESSMENTS) return;
+      const item = newItem();
+      assessmentItems.value.push(item);
+      previewTestKey.value = item.key;
     }
 
-    // Tinatanggal ang pinaka-huling assessment set
-    function removeAssessment() {
-      const n = assessmentCount.value;
-      if (!n) return;
-
-      buildTests(n).forEach((t) => {
-        eventForm.value[t.formKey] = null;
-        eventForm.value[t.linkKey] = null;
-      });
-
-      assessmentCount.value--;
-      if (assessmentCount.value === 0) {
-        eventForm.value.is_assessment_open = false;
+    function removeAssessment(test) {
+      assessmentItems.value = assessmentItems.value.filter((i) => i.key !== test.key);
+      if (previewTestKey.value === test.key) {
+        previewTestKey.value = assessmentItems.value[0]?.key || null;
       }
+      if (!assessmentItems.value.length) eventForm.value.is_assessment_open = false;
+    }
+
+    function removeAllAssessments() {
+      assessmentItems.value = [];
+      previewTestKey.value = null;
+      eventForm.value.is_assessment_open = false;
     }
 
     function resetAssessment() {
-      eventForm.value = defaultAssessmentForm();
-      assessmentCount.value = 0;
+      eventForm.value = { is_assessment_open: false };
+      assessmentItems.value = [];
       previewTestKey.value = null;
     }
 
     // payload na ipapasa sa ScheduleFormPanel
     const assessmentPayload = computed(() =>
-      assessmentTests.value
-        .map((test) => ({ test, form: eventForm.value[test.formKey] }))
-        .filter(({ form }) => form)
-        .map(({ test, form }) => ({
-          type: test.key.startsWith("pre") ? "pre_test" : "post_test",
-          event_name: event.value?.title_name || "",
-          title: `${test.label.trim()}`,
-          passing_score: form.passing_score,
-          questions: form.questions,
+      assessmentItems.value
+        .filter((i) => i.form)
+        .map((i) => ({
+          id: i.form.assessmentId ?? null, // existing = may id, bago = null
+           description: i.form.description,
+            title: i.form.title,
+            passing_score: i.form.passing_score,
+            questions: i.form.questions,
         }))
     );
 
-    // Google Form builder
+    // ---------- Form builder ----------
     const showGoogleFormDialog = ref(false);
-    const activeTest = ref(null); // "pre1" | "post1" | "pre2" | "post2"
+    const activeTest = ref(null); // item key
 
-    const activeTestConfig = computed(
-      () => assessmentTests.value.find((t) => t.key === activeTest.value) || null
+    const activeItem = computed(() => findItem(activeTest.value));
+    const builderInitialForm = computed(() => activeItem.value?.form || null);
+    const builderLabel = computed(() => ""); // walang default, ang user ang magta-type ng title
+
+    // mga title na gamit na ng ibang assessment (para iwas duplicate)
+    const builderTakenTitles = computed(() =>
+      assessmentItems.value
+        .filter((i) => i.key !== activeTest.value && i.form?.title)
+        .map((i) => i.form.title.trim())
     );
-
-    const builderInitialForm = computed(() =>
-      activeTestConfig.value ? eventForm.value[activeTestConfig.value.formKey] : null
-    );
-
-    // default title ng form: "<Event Title> - Pre Test"
-    const builderLabel = computed(() => activeTestConfig.value?.label?.trim() || "");
 
     function openFormBuilder(testKey) {
       activeTest.value = testKey;
@@ -583,74 +538,63 @@ export default defineComponent({
     }
 
     function onSaveGoogleForm(form) {
-      const test = activeTestConfig.value;
-      if (!test) return;
+      const item = activeItem.value;
+      if (!item) return;
 
-      eventForm.value[test.formKey] = form;
+      // panatilihin ang assessmentId kapag edit ng existing
+      item.form = { ...form, assessmentId: item.form?.assessmentId };
 
       $q.notify({
         type: "positive",
-        message: `${test.label.trim()} form saved with ${form.questions.length} question(s).`,
+        message: `"${form.title}" saved with ${form.questions.length} question(s).`,
         position: "top",
       });
     }
 
     function removeTestForm(test) {
-      eventForm.value[test.formKey] = null;
+      const item = findItem(test.key);
+      if (item) item.form = null;
     }
-    // Pre-test na kapares ng post-test (post1 -> pre1, post2 -> pre2)
-function getPairedPreTest(test) {
-  if (!test.key.startsWith("post")) return null;
-  const n = test.key.replace("post", "");
-  return assessmentTests.value.find((t) => t.key === `pre${n}`) || null;
-}
 
-// Lalabas lang ang button kung post-test ito, may laman ang pre-test, at wala pang form ang post-test
-function canCopyFromPre(test) {
-  const pre = getPairedPreTest(test);
-  return !!(pre && eventForm.value[pre.formKey] && !eventForm.value[test.formKey]);
-}
+    // ---------- Copy from another assessment ----------
+    function copySources(test) {
+      if (test.form) return [];
+      return assessmentTests.value.filter((t) => t.key !== test.key && t.form);
+    }
 
-function copyFromPreTest(test) {
-  const pre = getPairedPreTest(test);
-  const source = pre && eventForm.value[pre.formKey];
-  if (!source) return;
+    function copyFromAssessment(test, source) {
+      const item = findItem(test.key);
+      if (!item || !source?.form) return;
 
-  const copy = JSON.parse(JSON.stringify(source)); // deep copy
+      const copy = JSON.parse(JSON.stringify(source.form));
+      delete copy.assessmentId; // bagong record
+      copy.title = `${source.form.title} (Copy)`;
+      copy.questions.forEach((q) => {
+        delete q.id;
+        (q.options || []).forEach((o) => delete o.id);
+      });
 
-  // bagong record ito, kaya alisin ang mga id ng pre-test
-  delete copy.assessmentId;
-  copy.title = test.label.trim();
-  copy.questions.forEach((q) => {
-    delete q.id;
-    (q.options || []).forEach((o) => delete o.id);
-  });
+      item.form = copy;
 
-  eventForm.value[test.formKey] = copy;
+      $q.notify({
+        type: "positive",
+        message: `Copied ${copy.questions.length} question(s) from ${source.label}. Edit the form to rename it.`,
+        position: "top",
+      });
+    }
 
-  // EventCreatePage: gamitin ang Notify.create
-  // EventViewPage: gamitin ang $q.notify
-  Notify.create({
-    type: "positive",
-    message: `Copied ${copy.questions.length} question(s) from ${pre.label.trim()}.`,
-    position: "top",
-  });
-}
-
+    // ---------- Passing score ----------
     function getPassingScore(test) {
-      return eventForm.value[test.formKey]?.passing_score ?? "";
+      return test.form?.passing_score ?? "";
     }
 
     function setPassingScore(test, value) {
-      const form = eventForm.value[test.formKey];
-      if (!form) return;
-      form.passing_score = value === "" || value === null ? null : Number(value);
+      const item = findItem(test.key);
+      if (!item?.form) return;
+      item.form.passing_score = value === "" || value === null ? null : Number(value);
     }
 
-    // Assessment modal
-    const showAssessmentDialog = ref(false);
-    const previewTestKey = ref(null);
-
+    // ---------- Assessment modal ----------
     const previewTest = computed(
       () =>
         assessmentTests.value.find((t) => t.key === previewTestKey.value) ||
@@ -658,9 +602,7 @@ function copyFromPreTest(test) {
         null
     );
 
-    const previewForm = computed(() =>
-      previewTest.value ? eventForm.value[previewTest.value.formKey] : null
-    );
+    const previewForm = computed(() => previewTest.value?.form || null);
 
     function openAssessmentDialog() {
       if (assessmentCount.value === 0) addAssessment();
@@ -668,16 +610,8 @@ function copyFromPreTest(test) {
       showAssessmentDialog.value = true;
     }
 
-    function removeAllAssessments() {
-      while (assessmentCount.value > 0) removeAssessment();
-      previewTestKey.value = null;
-    }
-
     function testStatus(test) {
-      const form = eventForm.value[test.formKey];
-      if (form) return `${form.title} · ${form.questions.length} question(s)`;
-      if (eventForm.value[test.linkKey]) return "Google Form link added";
-      return "Not set";
+      return test.form ? `${test.form.questions.length} question(s)` : "No form yet";
     }
 
     function questionText(q) {
@@ -690,12 +624,12 @@ function copyFromPreTest(test) {
       );
     }
 
-    // Galing sa API ang shape ng assessment; i-convert sa shape na gamit ng builder at preview
+    // Galing sa API ang shape; i-convert sa shape ng builder at preview
     function toFormShape(data) {
       return {
         assessmentId: data.assessmentId,
         title: data.title,
-        description: "",
+        description: data.description ?? "",
         passing_score: data.passing_score,
         questions: (data.questions || []).map((q) => ({
           id: q.id,
@@ -711,7 +645,7 @@ function copyFromPreTest(test) {
       };
     }
 
-    // Edit mode: i-fetch ang bawat assessment gamit ang assessmentId
+    // Edit mode: i-fetch ang bawat assessment gamit ang assessmentId (kahit ilan, kahit anong title)
     async function loadAssessmentFromApi(data) {
       resetAssessment();
 
@@ -721,30 +655,21 @@ function copyFromPreTest(test) {
       );
       if (!list.length) return;
 
+      const sorted = [...list].sort((a, b) => a.assessmentId - b.assessmentId);
       const results = await Promise.all(
-        list.map((a) => assessmentStore.view_assessment(a.assessmentId))
+        sorted.map((a) => assessmentStore.view_assessment(a.assessmentId))
       );
 
-      let preCount = 0;
-      let postCount = 0;
-
-      results.forEach((res, i) => {
+      results.forEach((res) => {
         if (!res?.success) {
           $q.notify({ type: "negative", message: res?.message || "Failed to load assessment.", position: "top" });
           return;
         }
-
-        const title = res.data.title || list[i].title || "";
-        const isPost = /post[-\s]?test/i.test(title);
-        const setNo = isPost ? ++postCount : ++preCount;
-        if (setNo > MAX_ASSESSMENTS) return;
-
-        const [pre, post] = buildTests(setNo);
-        eventForm.value[(isPost ? post : pre).formKey] = toFormShape(res.data);
-        assessmentCount.value = Math.max(assessmentCount.value, setNo);
+        assessmentItems.value.push(newItem(toFormShape(res.data)));
       });
-    }
 
+      previewTestKey.value = assessmentItems.value[0]?.key || null;
+    }
 
     const scheduleColumns = [
       {
@@ -919,8 +844,8 @@ function copyFromPreTest(test) {
             afternoon_in: to24HourTime(schedule.afternoon_in),
             afternoon_out: to24HourTime(schedule.afternoon_out),
             speakers: (schedule.speakers || []).map((speaker) => ({
-        id: speaker.speaker_id ?? `${schedule.schedule_date_time_id}-${speaker.speaker_name}`,
-          speaker_id: speaker.speaker_id ?? null,   // 👈 idagdag
+              id: speaker.speaker_id ?? `${schedule.schedule_date_time_id}-${speaker.speaker_name}`,
+              speaker_id: speaker.speaker_id ?? null,
               name: speaker.speaker_name || "",
               position: speaker.position || "",
               agency: speaker.agency || "",
@@ -1154,6 +1079,8 @@ function copyFromPreTest(test) {
       removeAssessment,
       removeAllAssessments,
       removeTestForm,
+      copySources,
+      copyFromAssessment,
       getPassingScore,
       setPassingScore,
       showAssessmentDialog,
@@ -1167,6 +1094,7 @@ function copyFromPreTest(test) {
       showGoogleFormDialog,
       builderInitialForm,
       builderLabel,
+      builderTakenTitles,
       openFormBuilder,
       onSaveGoogleForm,
 
@@ -1178,8 +1106,6 @@ function copyFromPreTest(test) {
 
       isDeleteLoading,
       isAnyDeleteLoading,
-      canCopyFromPre,
-      copyFromPreTest,
     };
   },
 });
@@ -1590,7 +1516,7 @@ function copyFromPreTest(test) {
 }
 
 /* =========================================================
-   ASSESSMENT (summary + modal)  — galing sa EventCreatePage
+   ASSESSMENT (summary + modal)
 ========================================================= */
 .assessment-header {
   display: flex;
@@ -1744,7 +1670,7 @@ function copyFromPreTest(test) {
 }
 
 .delete-btn {
- color: #d83d3d;
+  color: #d83d3d;
 }
 
 .delete-btn:hover {
@@ -1826,8 +1752,6 @@ function copyFromPreTest(test) {
   margin-top: 2px;
   font-size: 14px;
   color: #555;
-
-
 }
 
 .preview-separator {
@@ -1901,6 +1825,7 @@ function copyFromPreTest(test) {
     position: static;
   }
 }
+
 .copy-pre-btn {
   color: #555555;
   font-size: 11px;

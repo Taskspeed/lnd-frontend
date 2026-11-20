@@ -17,8 +17,10 @@
           <div class="gf-header-card">
             <div class="gf-header-bar"></div>
             <div class="gf-header-content">
-          <div class="gf-title-text">{{ formTitle }}</div>
-          <div class="gf-desc-text">{{ formDescription }}</div>
+              <input v-model="formTitle" class="gf-title-input" maxlength="100"
+                placeholder= "Title (e.g.Pre-Test, Quiz 1, Post-Test)" />
+      <input v-model="formDescription" class="gf-desc-input" maxlength="300"
+  placeholder="Form description" />
               <label class="gf-passing-score">Passing score
                 <input v-model.number="passingScore" type="number" min="0" step="1" />
               </label>
@@ -35,7 +37,6 @@
                   <!-- DRAG HANDLE -->
                   <div class="gf-drag-handle">
                     <q-icon name="drag_indicator" size="20px" style="transform: rotate(90deg)" />
-
                   </div>
 
                   <!-- QUESTION + TYPE -->
@@ -130,12 +131,13 @@ export default defineComponent({
 
   components: { draggable },
 
-props: {
-  modelValue: { type: Boolean, default: false },
-  eventTitle: { type: String, default: "" },   // event title -> description
-  testLabel: { type: String, default: "" },    // "Pre-Test Assessment" -> title
-  initialForm: { type: Object, default: null },
-},
+  props: {
+    modelValue: { type: Boolean, default: false },
+    eventTitle: { type: String, default: "" }, // event title -> description
+    testLabel: { type: String, default: "" }, // optional default title
+    initialForm: { type: Object, default: null },
+    takenTitles: { type: Array, default: () => [] }, // titles na gamit na ng ibang assessment
+  },
   emits: ["update:modelValue", "save"],
 
   setup(props, { emit }) {
@@ -154,8 +156,8 @@ props: {
       type: "multiple_choice",
       required: false,
       points: 1,
-      correctOptionId: null,   // para sa multiple_choice
-      correctOptionIds: [],    // para sa checkboxes
+      correctOptionId: null, // para sa multiple_choice
+      correctOptionIds: [], // para sa checkboxes
       options: [createOption("Option 1")],
     });
 
@@ -166,42 +168,43 @@ props: {
     const activeId = ref(questions.value[0].id);
 
     // Tuwing bubukas ang dialog: i-load yung dating form, o mag-start ng bago
-   watch(
-  () => props.modelValue,
-  (open) => {
-    if (!open) return;
+    watch(
+      () => props.modelValue,
+      (open) => {
+        if (!open) return;
 
-    if (props.initialForm) {
-      passingScore.value = props.initialForm.passing_score ?? 1;
-      questions.value = props.initialForm.questions.map((question) => {
-        const options = (question.options || []).map((option) => ({
-          id: option.id ?? uid(),
-          text: option.text ?? option.option_text ?? "",
-          isCorrect: option.is_correct === true,
-        }));
-        const correctIds = options.filter((option) => option.isCorrect).map((option) => option.id);
-        return {
-          id: question.id ?? uid(),
-          text: question.text ?? question.question ?? "",
-          type: question.type ?? question.question_type ?? "multiple_choice",
-          points: question.points ?? 1,
-          required: question.required ?? false,
-          correctOptionId: correctIds[0] ?? null,
-          correctOptionIds: correctIds,
-          options,
-        };
-      });
-    } else {
-      passingScore.value = 1;
-      questions.value = [createQuestion()];
-    }
+        if (props.initialForm) {
+          passingScore.value = props.initialForm.passing_score ?? 1;
+          questions.value = props.initialForm.questions.map((question) => {
+            const options = (question.options || []).map((option) => ({
+              id: option.id ?? uid(),
+              text: option.text ?? option.option_text ?? "",
+              isCorrect: option.is_correct === true,
+            }));
+            const correctIds = options.filter((option) => option.isCorrect).map((option) => option.id);
+            return {
+              id: question.id ?? uid(),
+              text: question.text ?? question.question ?? "",
+              type: question.type ?? question.question_type ?? "multiple_choice",
+              points: question.points ?? 1,
+              required: question.required ?? false,
+              correctOptionId: correctIds[0] ?? null,
+              correctOptionIds: correctIds,
+              options,
+            };
+          });
+        } else {
+          passingScore.value = 1;
+          questions.value = [createQuestion()];
+        }
 
-    // fixed, hindi ine-edit ng user
-    formTitle.value = props.testLabel || "";
-    formDescription.value = props.eventTitle || "";
-    activeId.value = questions.value[0].id;
-  }
-);
+        // editable na ang title; ang event title ay description lang
+      formTitle.value = props.initialForm?.title || "";
+      formDescription.value = props.initialForm?.description ?? "";
+        activeId.value = questions.value[0].id;
+      }
+    );
+
     // =========================================================
     // QUESTIONS
     // =========================================================
@@ -280,7 +283,13 @@ props: {
 
     function save() {
       if (!formTitle.value.trim()) {
-        Notify.create({ type: "warning", message: "Please enter a form title.", position: "top" });
+        Notify.create({ type: "warning", message: "Please enter an assessment title.", position: "top" });
+        return;
+      }
+
+      const typed = formTitle.value.trim().toLowerCase();
+      if (props.takenTitles.some((t) => t.trim().toLowerCase() === typed)) {
+        Notify.create({ type: "warning", message: "Another assessment already uses this title.", position: "top" });
         return;
       }
 
@@ -404,7 +413,7 @@ props: {
 .gf-body {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 72px 60px 16px;   /* ← dati: 24px 16px 60px */
+  padding: 24px 72px 60px 16px;
 }
 
 .gf-center {
@@ -438,40 +447,48 @@ props: {
   min-height: 130px;
 }
 
-.gf-title-input[readonly] {
+.gf-title-input {
   border: none;
-  border-bottom: 1px solid transparent;
+  border-bottom: 1px solid #dadce0;
   outline: none;
-  font-size: 30px;
+  font-size: 22px;
   color: #202124;
   padding: 4px 0;
   background: transparent;
 }
 
-.gf-title-input[readonly]:focus {
-  border-bottom: 2px solid #542b2b;
+.gf-title-input:focus {
+  border-bottom: 2px solid #18bd4f;
 }
 
-.gf-desc-input[readonly] {
-  border: none;
-  border-bottom: 1px solid transparent;
-  outline: none;
-  font-size: 14px;
+.gf-passing-score {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   color: #555;
-  padding: 4px 0;
-  background: transparent;
-    cursor: default;
+  font-size: 14px;
 }
 
-.gf-desc-input[readonly]:focus {
-  border-bottom: 2px solid #542b2b;
-    border-bottom: 1px solid transparent;
+.gf-passing-score input {
+  width: 90px;
+  padding: 6px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
 }
 
-.gf-passing-score { display: flex; align-items: center; gap: 12px; color: #555; font-size: 14px; }
-.gf-passing-score input { width: 90px; padding: 6px; border: 1px solid #dadce0; border-radius: 4px; }
-.gf-points-row { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 10px; color: #555; font-size: 13px; }
-.gf-points-input { width: 90px; }
+.gf-points-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 10px;
+  color: #555;
+  font-size: 13px;
+}
+
+.gf-points-input {
+  width: 90px;
+}
 
 /* =========================================================
    QUESTION LIST (DRAGGABLE)
@@ -482,14 +499,13 @@ props: {
   gap: 12px;
 }
 
-/* dati: gap: 12px + flex na nagpapaliit sa card */
 .gf-question-row {
   position: relative;
 }
 
 .gf-question-card {
   position: relative;
-  width: 100%;              /* ← dati: flex: 1 */
+  width: 100%;
   padding: 28px 22px 8px;
   border: 1px solid #dadce0;
   border-left: 6px solid transparent;
@@ -503,7 +519,6 @@ props: {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
-/* drag handle: malaking hit area + grab cursor */
 .gf-drag-handle {
   position: absolute;
   top: 0;
@@ -512,7 +527,7 @@ props: {
   padding: 2px 40px 4px;
   color: #bdbdbd;
   line-height: 1;
-  cursor: move;          /* ← dati: grab */
+  cursor: move;
   user-select: none;
 }
 
@@ -521,10 +536,9 @@ props: {
 }
 
 .gf-drag-handle:active {
-  cursor: move;          /* ← dati: grabbing */
+  cursor: move;
 }
 
-/* habang dina-drag */
 .gf-ghost {
   opacity: 0.4;
 }
@@ -627,12 +641,12 @@ props: {
 }
 
 /* =========================================================
-   SIDE TOOLBAR (nasa labas ng card, hindi nakakaapekto sa lapad)
+   SIDE TOOLBAR
 ========================================================= */
 .gf-side-toolbar {
-  position: absolute;       /* ← dati: sticky */
+  position: absolute;
   top: 0;
-  left: calc(100% + 12px);  /* ← nasa kanan ng card */
+  left: calc(100% + 12px);
   padding: 6px;
   border: 1px solid #dadce0;
   border-radius: 8px;
@@ -640,6 +654,7 @@ props: {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   z-index: 1;
 }
+
 @media (max-width: 650px) {
   .gf-question-top {
     flex-wrap: wrap;
@@ -649,19 +664,22 @@ props: {
     width: 100%;
   }
 }
-.gf-title-text {
-  padding: 4px 0;
-  font-size: 30px;
-  color: #202124;
-  cursor: default;
-  user-select: none;
-}
 
-.gf-desc-text {
+.gf-desc-input {
+  border: none;
+  border-bottom: 1px solid transparent;
+  outline: none;
   padding: 4px 0;
   font-size: 14px;
   color: #555;
-  cursor: default;
-  user-select: none;
+  background: transparent;
+}
+
+.gf-desc-input:hover {
+  border-bottom-color: #dadce0;
+}
+
+.gf-desc-input:focus {
+  border-bottom: 2px solid #18bd4f;
 }
 </style>
