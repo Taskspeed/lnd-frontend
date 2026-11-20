@@ -110,29 +110,36 @@
                   </q-td>
                 </template>
 
-                <template #body-cell-action="props">
-                  <q-td :props="props">
-                    <q-btn flat dense round icon="visibility" color="primary"
-                      :loading="loadingFormData && activeRowId === props.row.employee_form_submission_id"
-                      @click="openSubmission(props.row)">
-                      <q-tooltip>View Submission</q-tooltip>
-                    </q-btn>
+          <template #body-cell-action="props">
+            <q-td :props="props">
+              <q-btn flat dense round icon="visibility" color="primary"
+                :loading="loadingFormData && activeRowId === props.row.employee_form_submission_id"
+                @click="openSubmission(props.row)">
+                <q-tooltip>View Submission</q-tooltip>
+              </q-btn>
 
-                    <template v-if="props.row.status !== 'Approved'">
-                      <q-btn flat dense round icon="task_alt" color="positive"
-                        :loading="isApproveLoading(props.row.employee_form_submission_id)"
-                        :disable="isAnyApproveLoading()" @click.stop="approved(props.row)">
-                        <q-tooltip>Approved</q-tooltip>
-                      </q-btn>
+              <!-- Signed copy: lalabas lang kung may image -->
+              <q-btn v-if="rowImage(props.row)" flat dense round icon="image" color="blue"
+                :loading="imageBusyId === props.row.employee_form_submission_id"
+                @click="openFormImage(props.row)">
+                <q-tooltip>View signed copy</q-tooltip>
+              </q-btn>
 
-                      <q-btn flat dense round icon="cancel" color="negative"
-                        :loading="isReturnedLoading(props.row.employee_form_submission_id)"
-                        :disable="isAnyReturnedLoading()" @click.stop="returned(props.row)">
-                        <q-tooltip>Returned</q-tooltip>
-                      </q-btn>
-                    </template>
-                  </q-td>
-                </template>
+              <template v-if="props.row.status !== 'Approved'">
+                <q-btn flat dense round icon="task_alt" color="positive"
+                  :loading="isApproveLoading(props.row.employee_form_submission_id)"
+                  :disable="isAnyApproveLoading()" @click.stop="approved(props.row)">
+                  <q-tooltip>Approved</q-tooltip>
+                </q-btn>
+
+                <q-btn flat dense round icon="cancel" color="negative"
+                  :loading="isReturnedLoading(props.row.employee_form_submission_id)"
+                  :disable="isAnyReturnedLoading()" @click.stop="returned(props.row)">
+                  <q-tooltip>Returned</q-tooltip>
+                </q-btn>
+              </template>
+            </q-td>
+          </template>
 
                 <template #no-data>
                   <div class="qs-empty">No form submissions found.</div>
@@ -823,6 +830,45 @@ async function openDocument(doc) {
   previewUrl.value = URL.createObjectURL(new Blob([blob], { type: mimeOf(doc) }))
 }
 
+
+// --- Signed copy (image ng form) ---
+const imageBusyId = ref(null)
+
+// may image lang kung may na-upload na (form_record_id + image)
+const rowImage = (row) => !!(row.form_record_id && row.image)
+
+async function openFormImage(row) {
+  if (!rowImage(row) || imageBusyId.value) return
+
+  imageBusyId.value = row.employee_form_submission_id
+
+  // reuse ang existing preview dialog
+  clearPreview()
+  previewDoc.value = { title: `${row.form_name} (Signed Copy)`, file_type: 'img' }
+  showDocPreview.value = true
+  previewLoading.value = true
+
+  const blob = await employeeSubmissionStore.previewImage(row.form_name, row.form_record_id)
+
+  previewLoading.value = false
+  imageBusyId.value = null
+
+  // isinara ng user habang naglo-load
+  if (!showDocPreview.value) return
+
+  if (!blob) {
+    showDocPreview.value = false
+    Swal.fire({
+      title: 'Failed',
+      text: employeeSubmissionStore.error || 'Failed to load image.',
+      icon: 'error',
+      scrollbarPadding: false,
+    })
+    return
+  }
+
+  previewUrl.value = URL.createObjectURL(blob)
+}
 async function downloadDocument(doc) {
   docBusyId.value = doc.id
   const blob = await employeeSubmissionStore.fetchFileBlob(doc.id)
@@ -840,6 +886,28 @@ async function downloadDocument(doc) {
   a.remove()
   URL.revokeObjectURL(url)
 }
+
+
+const previewImage = async (row) => {
+  if (!row.recordId || busyId.value) return;
+  busyId.value = `preview-${row.id}`;
+
+  // buksan muna ang tab bago mag-await para hindi ma-block ng popup blocker
+  const w = window.open("", "_blank");
+  const blob = await formStore.previewImage(row.formName, row.recordId);
+  busyId.value = null;
+
+  if (!blob) {
+    w?.close();
+    $q.notify({ type: "negative", message: formStore.error || "Failed to load image." });
+    return;
+  }
+
+  const url = URL.createObjectURL(blob);
+  if (w) w.location.href = url;
+  else window.open(url, "_blank");
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+};
 
 onBeforeUnmount(() => {
   revokeThumbs()

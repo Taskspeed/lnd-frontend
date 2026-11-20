@@ -60,3 +60,6 @@ export const employee_view_documents_submission = (documentId) => {
 export const  event_participant_certificate = (params = {}) => {
   return api.get(`event/employee/submission/event/participants`,{ params });
 };
+
+export const preview_image_signed = (formRecordId, slug) =>
+  api.get(`erms/${slug}/image/${formRecordId}`, { responseType: "blob" });
