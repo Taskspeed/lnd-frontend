@@ -86,7 +86,7 @@
         </div>
 
         <!-- SIGNATURES -->
-        <div class="lir-signature-grid">
+        <!-- <div class="lir-signature-grid">
           <div class="lir-sig-col">
             <div class="lir-sig-line"></div>
             <div class="lir-sig-caption">Learner's Name &amp; Signature</div>
@@ -99,7 +99,7 @@
         <div class="lir-sig-single">
           <div class="lir-sig-line"></div>
           <div class="lir-sig-caption">Head of Office Name &amp; Signature</div>
-        </div>
+        </div> -->
       </q-card-section>
 
       <q-card-actions align="right" class="lir-footer">

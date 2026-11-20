@@ -121,7 +121,7 @@
         </div>
 
         <!-- SIGNATURES -->
-        <div class="lpr-signature-grid">
+        <!-- <div class="lpr-signature-grid">
           <div class="lpr-sig-col">
             <div class="lpr-field-label">Evaluated by:</div>
             <div class="lpr-sig-line"></div>
@@ -136,7 +136,7 @@
         <div class="lpr-field-row q-mt-md">
           <span class="lpr-field-label">Date of Evaluation:</span>
           <span class="lpr-field-line lpr-field-line-short"></span>
-        </div>
+        </div> -->
       </q-card-section>
 
       <q-card-actions align="right" class="lpr-footer">

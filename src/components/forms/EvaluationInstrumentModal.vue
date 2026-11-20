@@ -145,16 +145,18 @@ const eventName = computed(() => data.value.event || '')
 const date = computed(() => data.value.date || '')
 const participant = computed(() => data.value.name_of_participant || '')
 const comments = computed(() => data.value.comments_suggestions || '')
-const feedback = computed(() => data.value.feedback || {})
+const feedback = computed(() => {
+  const f = data.value.feedback
+  return (Array.isArray(f) ? f[0] : f) || {}
+})
 
 // NOTE: kapag ang relation ay pinangalanang `venue()`, mao-overwrite nito ang
 // `venue` column sa JSON. Kaya mas maganda i-rename ang relation sa `venueRatings()`
 // (JSON key: venue_ratings). Sinusuportahan ng code na ito pareho.
 const venueRows = computed(() => {
   const d = data.value
-  if (Array.isArray(d.venue_ratings)) return d.venue_ratings
-  if (Array.isArray(d.venue)) return d.venue
-  return []
+  const rows = d.venue_evaluation ?? d.venue_ratings ?? (Array.isArray(d.venue) ? d.venue : [])
+  return [...rows].sort((a, b) => (a.id ?? 0) - (b.id ?? 0))
 })
 
 const venueText = computed(() => (typeof data.value.venue === 'string' ? data.value.venue : ''))
@@ -180,7 +182,10 @@ const QUESTIONS = {
 const buildRows = (key, saved = []) =>
   QUESTIONS[key].map((question, i) => ({
     ...(saved[i] || {}),
-    question: saved[i]?.question || question,
+    question:
+      typeof saved[i]?.question === 'string' && saved[i].question.trim()
+        ? saved[i].question
+        : question,
   }))
 
 const sections = computed(() => [

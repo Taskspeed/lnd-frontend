@@ -120,7 +120,7 @@
         </div>
 
         <!-- SIGNATURES -->
-        <div class="lamr-signature-grid">
+        <!-- <div class="lamr-signature-grid">
           <div class="lamr-sig-col">
             <div class="lamr-sig-line"></div>
             <div class="lamr-sig-caption">Immediate Supervisor</div>
@@ -129,7 +129,7 @@
             <div class="lamr-sig-line"></div>
             <div class="lamr-sig-caption">Head of Office</div>
           </div>
-        </div>
+        </div> -->
       </q-card-section>
 
       <q-card-actions align="right" class="lamr-footer">

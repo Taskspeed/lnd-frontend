@@ -70,10 +70,10 @@
         </div>
 
         <!-- PARTICIPANT -->
-        <div class="lir-sig-single">
+        <!-- <div class="lir-sig-single">
           <div class="lir-sig-line spk-sig-name">{{ participant }}</div>
           <div class="lir-sig-caption">Participant (Signature over printed name)</div>
-        </div>
+        </div> -->
       </q-card-section>
 
       <q-card-actions align="right" class="lir-footer">

@@ -174,7 +174,7 @@
         </div>
 
         <!-- SIGNATURES -->
-        <div class="lap-signature-row">
+        <!-- <div class="lap-signature-row">
           <div class="lap-sig-block">
             <span class="lap-field-label">Signature:</span>
           </div>
@@ -196,7 +196,7 @@
         <div class="lap-field-row q-mt-md">
           <span class="lap-field-label">Date:</span>
           <span class="lap-field-line lap-field-line-short"></span>
-        </div>
+        </div> -->
       </q-card-section>
 
       <q-card-actions align="right" class="lap-footer">
